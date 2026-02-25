@@ -30,12 +30,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. User can switch between multiple projects in the dashboard and each project shows its own configuration
   4. User can generate an API key with a recognizable `ph_live_` prefix, see it displayed once on creation, and the key is hashed at rest in the database
   5. User can revoke an API key and any subsequent API calls using that key are rejected
-**Plans**: TBD
+**Plans**: 3 plans in 3 waves
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
-- [ ] 01-03: TBD
+- [ ] 01-01-PLAN.md — Monorepo scaffold, DB schema, Better Auth config, Hono API server, React web shell with auth flow (Wave 1)
+- [ ] 01-02-PLAN.md — Project CRUD tRPC router, field configuration, dashboard UI with card grid and creation flow (Wave 2)
+- [ ] 01-03-PLAN.md — API key lifecycle tRPC router, verifyProjectKey utility, Stripe-like key management UI (Wave 3)
 
 ### Phase 2: Entry Submission API
 **Goal**: External developers can submit waitlist and demo-booking entries to pleasehold via a simple authenticated REST endpoint, with validation, deduplication, rate limiting, and queue positioning
