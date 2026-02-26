@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QA & Hardening
-status: in-progress
-last_updated: "2026-02-26T17:08:44Z"
+status: complete
+last_updated: "2026-02-26T18:46:04Z"
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 6
-  completed_plans: 7
+  completed_plans: 6
 ---
 
 # Project State
@@ -18,16 +18,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-02-26)
 
 **Core value:** Developers can add a waitlist or demo-booking form to any landing page in minutes by hitting an API -- no backend work, no form infrastructure, just a token and a POST request.
-**Current focus:** v1.1 QA & Hardening -- Phase 9 plan 02 complete
+**Current focus:** v1.1 QA & Hardening -- COMPLETE (all 15/15 requirements satisfied)
 
 ## Current Position
 
 Phase: 9 of 9 (QA Verification)
-Plan: 2 of 3 (09-02 complete)
-Status: Phase 9 in progress -- 09-01, 09-02 complete, 09-03 remaining
-Last activity: 2026-02-26 -- Completed 09-02-PLAN.md (Docker self-hosting QA)
+Plan: 3 of 3 (09-03 complete)
+Status: v1.1 milestone complete -- all 4 phases (6-9) done, all 6 plans complete
+Last activity: 2026-02-26 -- Completed 09-03-PLAN.md (Notification pipeline and double opt-in QA)
 
-Progress: [#################...] 87% (7/9 phases complete, Phase 9: 2/3 plans)
+Progress: [####################] 100% (9/9 phases complete, Phase 9: 3/3 plans)
 
 ## Performance Metrics
 
@@ -48,6 +48,7 @@ Progress: [#################...] 87% (7/9 phases complete, Phase 9: 2/3 plans)
 | Phase 08 P01 | 8min | 2 tasks | 5 files |
 | Phase 09 P01 | 3min | 2 tasks | 1 file |
 | Phase 09 P02 | 45min | 2 tasks | 7 files |
+| Phase 09 P03 | 24min | 3 tasks | 1 file |
 
 ## Accumulated Context
 
@@ -69,6 +70,9 @@ All v1.0 decisions archived in PROJECT.md Key Decisions table.
 - [09-01] Restored .env from .env.backup-pre-qa after previous Docker QA test had overwritten it
 - [09-02] Copy root tsconfig.json into Docker builder stage to fix turbo prune --docker omission
 - [09-02] Mark better-auth as external in tsup config to resolve Zod v3/v4 runtime conflict
+- [09-03] Inserted Slack/Discord channels directly in DB to bypass URL prefix validation for local QA testing
+- [09-03] Telegram delivery expected to fail with fake bot token -- validates request construction, not delivery
+- [09-03] Worker deduplication confirmed: sent channels skipped on retry after Telegram failure
 
 ### Pending Todos
 
@@ -77,10 +81,10 @@ None.
 ### Blockers/Concerns
 
 - [Carry-forward]: Better Auth project-scoped key native support (Issue #4746) -- metadata workaround works but migration path uncertain
-- [v1.1 scope]: 8 tech debt items + 2 integration issues from v1.0 audit -- all targeted in Phases 6-8
+- [v1.1 scope]: RESOLVED -- All 8 tech debt items + 2 integration issues fixed in Phases 6-8, verified in Phase 9
 
 ## Session Continuity
 
 Last session: 2026-02-26
-Stopped at: Completed 09-02-PLAN.md -- Docker self-hosting QA (2/3 Phase 9 plans done)
+Stopped at: Completed 09-03-PLAN.md -- v1.1 QA & Hardening milestone complete (15/15 requirements)
 Resume file: None

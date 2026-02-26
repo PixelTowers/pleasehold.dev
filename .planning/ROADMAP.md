@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1-5 (shipped 2026-02-26)
-- **v1.1 QA & Hardening** — Phases 6-9 (in progress)
+- **v1.1 QA & Hardening** — Phases 6-9 (completed 2026-02-26)
 
 ## Phases
 
@@ -27,7 +27,7 @@ Full details: `milestones/v1.0-ROADMAP.md`
 - [x] **Phase 6: Code Fixes** - Fix router, integration, and cleanup issues from v1.0 audit
 - [x] **Phase 7: Build and Config** - Fix local build, Docker migrations, and SMTP config clarity
 - [x] **Phase 8: Test Harness** - Enable integration tests for entry submission with seeded DB
-- [ ] **Phase 9: QA Verification** - Walk through every E2E flow like a real developer
+- [x] **Phase 9: QA Verification** - Walk through every E2E flow like a real developer
 
 ## Phase Details
 
@@ -88,7 +88,7 @@ Plans:
 Plans:
 - [x] 09-01-PLAN.md — Developer flow and API key security QA (signup → project → fields → key → entries → dashboard + auth/rate-limit verification)
 - [x] 09-02-PLAN.md — Docker self-hosting QA (clean docker-compose up → health checks → entry submission → dashboard)
-- [ ] 09-03-PLAN.md — Notification pipeline and double opt-in verification QA (5 channels + enable opt-in → submit → verify → status flip → notifications)
+- [x] 09-03-PLAN.md — Notification pipeline and double opt-in verification QA (5 channels + enable opt-in → submit → verify → status flip → notifications)
 
 ## Progress
 
@@ -105,4 +105,4 @@ Phases execute in numeric order: 6 -> 7 -> 8 -> 9
 | 6. Code Fixes | v1.1 | 2/2 | Complete | 2026-02-26 |
 | 7. Build and Config | v1.1 | 2/2 | Complete | 2026-02-26 |
 | 8. Test Harness | v1.1 | 1/1 | Complete | 2026-02-26 |
-| 9. QA Verification | v1.1 | 2/3 | In progress | - |
+| 9. QA Verification | v1.1 | 3/3 | Complete | 2026-02-26 |
