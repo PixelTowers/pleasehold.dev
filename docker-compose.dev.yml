@@ -1,0 +1,48 @@
+# ABOUTME: Docker Compose configuration for local development infrastructure.
+# ABOUTME: Provides PostgreSQL and Redis services with persistent volumes.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pleasehold-postgres
+    restart: unless-stopped
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: pleasehold
+      POSTGRES_USER: pleasehold
+      POSTGRES_PASSWORD: pleasehold
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - pleasehold-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pleasehold -d pleasehold"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    container_name: pleasehold-redis
+    restart: unless-stopped
+    command: redis-server --maxmemory-policy noeviction
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - pleasehold-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  pleasehold-net:
+    driver: bridge

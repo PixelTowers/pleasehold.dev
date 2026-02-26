@@ -1,0 +1,27 @@
+{
+	"name": "@pleasehold/worker",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "tsx watch src/index.ts",
+		"build": "tsup",
+		"lint": "biome check src/",
+		"typecheck": "tsc --noEmit",
+		"clean": "rm -rf dist"
+	},
+	"dependencies": {
+		"bullmq": "^5",
+		"drizzle-orm": "^0.45.1",
+		"ioredis": "^5",
+		"nodemailer": "^6",
+		"@pleasehold/db": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/node": "^22",
+		"@types/nodemailer": "^6",
+		"tsup": "^8",
+		"tsx": "^4",
+		"typescript": "~5.7.3"
+	}
+}

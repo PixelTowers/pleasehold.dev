@@ -1,0 +1,23 @@
+{
+	"name": "pleasehold",
+	"private": true,
+	"packageManager": "pnpm@10.30.1",
+	"engines": {
+		"node": ">=22"
+	},
+	"scripts": {
+		"dev": "dotenv -e .env -- turbo dev",
+		"build": "turbo build",
+		"lint": "turbo lint",
+		"typecheck": "turbo typecheck",
+		"db:generate": "turbo db:generate",
+		"db:migrate": "turbo db:migrate",
+		"clean": "turbo clean && rm -rf node_modules"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.4",
+		"dotenv-cli": "^11.0.0",
+		"turbo": "2.4.4",
+		"typescript": "~5.7.3"
+	}
+}

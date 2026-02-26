@@ -1,61 +1,48 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: MVP
+status: shipped
+last_updated: "2026-02-26T11:15:00Z"
+progress:
+  total_phases: 5
+  completed_phases: 5
+  total_plans: 13
+  completed_plans: 13
+---
+
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-25)
+See: .planning/PROJECT.md (updated 2026-02-26)
 
 **Core value:** Developers can add a waitlist or demo-booking form to any landing page in minutes by hitting an API -- no backend work, no form infrastructure, just a token and a POST request.
-**Current focus:** Phase 1: Auth, Projects, and API Keys
+**Current focus:** v1.0 shipped. Ready for next milestone.
 
 ## Current Position
 
-Phase: 1 of 5 (Auth, Projects, and API Keys)
-Plan: 0 of 3 in current phase
-Status: Ready to plan
-Last activity: 2026-02-25 -- Roadmap created
-
-Progress: [░░░░░░░░░░] 0%
-
-## Performance Metrics
-
-**Velocity:**
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: 0 hours
-
-**By Phase:**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| - | - | - | - |
-
-**Recent Trend:**
-- Last 5 plans: -
-- Trend: -
-
-*Updated after each plan completion*
+Milestone: v1.0 MVP — SHIPPED
+Status: Complete and archived
+Last activity: 2026-02-26 — Milestone archived
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-- [Roadmap]: 5 phases derived from 34 requirements at standard depth. Auth/Projects/Keys bundled in Phase 1 as prerequisite to all other work. Notifications (Phase 4) depends on Phase 2 only, can run in parallel with Phase 3.
+All v1.0 decisions archived in PROJECT.md Key Decisions table.
 
 ### Pending Todos
 
-None yet.
+None.
 
 ### Blockers/Concerns
 
-- [Research]: Better Auth project-scoped key native support (Issue #4746) is open -- metadata workaround is documented but migration path uncertain. Isolate key scoping logic in middleware.
-- [Research]: BullMQ requires Redis configured with `noeviction` -- default `allkeys-lru` silently loses queued jobs. Must validate at application startup.
-- [Research]: Cross-tenant data isolation requires a DAL pattern from day one -- Drizzle does not auto-inject tenant scoping.
+- [Carry-forward]: Better Auth project-scoped key native support (Issue #4746) is open — metadata workaround works but migration path uncertain
+- [Tech debt]: 8 items documented in milestones/v1.0-MILESTONE-AUDIT.md
 
 ## Session Continuity
 
-Last session: 2026-02-25
-Stopped at: Roadmap created, ready for Phase 1 planning
+Last session: 2026-02-26
+Stopped at: v1.0 milestone archived and tagged.
 Resume file: None

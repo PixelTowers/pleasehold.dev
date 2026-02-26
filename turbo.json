@@ -1,0 +1,47 @@
+{
+	"$schema": "https://turbo.build/schema.json",
+	"tasks": {
+		"build": {
+			"dependsOn": ["^build"],
+			"outputs": ["dist/**", "out/**"]
+		},
+		"dev": {
+			"persistent": true,
+			"cache": false,
+			"passThroughEnv": [
+				"DATABASE_URL",
+				"BETTER_AUTH_SECRET",
+				"API_URL",
+				"WEB_URL",
+				"GITHUB_CLIENT_ID",
+				"GITHUB_CLIENT_SECRET",
+				"GOOGLE_CLIENT_ID",
+				"GOOGLE_CLIENT_SECRET",
+				"REDIS_HOST",
+				"REDIS_PORT",
+				"SMTP_HOST",
+				"SMTP_PORT",
+				"SMTP_USER",
+				"SMTP_PASS",
+				"SMTP_FROM"
+			]
+		},
+		"lint": {
+			"dependsOn": ["^build"]
+		},
+		"typecheck": {
+			"dependsOn": ["^build"]
+		},
+		"db:generate": {
+			"cache": false,
+			"passThroughEnv": ["DATABASE_URL"]
+		},
+		"db:migrate": {
+			"cache": false,
+			"passThroughEnv": ["DATABASE_URL"]
+		},
+		"clean": {
+			"cache": false
+		}
+	}
+}

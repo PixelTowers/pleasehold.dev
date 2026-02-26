@@ -2,7 +2,7 @@
 
 ## What This Is
 
-An API-first waitlist and demo-booking SaaS that lets developers offload signup capture from their landing pages. Developers integrate via API key, configure what data to collect (email only, email + name, etc.) and how to get notified (email, Slack, webhook). Open source and self-hostable via Docker.
+An API-first waitlist and demo-booking SaaS that lets developers offload signup capture from their landing pages. Developers integrate via API key, configure what data to collect (email only, email + name, etc.) and how to get notified (email, Slack, webhook, Discord, Telegram). Includes a management dashboard for browsing entries, tracking status, and exporting data. Open source and self-hostable via Docker.
 
 ## Core Value
 
@@ -12,21 +12,21 @@ Developers can add a waitlist or demo-booking form to any landing page in minute
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Developer can create an account and manage projects via web dashboard — v1.0
+- ✓ Developer can generate API keys scoped to a project — v1.0
+- ✓ Developer can configure a project as "waitlist" mode or "book a demo" mode — v1.0
+- ✓ Developer can configure which fields to collect (email, name, company, message, custom fields) — v1.0
+- ✓ External users can submit entries via authenticated API (POST with API key) — v1.0
+- ✓ Developer can view all collected entries in the dashboard — v1.0
+- ✓ Developer can configure notification channels (email, Slack, webhook, Discord, Telegram) when new entries arrive — v1.0
+- ✓ Notifications are delivered asynchronously via background jobs — v1.0
+- ✓ Developer can export entries (CSV) — v1.0
+- ✓ The entire product is self-hostable via a single `docker-compose up` — v1.0
+- ✓ API is documented and developer-friendly — v1.0
 
 ### Active
 
-- [ ] Developer can create an account and manage projects via web dashboard
-- [ ] Developer can generate API keys scoped to a project
-- [ ] Developer can configure a project as "waitlist" mode or "book a demo" mode
-- [ ] Developer can configure which fields to collect (email, name, company, message, custom fields)
-- [ ] External users can submit entries via authenticated API (POST with API key)
-- [ ] Developer can view all collected entries in the dashboard
-- [ ] Developer can configure notification channels (email, Slack, webhook) when new entries arrive
-- [ ] Notifications are delivered asynchronously via background jobs
-- [ ] Developer can export entries (CSV)
-- [ ] The entire product is self-hostable via a single `docker-compose up`
-- [ ] API is documented and developer-friendly
+(None yet — define with `/gsd:new-milestone`)
 
 ### Out of Scope
 
@@ -35,31 +35,54 @@ Developers can add a waitlist or demo-booking form to any landing page in minute
 - Payment processing — no billing in v1
 - Mobile app — web dashboard only
 - Real-time features (WebSocket/SSE) — polling or manual refresh is fine for v1
+- Referral / viral loop system — expose data for devs to build their own
+- Email marketing / drip campaigns — use webhooks to pipe to existing email tools
+- Landing page builder — developers already have their own sites
+- AI features — API-first design is already AI-agent friendly
 
 ## Context
 
-- **Reference codebase:** GoldenBerry (`/Users/christopher.jimenez/Src/PixelTowers/GoldenBerry`) uses the same stack and monorepo structure — use as architectural reference
-- **Two modes, one product:** Waitlist and demo-booking are configuration modes on the same project entity, not separate features. The difference is which fields are required and how the notification is framed
-- **API-first philosophy:** The UI (forms on developer sites) is "cheap" — pleasehold provides the backend infrastructure and management dashboard, not the frontend widget
-- **Open source:** The product is fully open source and designed to be self-hosted. The hosted version at pleasehold.dev is the convenience/managed offering
+Shipped v1.0 MVP with 8,008 lines of TypeScript across 144 files.
+
+**Tech stack:** TypeScript monorepo (pnpm + Turborepo) — Hono + tRPC (API), Drizzle + PostgreSQL (data), React 19 + Vite (dashboard), BullMQ + Redis (jobs), Better Auth (auth), Biome (quality), Vitest (testing), Docker + nginx (deployment).
+
+**Architecture:** `apps/api` (Hono server with REST + tRPC), `apps/web` (React 19 SPA), `apps/worker` (BullMQ processor), `packages/db` (Drizzle schema), `packages/trpc` (tRPC routers), `packages/auth` (Better Auth config).
+
+**Known tech debt (8 items from audit):**
+- `window.location.href` redirects bypass TanStack Router (Phase 1)
+- Integration tests for entry route skipped — need seeded DB harness (Phase 2)
+- Template string navigation bypasses type safety (Phase 3)
+- SMTP_HOST warn-only — email silently fails without config (Phase 4)
+- `pnpm build --filter @pleasehold/api` fails locally — Docker build works (Phase 5)
+- Gitignored migrations dir needs `db:generate` step in Docker (Phase 5)
+- Dead exports in `@pleasehold/auth` (cross-phase)
+- `/health` not proxied through nginx (cross-phase)
+
+**Reference codebase:** GoldenBerry (`/Users/christopher.jimenez/Src/PixelTowers/GoldenBerry`) uses the same stack and monorepo structure.
 
 ## Constraints
 
-- **Stack:** TypeScript monorepo (pnpm + Turborepo) — Hono + tRPC (API), Drizzle + PostgreSQL (data), React 19 + Vite (dashboard), Astro (landing), BullMQ + Redis (jobs), Better Auth (auth), Biome (quality), Vitest (testing)
+- **Stack:** TypeScript monorepo (pnpm + Turborepo) — Hono + tRPC (API), Drizzle + PostgreSQL (data), React 19 + Vite (dashboard), BullMQ + Redis (jobs), Better Auth (auth), Biome (quality), Vitest (testing)
 - **Self-hosting:** Must run via `docker-compose up` with PostgreSQL + Redis as infrastructure dependencies
 - **API design:** All entry submission endpoints must be simple REST (not tRPC) — external developers need a plain HTTP API with API key auth. tRPC is for the internal dashboard ↔ API communication
-- **Monorepo structure:** `apps/api`, `apps/web` (dashboard), `apps/landing` (marketing site), `packages/*` (shared code)
+- **Monorepo structure:** `apps/api`, `apps/web` (dashboard), `apps/worker` (BullMQ), `packages/*` (shared code)
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| GoldenBerry stack | Proven stack Chris is already productive with — Hono, tRPC, Drizzle, React 19, Turborepo | — Pending |
-| API-only (no widget) | Frontend forms are cheap to build — pleasehold's value is the backend + dashboard | — Pending |
-| REST for public API, tRPC for dashboard | External devs need simple HTTP; dashboard benefits from type-safe RPC | — Pending |
-| Two modes, one entity | Waitlist vs demo-booking is a config flag, not separate product surfaces | — Pending |
-| Docker for self-hosting | Single `docker-compose up` is the simplest self-hosting story | — Pending |
-| PostgreSQL + Redis | Postgres for data, Redis for BullMQ job queue and notification delivery | — Pending |
+| GoldenBerry stack | Proven stack Chris is already productive with — Hono, tRPC, Drizzle, React 19, Turborepo | ✓ Good |
+| API-only (no widget) | Frontend forms are cheap to build — pleasehold's value is the backend + dashboard | ✓ Good |
+| REST for public API, tRPC for dashboard | External devs need simple HTTP; dashboard benefits from type-safe RPC | ✓ Good |
+| Two modes, one entity | Waitlist vs demo-booking is a config flag, not separate product surfaces | ✓ Good |
+| Docker for self-hosting | Single `docker-compose up` is the simplest self-hosting story | ✓ Good |
+| PostgreSQL + Redis | Postgres for data, Redis for BullMQ job queue and notification delivery | ✓ Good |
+| Better Auth with apiKey plugin | Metadata workaround for project scoping (native support pending Issue #4746) | ⚠️ Revisit |
+| BullMQ noeviction policy | Redis must use noeviction to prevent silent job loss — validated at worker startup | ✓ Good |
+| Path-specific CORS | `origin:*` for public API, restricted for dashboard routes — prevents header collision | ✓ Good |
+| Dedup returns 200 (not 409) | Idempotent behavior for duplicate email submissions per ENTR-03 | ✓ Good |
+| OpenAPI via @hono/zod-openapi | v0.19.10 for zod v3 compat; schemas are documentation-only, runtime uses dynamic validation | ✓ Good |
+| nginx reverse proxy in Docker | Preferred over VITE_API_URL build-time env for API routing | ✓ Good |
 
 ---
-*Last updated: 2025-02-25 after initialization*
+*Last updated: 2026-02-26 after v1.0 milestone*

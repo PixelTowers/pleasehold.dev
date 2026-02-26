@@ -1,0 +1,38 @@
+{
+	"name": "@pleasehold/auth",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./client": {
+			"types": "./dist/client.d.ts",
+			"import": "./dist/client.js"
+		}
+	},
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsup",
+		"dev": "tsup --watch",
+		"lint": "biome check src/",
+		"format": "biome format --write src/",
+		"typecheck": "tsc --noEmit",
+		"clean": "rm -rf dist"
+	},
+	"dependencies": {
+		"@pleasehold/db": "workspace:*",
+		"better-auth": "^1.4.18"
+	},
+	"devDependencies": {
+		"hono": "^4.12.2",
+		"tsup": "^8.3.5",
+		"typescript": "~5.7.3"
+	}
+}

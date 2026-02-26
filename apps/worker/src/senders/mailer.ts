@@ -1,0 +1,26 @@
+// ABOUTME: Shared Nodemailer transporter singleton for email-based senders (notifications and verification).
+// ABOUTME: Configured from SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASS env vars; logs a warning if SMTP_HOST is unset.
+
+import nodemailer from 'nodemailer';
+
+const SMTP_HOST = process.env.SMTP_HOST;
+const SMTP_PORT = Number(process.env.SMTP_PORT ?? '587');
+const SMTP_USER = process.env.SMTP_USER;
+const SMTP_PASS = process.env.SMTP_PASS;
+
+if (!SMTP_HOST) {
+	console.warn('WARNING: SMTP_HOST is not set -- email sending will fail until configured.');
+}
+
+export const transporter = nodemailer.createTransport({
+	host: SMTP_HOST,
+	port: SMTP_PORT,
+	secure: SMTP_PORT === 465,
+	auth:
+		SMTP_USER && SMTP_PASS
+			? {
+					user: SMTP_USER,
+					pass: SMTP_PASS,
+				}
+			: undefined,
+});

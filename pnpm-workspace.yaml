@@ -1,0 +1,8 @@
+# ABOUTME: pnpm workspace configuration for the pleasehold monorepo.
+# ABOUTME: Defines workspace packages spanning apps and shared packages.
+packages:
+  - 'apps/*'
+  - 'packages/*'
+onlyBuiltDependencies:
+  - '@biomejs/biome'
+  - 'esbuild'

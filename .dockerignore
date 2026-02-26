@@ -1,0 +1,17 @@
+# ABOUTME: Docker build context exclusions for the pleasehold monorepo.
+# ABOUTME: Prevents node_modules, git history, env files, and build artifacts from being sent to Docker daemon.
+
+node_modules
+.git
+.turbo
+.env
+.env.*
+!.env.example
+dist
+build
+out
+.private-journal
+.planning
+coverage
+*.md
+!README.md

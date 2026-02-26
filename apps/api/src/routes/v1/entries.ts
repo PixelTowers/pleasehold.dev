@@ -1,0 +1,183 @@
+// ABOUTME: POST handler for public entry submission API with deduplication and atomic position assignment.
+// ABOUTME: Validates input against project field config, inserts with onConflictDoNothing, returns queue position.
+
+import crypto from 'node:crypto';
+import { entries } from '@pleasehold/db';
+import { and, eq, sql } from 'drizzle-orm';
+import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
+import { buildEntrySchema } from '../../lib/field-validator';
+import { enqueueNotification } from '../../lib/notification-queue';
+import type { ApiKeyVariables } from '../../middleware/api-key-auth';
+import { EntryRequestSchema, EntryResponseSchema, ErrorResponseSchema } from '../../openapi';
+
+const submitEntryRoute = createRoute({
+	method: 'post',
+	path: '/',
+	tags: ['Entries'],
+	summary: 'Submit a waitlist or demo-booking entry',
+	description:
+		'Submit a new entry for the project associated with the provided API key. If double opt-in is enabled, the entry will require email verification before becoming active.',
+	security: [{ apiKey: [] }],
+	request: {
+		body: {
+			content: {
+				'application/json': {
+					schema: EntryRequestSchema,
+				},
+			},
+		},
+	},
+	responses: {
+		201: {
+			content: { 'application/json': { schema: EntryResponseSchema } },
+			description: 'Entry created',
+		},
+		200: {
+			content: { 'application/json': { schema: EntryResponseSchema } },
+			description: 'Duplicate entry returned',
+		},
+		400: {
+			content: { 'application/json': { schema: ErrorResponseSchema } },
+			description: 'Validation error',
+		},
+		401: {
+			content: { 'application/json': { schema: ErrorResponseSchema } },
+			description: 'Invalid API key',
+		},
+		429: {
+			description: 'Rate limit exceeded',
+		},
+	},
+});
+
+const app = new OpenAPIHono<{ Variables: ApiKeyVariables }>();
+
+app.openapi(submitEntryRoute, async (c) => {
+	const project = c.get('project');
+	const db = c.get('db');
+
+	let body: unknown;
+	try {
+		body = await c.req.json();
+	} catch {
+		return c.json(
+			{ error: { code: 'INVALID_JSON', message: 'Request body must be valid JSON' } },
+			400,
+		);
+	}
+
+	const schema = buildEntrySchema(project.fieldConfig);
+	const parseResult = schema.safeParse(body);
+
+	if (!parseResult.success) {
+		return c.json(
+			{
+				error: {
+					code: 'VALIDATION_ERROR',
+					message: 'Invalid submission',
+					details: parseResult.error.issues.map((issue) => ({
+						field: issue.path.join('.'),
+						message: issue.message,
+					})),
+				},
+			},
+			400,
+		);
+	}
+
+	const data = parseResult.data;
+
+	const insertResult = await db
+		.insert(entries)
+		.values({
+			projectId: project.id,
+			email: data.email,
+			name: data.name ?? null,
+			company: data.company ?? null,
+			message: data.message ?? null,
+			metadata: data.metadata ?? null,
+			position: sql`(SELECT COALESCE(MAX(${entries.position}), 0) + 1 FROM ${entries} WHERE ${entries.projectId} = ${project.id})`,
+		})
+		.onConflictDoNothing({ target: [entries.projectId, entries.email] })
+		.returning();
+
+	if (insertResult.length > 0) {
+		const entry = insertResult[0];
+
+		if (project.doubleOptIn) {
+			// Double opt-in enabled: mark entry as pending verification and send verification email
+			const verificationToken = crypto.randomUUID();
+			const verificationExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
+
+			await db
+				.update(entries)
+				.set({
+					status: 'pending_verification',
+					verificationToken,
+					verificationExpiresAt,
+					updatedAt: new Date(),
+				})
+				.where(eq(entries.id, entry.id));
+
+			enqueueNotification({
+				entryId: entry.id,
+				projectId: project.id,
+				type: 'verification_email',
+			}).catch((err) => console.error('Failed to enqueue verification email:', err));
+		} else {
+			// Standard flow: notify project owner about the new entry
+			enqueueNotification({
+				entryId: entry.id,
+				projectId: project.id,
+				type: 'entry_created',
+			}).catch((err) => console.error('Failed to enqueue notification:', err));
+		}
+
+		return c.json(
+			{
+				data: {
+					id: entry.id,
+					email: entry.email,
+					name: entry.name,
+					company: entry.company,
+					position: entry.position,
+					createdAt: entry.createdAt.toISOString(),
+				},
+			},
+			201,
+		);
+	}
+
+	// Duplicate email for this project -- return the existing entry
+	const existing = await db.query.entries.findFirst({
+		where: and(eq(entries.projectId, project.id), eq(entries.email, data.email)),
+	});
+
+	if (!existing) {
+		return c.json(
+			{
+				error: {
+					code: 'INTERNAL_ERROR',
+					message: 'Entry conflict detected but existing entry not found',
+				},
+			},
+			500,
+		);
+	}
+
+	return c.json(
+		{
+			data: {
+				id: existing.id,
+				email: existing.email,
+				name: existing.name,
+				company: existing.company,
+				position: existing.position,
+				createdAt: existing.createdAt.toISOString(),
+			},
+		},
+		200,
+	);
+});
+
+export const entriesRoute = app;
