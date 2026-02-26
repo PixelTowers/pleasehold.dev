@@ -385,10 +385,28 @@ When a job fails (due to Telegram), BullMQ retries it with exponential backoff. 
 ### SMTP Configuration
 The worker requires `SMTP_HOST`, `SMTP_PORT`, and `SMTP_FROM` environment variables for email delivery. Without these, the mailer.ts prints a warning and email operations will fail. For local testing, Mailpit on port 1025 works without authentication.
 
+## Human Verification (Task 3)
+
+**Verifier:** Chris (project owner)
+**Date:** 2026-02-26
+**Result:** APPROVED
+
+### Verification Checklist
+
+| Item | Status | Notes |
+|------|--------|-------|
+| Mailpit: Verification email (styled "Confirm Submission" button) | PASS | Present in inbox, correctly styled |
+| Mailpit: Notification email (entry details table) | PASS | Present in inbox with entry data |
+| Dashboard: verify-test@example.com status = "new" | PASS | Correct after verification flow |
+| Dashboard: notification-test@example.com status = "new" | PASS | Correct for direct submission |
+
+**Human verdict:** All looks correct. Verification email styled properly with Confirm Submission button. Notification email contains entry details table. Dashboard reflects correct statuses for both entries.
+
 ## Overall Summary
 
 | Requirement | Test Suite | Steps | Passed | Result |
 |-------------|-----------|-------|--------|--------|
 | QA-02       | Notification Pipeline | 7 | 7 | PASS |
 | QA-03       | Double Opt-In Flow    | 8 | 8 | PASS |
-| **Total**   |                       | **15** | **15** | **PASS** |
+| Human       | Visual Verification   | 4 | 4 | PASS |
+| **Total**   |                       | **19** | **19** | **PASS** |
