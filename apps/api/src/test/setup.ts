@@ -59,11 +59,13 @@ export async function setup() {
 		trustedOrigins: ['http://localhost:5173'],
 	});
 
-	await seed(db, auth);
+	const apiKey = await seed(db, auth);
 
-	// Store the test DATABASE_URL so tests and teardown can use it
+	// Store values in process.env so vitest worker processes inherit them.
+	// Global setup runs before workers are forked, so env vars propagate.
 	process.env.TEST_DATABASE_URL = testDatabaseUrl;
-	// Also provide it as DATABASE_URL so the app's createDb picks it up
+	process.env.TEST_API_KEY = apiKey;
+	// Also provide DATABASE_URL so the app's createDb picks it up in test workers
 	process.env.DATABASE_URL = testDatabaseUrl;
 	// Auth secret for test app instances
 	process.env.BETTER_AUTH_SECRET = 'test-secret-at-least-32-characters-long';

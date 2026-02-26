@@ -12,10 +12,17 @@ import type { createAuth } from '@pleasehold/auth';
 export const TEST_USER_ID = 'test-user-1';
 export const TEST_PROJECT_ID = '00000000-0000-4000-8000-000000000001';
 
-// Populated during seed() -- tests import this after global setup has run
-export let TEST_API_KEY = '';
+/**
+ * Returns the test API key from process.env, set by the global setup after seeding.
+ * This indirection is needed because global setup and test workers run in separate processes.
+ */
+export function getTestApiKey(): string {
+	const key = process.env.TEST_API_KEY;
+	if (!key) throw new Error('TEST_API_KEY not set. Global setup may have failed.');
+	return key;
+}
 
-export async function seed(db: Database, auth: ReturnType<typeof createAuth>) {
+export async function seed(db: Database, auth: ReturnType<typeof createAuth>): Promise<string> {
 	const now = new Date();
 
 	// 1. Insert a user into Better Auth's auth_users table
@@ -58,6 +65,7 @@ export async function seed(db: Database, auth: ReturnType<typeof createAuth>) {
 		},
 	});
 
-	// The response includes the plaintext key (only available at creation time)
-	TEST_API_KEY = result.key;
+	// The response includes the plaintext key (only available at creation time).
+	// Return it so the caller can store it in process.env for test workers.
+	return result.key;
 }
