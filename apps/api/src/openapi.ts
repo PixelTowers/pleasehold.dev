@@ -6,21 +6,9 @@ import { z } from '@hono/zod-openapi';
 export const EntryRequestSchema = z
 	.object({
 		email: z.string().email().openapi({ example: 'user@example.com' }),
-		name: z
-			.string()
-			.max(200)
-			.optional()
-			.openapi({ example: 'Jane Doe' }),
-		company: z
-			.string()
-			.max(200)
-			.optional()
-			.openapi({ example: 'Acme Inc' }),
-		message: z
-			.string()
-			.max(2000)
-			.optional()
-			.openapi({ example: 'Interested in early access' }),
+		name: z.string().max(200).optional().openapi({ example: 'Jane Doe' }),
+		company: z.string().max(200).optional().openapi({ example: 'Acme Inc' }),
+		message: z.string().max(2000).optional().openapi({ example: 'Interested in early access' }),
 		metadata: z
 			.record(z.union([z.string(), z.number(), z.boolean(), z.null()]))
 			.optional()

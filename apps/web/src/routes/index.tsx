@@ -1,13 +1,13 @@
 // ABOUTME: Dashboard index route showing project card grid or guided creation flow.
 // ABOUTME: Protected route; redirects to login if unauthenticated; shows CreateProjectFlow for zero-project users.
 
-import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { Plus } from 'lucide-react';
-import { authClient } from '@/lib/auth-client';
 import { CreateProjectFlow } from '@/components/CreateProjectFlow';
 import { ProjectCard } from '@/components/ProjectCard';
-import { useProjects } from '@/hooks/useProjects';
 import { Button } from '@/components/ui/button';
+import { useProjects } from '@/hooks/useProjects';
+import { authClient } from '@/lib/auth-client';
 
 export const Route = createFileRoute('/')({
 	component: DashboardIndex,

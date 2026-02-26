@@ -2,7 +2,7 @@
 	"root": true,
 	"$schema": "https://biomejs.dev/schemas/2.4.4/schema.json",
 	"files": {
-		"includes": ["**", "!**/routeTree.gen.ts"]
+		"includes": ["**", "!**/routeTree.gen.ts", "!**/*.css"]
 	},
 	"assist": { "actions": { "source": { "organizeImports": "on" } } },
 	"formatter": {

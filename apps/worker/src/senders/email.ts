@@ -1,10 +1,10 @@
-// ABOUTME: Email notification sender that delivers formatted entry alerts to configured recipients via Nodemailer.
+// ABOUTME: Email notification sender that delivers formatted entry alerts to configured recipients via Resend.
 // ABOUTME: Sends both HTML and plain text versions with entry details (email, name, position, project).
 
 import type { EntryPayload } from '../types';
-import { transporter } from './mailer';
+import { resend } from './mailer';
 
-const SMTP_FROM = process.env.SMTP_FROM ?? 'notifications@pleasehold.dev';
+const EMAIL_FROM = process.env.EMAIL_FROM ?? 'notifications@pleasehold.dev';
 
 export async function sendEmailNotification(
 	recipients: string[],
@@ -34,9 +34,9 @@ export async function sendEmailNotification(
   </table>
 </div>`.trim();
 
-	await transporter.sendMail({
-		from: SMTP_FROM,
-		to: recipients.join(', '),
+	await resend.emails.send({
+		from: EMAIL_FROM,
+		to: recipients,
 		subject,
 		text: textBody,
 		html: htmlBody,

@@ -1,7 +1,6 @@
 // ABOUTME: BullMQ job processor that routes notification jobs to channel-specific sender functions.
 // ABOUTME: Handles entry_created (multi-channel fan-out) and verification_email job types with delivery logging.
 
-import type { Job } from 'bullmq';
 import {
 	createDb,
 	entries,
@@ -9,13 +8,14 @@ import {
 	notificationLogs,
 	projects,
 } from '@pleasehold/db';
+import type { Job } from 'bullmq';
 import { and, eq } from 'drizzle-orm';
+import { sendDiscordNotification } from './senders/discord';
 import { sendEmailNotification } from './senders/email';
 import { sendSlackNotification } from './senders/slack';
-import { sendDiscordNotification } from './senders/discord';
 import { sendTelegramNotification } from './senders/telegram';
-import { sendWebhookNotification } from './senders/webhook';
 import { sendVerificationEmail } from './senders/verification-email';
+import { sendWebhookNotification } from './senders/webhook';
 import type { EntryPayload } from './types';
 
 interface NotificationJobData {
@@ -93,9 +93,7 @@ async function processEntryCreated(data: NotificationJobData): Promise<void> {
 		});
 
 		if (existingLog) {
-			console.log(
-				`Channel ${channel.id} already sent for entry ${data.entryId}. Skipping.`,
-			);
+			console.log(`Channel ${channel.id} already sent for entry ${data.entryId}. Skipping.`);
 			continue;
 		}
 
@@ -111,9 +109,7 @@ async function processEntryCreated(data: NotificationJobData): Promise<void> {
 			});
 		} catch (err) {
 			const errorMessage = err instanceof Error ? err.message : String(err);
-			console.error(
-				`Failed to send to channel ${channel.id} (${channel.type}): ${errorMessage}`,
-			);
+			console.error(`Failed to send to channel ${channel.id} (${channel.type}): ${errorMessage}`);
 
 			await db.insert(notificationLogs).values({
 				channelId: channel.id,
@@ -191,16 +187,12 @@ async function processVerificationEmail(data: NotificationJobData): Promise<void
 	});
 
 	if (!entry) {
-		console.warn(
-			`Entry ${data.entryId} not found for verification email. Skipping.`,
-		);
+		console.warn(`Entry ${data.entryId} not found for verification email. Skipping.`);
 		return;
 	}
 
 	if (!entry.verificationToken) {
-		console.warn(
-			`Entry ${data.entryId} has no verification token. Skipping.`,
-		);
+		console.warn(`Entry ${data.entryId} has no verification token. Skipping.`);
 		return;
 	}
 

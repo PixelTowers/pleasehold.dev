@@ -1,9 +1,9 @@
 // ABOUTME: Double opt-in email verification endpoint that validates tokens and flips entry status.
 // ABOUTME: Public route (no API key required) mounted at /verify/:token, enqueues owner notifications after verification.
 
+import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { type Database, entries } from '@pleasehold/db';
 import { eq } from 'drizzle-orm';
-import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 import { enqueueNotification } from '../../lib/notification-queue';
 import { ErrorResponseSchema, VerifyResponseSchema } from '../../openapi';
 

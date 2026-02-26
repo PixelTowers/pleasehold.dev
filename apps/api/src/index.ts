@@ -1,12 +1,12 @@
 // ABOUTME: Main API server entry point using Hono with tRPC, Better Auth, and public REST API.
 // ABOUTME: Serves tRPC at /trpc/*, auth at /api/auth/*, entry submission at /api/v1/entries, and health check.
 
-import { createAuth } from '@pleasehold/auth';
-import { createDb } from '@pleasehold/db';
-import { appRouter, createContext } from '@pleasehold/trpc';
 import { serve } from '@hono/node-server';
 import { trpcServer } from '@hono/trpc-server';
 import { OpenAPIHono } from '@hono/zod-openapi';
+import { createAuth } from '@pleasehold/auth';
+import { createDb } from '@pleasehold/db';
+import { appRouter, createContext } from '@pleasehold/trpc';
 import { apiReference } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
 import { apiKeyAuth } from './middleware/api-key-auth';

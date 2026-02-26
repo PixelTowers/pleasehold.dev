@@ -1,14 +1,14 @@
 // ABOUTME: Integration tests for POST /api/v1/entries against a real seeded PostgreSQL database.
 // ABOUTME: Covers API key auth, field validation, deduplication, queue positioning, and metadata storage.
 
-import { createDb, entries, type Database } from '@pleasehold/db';
-import { createAuth } from '@pleasehold/auth';
 import { OpenAPIHono } from '@hono/zod-openapi';
+import { createAuth } from '@pleasehold/auth';
+import { createDb, type Database, entries } from '@pleasehold/db';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { apiKeyAuth, type ApiKeyVariables } from '../../middleware/api-key-auth';
-import { entriesRoute } from './entries';
+import { type ApiKeyVariables, apiKeyAuth } from '../../middleware/api-key-auth';
 import { getTestApiKey } from '../../test/seed';
+import { entriesRoute } from './entries';
 
 let app: OpenAPIHono<{ Variables: ApiKeyVariables }>;
 let db: Database;
@@ -64,9 +64,12 @@ describe('POST /api/v1/entries', () => {
 	});
 
 	it('returns 401 when API key is invalid', async () => {
-		const res = await postEntry({ email: 'bad-key@example.com' }, {
-			'x-api-key': 'ph_live_invalid_key_12345',
-		});
+		const res = await postEntry(
+			{ email: 'bad-key@example.com' },
+			{
+				'x-api-key': 'ph_live_invalid_key_12345',
+			},
+		);
 		expect(res.status).toBe(401);
 
 		const body = await res.json();
@@ -74,9 +77,12 @@ describe('POST /api/v1/entries', () => {
 	});
 
 	it('returns 400 VALIDATION_ERROR when email is missing', async () => {
-		const res = await postEntry({}, {
-			'x-api-key': testApiKey,
-		});
+		const res = await postEntry(
+			{},
+			{
+				'x-api-key': testApiKey,
+			},
+		);
 		expect(res.status).toBe(400);
 
 		const body = await res.json();
@@ -131,17 +137,11 @@ describe('POST /api/v1/entries', () => {
 	});
 
 	it('returns 201 and assigns sequential positions', async () => {
-		const resA = await postEntry(
-			{ email: 'position-a@example.com' },
-			{ 'x-api-key': testApiKey },
-		);
+		const resA = await postEntry({ email: 'position-a@example.com' }, { 'x-api-key': testApiKey });
 		expect(resA.status).toBe(201);
 		const bodyA = await resA.json();
 
-		const resB = await postEntry(
-			{ email: 'position-b@example.com' },
-			{ 'x-api-key': testApiKey },
-		);
+		const resB = await postEntry({ email: 'position-b@example.com' }, { 'x-api-key': testApiKey });
 		expect(resB.status).toBe(201);
 		const bodyB = await resB.json();
 

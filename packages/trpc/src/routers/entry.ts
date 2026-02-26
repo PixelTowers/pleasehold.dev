@@ -1,14 +1,20 @@
 // ABOUTME: tRPC router for entry dashboard operations (list, detail, stats, status updates, export).
 // ABOUTME: All procedures verify project ownership before accessing entry data.
 
+import { type Database, entries, projects } from '@pleasehold/db';
 import { TRPCError } from '@trpc/server';
 import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import { type Database, entries, projects } from '@pleasehold/db';
 import { protectedProcedure, router } from '../trpc';
 
 const entryManualStatusEnum = z.enum(['new', 'contacted', 'converted', 'archived']);
-const entryFilterStatusEnum = z.enum(['new', 'contacted', 'converted', 'archived', 'pending_verification']);
+const entryFilterStatusEnum = z.enum([
+	'new',
+	'contacted',
+	'converted',
+	'archived',
+	'pending_verification',
+]);
 
 async function verifyProjectOwnership(db: Database, projectId: string, userId: string) {
 	const project = await db.query.projects.findFirst({

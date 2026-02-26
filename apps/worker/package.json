@@ -11,15 +11,14 @@
 		"clean": "rm -rf dist"
 	},
 	"dependencies": {
+		"@pleasehold/db": "workspace:*",
 		"bullmq": "^5",
 		"drizzle-orm": "^0.45.1",
 		"ioredis": "^5",
-		"nodemailer": "^6",
-		"@pleasehold/db": "workspace:*"
+		"resend": "^6.9.2"
 	},
 	"devDependencies": {
 		"@types/node": "^22",
-		"@types/nodemailer": "^6",
 		"tsup": "^8",
 		"tsx": "^4",
 		"typescript": "~5.7.3"

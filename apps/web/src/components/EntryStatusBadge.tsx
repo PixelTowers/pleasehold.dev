@@ -1,8 +1,8 @@
 // ABOUTME: Color-coded pill badge that displays entry status values (new, contacted, converted, archived).
 // ABOUTME: Uses shadcn Badge with status-specific Tailwind color classes.
 
-import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 const statusClasses: Record<string, string> = {
 	new: 'bg-blue-100 text-blue-700 hover:bg-blue-100',

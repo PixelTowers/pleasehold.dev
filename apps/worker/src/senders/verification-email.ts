@@ -1,9 +1,9 @@
 // ABOUTME: Verification email sender for the double opt-in flow, sends a confirmation link to the submitter.
-// ABOUTME: Uses the shared Nodemailer transporter to deliver a styled HTML email with a confirm button.
+// ABOUTME: Uses the shared Resend client to deliver a styled HTML email with a confirm button.
 
-import { transporter } from './mailer';
+import { resend } from './mailer';
 
-const SMTP_FROM = process.env.SMTP_FROM ?? 'noreply@pleasehold.dev';
+const EMAIL_FROM = process.env.EMAIL_FROM ?? 'noreply@pleasehold.dev';
 const API_URL = process.env.API_URL ?? 'http://localhost:3001';
 
 export async function sendVerificationEmail(
@@ -37,9 +37,9 @@ export async function sendVerificationEmail(
   <p style="color: #999; font-size: 12px;">Or copy this link: ${escapeHtml(verificationUrl)}</p>
 </div>`.trim();
 
-	await transporter.sendMail({
-		from: SMTP_FROM,
-		to: email,
+	await resend.emails.send({
+		from: EMAIL_FROM,
+		to: [email],
 		subject,
 		text: textBody,
 		html: htmlBody,

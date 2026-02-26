@@ -1,10 +1,10 @@
 // ABOUTME: tRPC router for project CRUD and field configuration management.
 // ABOUTME: All queries enforce userId ownership checks; mode is immutable after creation.
 
+import { projectFieldConfigs, projects } from '@pleasehold/db';
 import { TRPCError } from '@trpc/server';
 import { and, desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { projectFieldConfigs, projects } from '@pleasehold/db';
 import { protectedProcedure, router } from '../trpc';
 
 export const projectRouter = router({
@@ -128,10 +128,7 @@ export const projectRouter = router({
 				.returning();
 
 			// Also update parent project's updatedAt timestamp
-			await ctx.db
-				.update(projects)
-				.set({ updatedAt: now })
-				.where(eq(projects.id, input.projectId));
+			await ctx.db.update(projects).set({ updatedAt: now }).where(eq(projects.id, input.projectId));
 
 			return updatedConfig;
 		}),

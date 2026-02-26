@@ -2,10 +2,10 @@
 // ABOUTME: Provides CRUD for notification channels with per-type config validation and webhook HMAC secret management.
 
 import crypto from 'node:crypto';
+import { type Database, notificationChannels, projects } from '@pleasehold/db';
 import { TRPCError } from '@trpc/server';
 import { and, asc, eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { type Database, notificationChannels, projects } from '@pleasehold/db';
 import { protectedProcedure, router } from '../trpc';
 
 async function verifyProjectOwnership(db: Database, projectId: string, userId: string) {
@@ -42,7 +42,10 @@ const webhookConfigSchema = z.object({
 
 type ChannelType = 'email' | 'slack' | 'discord' | 'telegram' | 'webhook';
 
-function validateConfigForType(type: ChannelType, config: Record<string, unknown>): Record<string, unknown> {
+function validateConfigForType(
+	type: ChannelType,
+	config: Record<string, unknown>,
+): Record<string, unknown> {
 	switch (type) {
 		case 'email':
 			return emailConfigSchema.parse(config);

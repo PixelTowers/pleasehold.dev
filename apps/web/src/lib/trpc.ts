@@ -1,10 +1,10 @@
 // ABOUTME: tRPC client and React Query integration for the web dashboard.
 // ABOUTME: Configures httpBatchLink with credentials for cookie-based auth.
 
+import type { AppRouter } from '@pleasehold/trpc';
 import { QueryClient } from '@tanstack/react-query';
 import { createTRPCReact, httpBatchLink } from '@trpc/react-query';
 import superjson from 'superjson';
-import type { AppRouter } from '@pleasehold/trpc';
 
 export const trpc = createTRPCReact<AppRouter>();
 

@@ -2,9 +2,9 @@
 // ABOUTME: Shows project name, mode badge, entry count, and last activity with a link to project overview.
 
 import { Link } from '@tanstack/react-router';
-import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 interface ProjectCardProps {
 	id: string;

@@ -1,10 +1,10 @@
 // ABOUTME: tRPC router for API key lifecycle: create with project scoping, list by project, and revoke.
 // ABOUTME: All operations verify project ownership before acting; keys are scoped to projects via metadata.
 
+import { apikeys, projects } from '@pleasehold/db';
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { apikeys, projects } from '@pleasehold/db';
 import { protectedProcedure, router } from '../trpc';
 
 export const apiKeyRouter = router({
@@ -119,10 +119,7 @@ export const apiKeyRouter = router({
 					const parsed = JSON.parse(keyMetadata);
 					if (parsed.projectId) {
 						const project = await ctx.db.query.projects.findFirst({
-							where: and(
-								eq(projects.id, parsed.projectId),
-								eq(projects.userId, ctx.user.id),
-							),
+							where: and(eq(projects.id, parsed.projectId), eq(projects.userId, ctx.user.id)),
 							columns: { id: true },
 						});
 

@@ -7,6 +7,5 @@ export const apiRateLimiter = rateLimiter({
 	windowMs: 60 * 1000,
 	limit: 60,
 	standardHeaders: 'draft-6',
-	keyGenerator: (c) =>
-		c.req.header('x-api-key') ?? c.req.header('x-forwarded-for') ?? 'anonymous',
+	keyGenerator: (c) => c.req.header('x-api-key') ?? c.req.header('x-forwarded-for') ?? 'anonymous',
 });

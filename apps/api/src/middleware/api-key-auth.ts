@@ -1,9 +1,9 @@
 // ABOUTME: Hono middleware that verifies x-api-key header, resolves project with field config, and attaches to context.
 // ABOUTME: Extracts projectId from API key metadata -- the key IS the project selector.
 
-import type { Database } from '@pleasehold/db';
-import { projects, projectFieldConfigs } from '@pleasehold/db';
 import type { createAuth } from '@pleasehold/auth';
+import type { Database } from '@pleasehold/db';
+import { type projectFieldConfigs, projects } from '@pleasehold/db';
 import { eq } from 'drizzle-orm';
 import type { Context, Next } from 'hono';
 
@@ -60,10 +60,7 @@ export function apiKeyAuth(auth: ReturnType<typeof createAuth>, db: Database) {
 		});
 
 		if (!project) {
-			return c.json(
-				{ error: { code: 'PROJECT_NOT_FOUND', message: 'Project not found' } },
-				404,
-			);
+			return c.json({ error: { code: 'PROJECT_NOT_FOUND', message: 'Project not found' } }, 404);
 		}
 
 		c.set('project', project);
