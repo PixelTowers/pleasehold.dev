@@ -68,10 +68,10 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Running `pnpm test` (or equivalent) executes entry submission integration tests — they are no longer skipped
   2. Tests validate the full entry submission path: API key auth, field validation, deduplication, and queue positioning against a seeded database
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 08-01: TBD
+- [ ] 08-01-PLAN.md — Test database harness and entry submission integration tests
 
 ### Phase 9: QA Verification
 **Goal**: Every E2E user flow works without surprises when walked through like a real developer would
