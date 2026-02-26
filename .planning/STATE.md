@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QA & Hardening
-status: roadmap_complete
-last_updated: "2026-02-26T13:00:00Z"
+status: executing
+last_updated: "2026-02-26T12:33:21Z"
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 2
+  completed_plans: 1
 ---
 
 # Project State
@@ -23,9 +23,9 @@ See: .planning/PROJECT.md (updated 2026-02-26)
 ## Current Position
 
 Phase: 6 of 9 (Code Fixes) -- first phase of v1.1
-Plan: --
-Status: Ready to plan
-Last activity: 2026-02-26 -- Roadmap created for v1.1 milestone
+Plan: 2 of 2 (complete)
+Status: Executing phase 6
+Last activity: 2026-02-26 -- Completed 06-02-PLAN.md (infra fixes + cleanup)
 
 Progress: [##########..........] 56% (5/9 phases complete across all milestones)
 
@@ -51,7 +51,10 @@ Progress: [##########..........] 56% (5/9 phases complete across all milestones)
 ### Decisions
 
 All v1.0 decisions archived in PROJECT.md Key Decisions table.
-No new v1.1 decisions yet.
+
+**v1.1 Decisions:**
+- [06-02] Kept middleware.ts and verify-project-key.ts source files -- only removed barrel re-exports to reduce public API surface
+- [06-02] Added WEB_URL to worker service for consistency with API service env pattern
 
 ### Pending Todos
 
@@ -65,5 +68,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-26
-Stopped at: Roadmap created for v1.1. Ready to plan Phase 6.
+Stopped at: Completed 06-02-PLAN.md
 Resume file: None

@@ -17,7 +17,7 @@ Requirements for QA & Hardening milestone. Each maps to roadmap phases.
 
 ### Integration Fixes
 
-- [ ] **INTG-01**: Worker service has `API_URL` env var in docker-compose.yml so verification email links use the correct host
+- [x] **INTG-01**: Worker service has `API_URL` env var in docker-compose.yml so verification email links use the correct host
 - [ ] **INTG-02**: Dashboard status filter includes `pending_verification` so those entries can be isolated
 
 ### Tech Debt — Router
@@ -37,8 +37,8 @@ Requirements for QA & Hardening milestone. Each maps to roadmap phases.
 
 ### Tech Debt — Cleanup
 
-- [ ] **CLEN-01**: Dead exports (`verifyProjectKey`, `authMiddleware`) removed from `@pleasehold/auth`
-- [ ] **CLEN-02**: `/health` endpoint proxied through nginx and accessible via web service
+- [x] **CLEN-01**: Dead exports (`verifyProjectKey`, `authMiddleware`) removed from `@pleasehold/auth`
+- [x] **CLEN-02**: `/health` endpoint proxied through nginx and accessible via web service
 
 ## Future Requirements
 
@@ -64,7 +64,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QA-03 | Phase 9 | Pending |
 | QA-04 | Phase 9 | Pending |
 | QA-05 | Phase 9 | Pending |
-| INTG-01 | Phase 6 | Pending |
+| INTG-01 | Phase 6 | Complete |
 | INTG-02 | Phase 6 | Pending |
 | ROUT-01 | Phase 6 | Pending |
 | ROUT-02 | Phase 6 | Pending |
@@ -72,8 +72,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BILD-01 | Phase 7 | Pending |
 | BILD-02 | Phase 7 | Pending |
 | BILD-03 | Phase 7 | Pending |
-| CLEN-01 | Phase 6 | Pending |
-| CLEN-02 | Phase 6 | Pending |
+| CLEN-01 | Phase 6 | Complete |
+| CLEN-02 | Phase 6 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 15 total
