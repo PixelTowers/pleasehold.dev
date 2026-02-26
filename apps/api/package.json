@@ -16,6 +16,7 @@
 		"@hono/node-server": "^1.14.0",
 		"@hono/trpc-server": "^0.4.2",
 		"@hono/zod-openapi": "^0.19.10",
+		"better-auth": "^1.4.19",
 		"@pleasehold/auth": "workspace:*",
 		"@pleasehold/db": "workspace:*",
 		"@pleasehold/trpc": "workspace:*",
@@ -29,6 +30,7 @@
 	},
 	"devDependencies": {
 		"@types/node": "^22.0.0",
+		"postgres": "^3.4.8",
 		"tsup": "^8.3.5",
 		"tsx": "^4.19.0",
 		"typescript": "~5.7.3",

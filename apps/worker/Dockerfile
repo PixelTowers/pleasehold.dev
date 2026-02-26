@@ -20,6 +20,7 @@ RUN pnpm install --frozen-lockfile
 
 FROM installer AS builder
 COPY --from=pruner /app/out/full/ .
+COPY --from=pruner /app/tsconfig.json ./tsconfig.json
 RUN pnpm turbo build --filter=@pleasehold/worker...
 
 FROM base AS runner

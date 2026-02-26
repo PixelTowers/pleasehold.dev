@@ -20,16 +20,23 @@
 
 ---
 
-## v1.1 QA & Hardening (In Progress)
+## v1.1 QA & Hardening (Shipped: 2026-02-26)
 
-**Phases:** 6-9 (4 phases)
-**Requirements:** 15 (5 QA flows, 2 integration fixes, 2 router fixes, 1 testing, 3 build/config, 2 cleanup)
-**Goal:** Manually QA every user flow, fix all bugs and tech debt from v1.0 — leave the product solid before building new features.
+**Phases completed:** 4 phases, 8 plans
+**Commits:** 31 | **Files modified:** 49 | **Lines of TypeScript:** 8,335
+**Timeline:** ~24 hours (2026-02-25 → 2026-02-26)
+**Requirements:** 15/15 satisfied
 
-**Phase structure:**
-- Phase 6: Code Fixes (ROUT-01, ROUT-02, INTG-01, INTG-02, CLEN-01, CLEN-02)
-- Phase 7: Build and Config (BILD-01, BILD-02, BILD-03)
-- Phase 8: Test Harness (TEST-01)
-- Phase 9: QA Verification (QA-01, QA-02, QA-03, QA-04, QA-05)
+**Key accomplishments:**
+- Type-safe TanStack Router navigation replacing all window.location.href auth guards and template string URLs
+- tsup build configs for API and worker services enabling local `pnpm build` with workspace package bundling
+- Docker self-hosting fixes: root tsconfig in builds, Zod v3/v4 conflict resolved, generate-then-migrate flow
+- Actionable SMTP missing-config warning with feature list and all required env vars
+- Integration test harness with ephemeral PostgreSQL databases, Better Auth API key seeding, 8 passing tests (no mocks)
+- Full QA walkthrough: 40/40 manual steps passed across developer flow, Docker hosting, 5-channel notifications, and double opt-in
+- Dead code removal (auth exports) and nginx /health proxy for monitoring
+
+**Archives:** `milestones/v1.1-ROADMAP.md`, `milestones/v1.1-REQUIREMENTS.md`, `milestones/v1.1-MILESTONE-AUDIT.md`
 
 ---
+
