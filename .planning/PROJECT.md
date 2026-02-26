@@ -24,24 +24,29 @@ Developers can add a waitlist or demo-booking form to any landing page in minute
 - ✓ The entire product is self-hostable via a single `docker-compose up` — v1.0
 - ✓ API is documented and developer-friendly — v1.0
 
+- ✓ Manual QA of every user flow — signup through notifications, Docker deployment — v1.1
+- ✓ Fix integration gaps found in v1.0 audit (worker API_URL, pending_verification filter) — v1.1
+- ✓ Fix all 8 tech debt items from v1.0 audit — v1.1
+- ✓ Every end-to-end flow works without surprises — v1.1
+
 ### Active
 
-<!-- Current scope: v1.1 QA & Hardening -->
+<!-- No active milestone — ready for v1.2 feature planning -->
 
-- [ ] Manual QA of every user flow — signup through notifications, Docker deployment
-- [ ] Fix integration gaps found in v1.0 audit (worker API_URL, pending_verification filter)
-- [ ] Fix all 8 tech debt items from v1.0 audit
-- [ ] Every end-to-end flow works without surprises
+(none)
 
-## Current Milestone: v1.1 QA & Hardening
+## Latest Milestone: v1.1 QA & Hardening (Shipped)
 
 **Goal:** Manually QA every user flow, fix all bugs and tech debt from v1.0 — leave the product solid before building new features.
 
-**Target features:**
-- Manual QA walkthrough of all 5 E2E flows (signup → entry → notifications → dashboard → Docker)
-- Fix 2 integration issues (worker API_URL in Docker, pending_verification filter)
-- Fix 8 tech debt items across all phases
-- Every flow works end to end like a real developer would expect
+**Delivered:**
+- Type-safe TanStack Router navigation replacing all `window.location.href` redirects
+- tsup build configs for API and worker enabling local `pnpm build`
+- Docker fixes: root tsconfig in builds, Zod v3/v4 conflict resolved, generate-then-migrate flow
+- Actionable SMTP missing-config warning with feature list
+- Integration test harness with ephemeral PostgreSQL, 8 passing tests (no mocks)
+- Full QA walkthrough: 40/40 manual steps passed
+- Dead code removal and nginx `/health` proxy
 
 ### Out of Scope
 
@@ -57,21 +62,11 @@ Developers can add a waitlist or demo-booking form to any landing page in minute
 
 ## Context
 
-Shipped v1.0 MVP with 8,008 lines of TypeScript across 144 files.
+Shipped v1.1 (QA & Hardening) with 8,335 lines of TypeScript. All 8 tech debt items from v1.0 resolved. 15/15 requirements satisfied, 40/40 manual QA steps passed.
 
 **Tech stack:** TypeScript monorepo (pnpm + Turborepo) — Hono + tRPC (API), Drizzle + PostgreSQL (data), React 19 + Vite (dashboard), BullMQ + Redis (jobs), Better Auth (auth), Biome (quality), Vitest (testing), Docker + nginx (deployment).
 
 **Architecture:** `apps/api` (Hono server with REST + tRPC), `apps/web` (React 19 SPA), `apps/worker` (BullMQ processor), `packages/db` (Drizzle schema), `packages/trpc` (tRPC routers), `packages/auth` (Better Auth config).
-
-**Known tech debt (8 items from audit):**
-- `window.location.href` redirects bypass TanStack Router (Phase 1)
-- Integration tests for entry route skipped — need seeded DB harness (Phase 2)
-- Template string navigation bypasses type safety (Phase 3)
-- SMTP_HOST warn-only — email silently fails without config (Phase 4)
-- `pnpm build --filter @pleasehold/api` fails locally — Docker build works (Phase 5)
-- Gitignored migrations dir needs `db:generate` step in Docker (Phase 5)
-- Dead exports in `@pleasehold/auth` (cross-phase)
-- `/health` not proxied through nginx (cross-phase)
 
 **Reference codebase:** GoldenBerry (`/Users/christopher.jimenez/Src/PixelTowers/GoldenBerry`) uses the same stack and monorepo structure.
 
@@ -100,4 +95,4 @@ Shipped v1.0 MVP with 8,008 lines of TypeScript across 144 files.
 | nginx reverse proxy in Docker | Preferred over VITE_API_URL build-time env for API routing | ✓ Good |
 
 ---
-*Last updated: 2026-02-26 after v1.1 milestone started*
+*Last updated: 2026-02-26 after v1.1 milestone shipped*
