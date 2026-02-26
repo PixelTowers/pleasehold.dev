@@ -20,6 +20,7 @@ RUN pnpm install --frozen-lockfile
 
 FROM installer AS builder
 COPY --from=pruner /app/out/full/ .
+COPY --from=pruner /app/tsconfig.json ./tsconfig.json
 ARG VITE_API_URL=http://localhost:3001
 ENV VITE_API_URL=$VITE_API_URL
 RUN pnpm turbo build --filter=@pleasehold/web...
