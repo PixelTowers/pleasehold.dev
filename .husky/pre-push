@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+
+echo "🔍 Running type check..."
+pnpm run typecheck || exit 1
+
+echo "🧹 Running lint..."
+pnpm run lint || exit 1
+
+echo "🏗️ Running build..."
+pnpm run build || exit 1
+
+echo "✅ Pre-push checks passed!"

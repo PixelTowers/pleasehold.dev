@@ -12,11 +12,13 @@
 		"typecheck": "turbo typecheck",
 		"db:generate": "turbo db:generate",
 		"db:migrate": "turbo db:migrate",
-		"clean": "turbo clean && rm -rf node_modules"
+		"clean": "turbo clean && rm -rf node_modules",
+		"prepare": "husky"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.4",
 		"dotenv-cli": "^11.0.0",
+		"husky": "^9.1.7",
 		"turbo": "2.4.4",
 		"typescript": "~5.7.3"
 	}
