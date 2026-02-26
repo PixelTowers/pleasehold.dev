@@ -43,7 +43,7 @@ function EntriesPage() {
 	const { data: entriesData, isPending: entriesPending, error: entriesError } = trpc.entry.list.useQuery({
 		projectId,
 		search: debouncedSearch || undefined,
-		status: (statusFilter as 'new' | 'contacted' | 'converted' | 'archived') || undefined,
+		status: (statusFilter as 'new' | 'contacted' | 'converted' | 'archived' | 'pending_verification') || undefined,
 		page,
 		pageSize: 25,
 	});
@@ -201,6 +201,7 @@ function EntriesPage() {
 					<option value="contacted">Contacted</option>
 					<option value="converted">Converted</option>
 					<option value="archived">Archived</option>
+					<option value="pending_verification">Pending Verification</option>
 				</select>
 			</div>
 
@@ -235,9 +236,9 @@ function EntriesPage() {
 					rowSelection={rowSelection}
 					onRowSelectionChange={setRowSelection}
 					onEntryClick={(entryId) => {
-						// Entry detail route will be added in Plan 03-03; navigate by path for now
 						void navigate({
-							to: `/projects/${projectId}/entries/${entryId}` as string,
+							to: '/projects/$projectId/entries/$entryId',
+							params: { projectId, entryId },
 						});
 					}}
 				/>

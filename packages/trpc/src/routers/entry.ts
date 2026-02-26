@@ -7,7 +7,8 @@ import { z } from 'zod';
 import { type Database, entries, projects } from '@pleasehold/db';
 import { protectedProcedure, router } from '../trpc';
 
-const entryStatusEnum = z.enum(['new', 'contacted', 'converted', 'archived']);
+const entryManualStatusEnum = z.enum(['new', 'contacted', 'converted', 'archived']);
+const entryFilterStatusEnum = z.enum(['new', 'contacted', 'converted', 'archived', 'pending_verification']);
 
 async function verifyProjectOwnership(db: Database, projectId: string, userId: string) {
 	const project = await db.query.projects.findFirst({
@@ -25,7 +26,7 @@ const list = protectedProcedure
 		z.object({
 			projectId: z.string().uuid(),
 			search: z.string().optional(),
-			status: entryStatusEnum.optional(),
+			status: entryFilterStatusEnum.optional(),
 			page: z.number().int().min(1).default(1),
 			pageSize: z.number().int().min(1).max(100).default(25),
 		}),
@@ -127,7 +128,7 @@ const updateStatus = protectedProcedure
 		z.object({
 			projectId: z.string().uuid(),
 			entryId: z.string().uuid(),
-			status: entryStatusEnum,
+			status: entryManualStatusEnum,
 		}),
 	)
 	.mutation(async ({ ctx, input }) => {
@@ -151,7 +152,7 @@ const bulkUpdateStatus = protectedProcedure
 		z.object({
 			projectId: z.string().uuid(),
 			entryIds: z.array(z.string().uuid()).min(1).max(500),
-			status: entryStatusEnum,
+			status: entryManualStatusEnum,
 		}),
 	)
 	.mutation(async ({ ctx, input }) => {
