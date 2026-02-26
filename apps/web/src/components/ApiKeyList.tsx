@@ -2,8 +2,6 @@
 // ABOUTME: Only shows first 8 chars via start field; never displays full key or hash.
 
 import { useCallback, useState } from 'react';
-import { cn } from '@/lib/utils';
-import { trpc } from '@/lib/trpc';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -15,6 +13,8 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
+import { trpc } from '@/lib/trpc';
+import { cn } from '@/lib/utils';
 
 interface ApiKeyListProps {
 	projectId: string;
@@ -71,39 +71,53 @@ export function ApiKeyList({ projectId }: ApiKeyListProps) {
 			<Table>
 				<TableHeader>
 					<TableRow>
-						<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted">Label</TableHead>
-						<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted">Key</TableHead>
-						<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted">Status</TableHead>
-						<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted">Created</TableHead>
-						<TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted">Actions</TableHead>
+						<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted">
+							Label
+						</TableHead>
+						<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted">
+							Key
+						</TableHead>
+						<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted">
+							Status
+						</TableHead>
+						<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted">
+							Created
+						</TableHead>
+						<TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted">
+							Actions
+						</TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
 					{keys.map((key) => (
-						<TableRow
-							key={key.id}
-							className={cn(!key.enabled && 'bg-accent')}
-						>
+						<TableRow key={key.id} className={cn(!key.enabled && 'bg-accent')}>
 							<TableCell className={cn('font-medium', !key.enabled && 'text-muted-foreground')}>
 								{key.name || 'API Key'}
 							</TableCell>
 							<TableCell>
-								<code className={cn(
-									'rounded px-2 py-0.5 font-mono text-[0.8125rem]',
-									key.enabled
-										? 'bg-gray-100 text-foreground'
-										: 'text-muted-foreground',
-								)}>
-									{key.prefix}{key.start}...
+								<code
+									className={cn(
+										'rounded px-2 py-0.5 font-mono text-[0.8125rem]',
+										key.enabled ? 'bg-gray-100 text-foreground' : 'text-muted-foreground',
+									)}
+								>
+									{key.prefix}
+									{key.start}...
 								</code>
 							</TableCell>
 							<TableCell>
 								{key.enabled ? (
-									<Badge variant="secondary" className="border-0 bg-green-100 text-green-800 hover:bg-green-100">
+									<Badge
+										variant="secondary"
+										className="border-0 bg-green-100 text-green-800 hover:bg-green-100"
+									>
 										Active
 									</Badge>
 								) : (
-									<Badge variant="secondary" className="border-0 bg-red-100 text-red-800 hover:bg-red-100">
+									<Badge
+										variant="secondary"
+										className="border-0 bg-red-100 text-red-800 hover:bg-red-100"
+									>
 										Revoked
 									</Badge>
 								)}

@@ -2,8 +2,9 @@
 // ABOUTME: Displays email as always required and provides toggle switches for name, company, and message fields.
 
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import { trpc } from '@/lib/trpc';
+import { cn } from '@/lib/utils';
 
 interface FieldConfigFormProps {
 	projectId: string;
@@ -12,7 +13,12 @@ interface FieldConfigFormProps {
 	collectMessage: boolean;
 }
 
-function ToggleSwitch({ checked, onChange, label, description }: {
+function ToggleSwitch({
+	checked,
+	onChange,
+	label,
+	description,
+}: {
 	checked: boolean;
 	onChange: (val: boolean) => void;
 	label: string;
@@ -43,48 +49,38 @@ function ToggleSwitch({ checked, onChange, label, description }: {
 	);
 }
 
-export function FieldConfigForm({ projectId, collectName, collectCompany, collectMessage }: FieldConfigFormProps) {
+export function FieldConfigForm({
+	projectId,
+	collectName,
+	collectCompany,
+	collectMessage,
+}: FieldConfigFormProps) {
 	const [fields, setFields] = useState({
 		collectName,
 		collectCompany,
 		collectMessage,
 	});
-	const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
 	const utils = trpc.useUtils();
 	const updateFields = trpc.project.updateFields.useMutation({
 		onSuccess: () => {
-			setSaveStatus('saved');
+			toast.success('Field configuration saved');
 			utils.project.getById.invalidate({ id: projectId });
-			setTimeout(() => setSaveStatus('idle'), 2000);
 		},
 		onError: () => {
-			setSaveStatus('error');
-			setTimeout(() => setSaveStatus('idle'), 3000);
+			toast.error('Failed to save field configuration');
 		},
 	});
 
 	const handleToggle = (field: keyof typeof fields, value: boolean) => {
 		const updated = { ...fields, [field]: value };
 		setFields(updated);
-		setSaveStatus('saving');
 		updateFields.mutate({ projectId, ...updated });
 	};
 
 	return (
 		<div>
-			<div className="mb-4 flex items-center justify-between">
-				<h3 className="text-base font-semibold">Field Configuration</h3>
-				{saveStatus === 'saving' && (
-					<span className="text-xs text-muted">Saving...</span>
-				)}
-				{saveStatus === 'saved' && (
-					<span className="text-xs text-green-600">Saved</span>
-				)}
-				{saveStatus === 'error' && (
-					<span className="text-xs text-destructive">Failed to save</span>
-				)}
-			</div>
+			<h3 className="mb-4 text-base font-semibold">Field Configuration</h3>
 
 			{/* Email is always required */}
 			<div className="flex items-center justify-between border-b border-gray-100 py-3">

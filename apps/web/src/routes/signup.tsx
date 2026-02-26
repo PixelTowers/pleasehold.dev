@@ -1,61 +1,64 @@
 // ABOUTME: Signup page with name/email/password form and OAuth social login buttons.
 // ABOUTME: Creates a new account via Better Auth client and redirects to dashboard on success.
 
+import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { type FormEvent, useState } from 'react';
-import { authClient } from '@/lib/auth-client';
-import { cn } from '@/lib/utils';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { authClient } from '@/lib/auth-client';
+import { type SignupValues, signupSchema } from '@/lib/schemas';
 
 export const Route = createFileRoute('/signup')({
 	component: SignupPage,
 });
 
 function SignupPage() {
-	const [name, setName] = useState('');
-	const [email, setEmail] = useState('');
-	const [password, setPassword] = useState('');
-	const [error, setError] = useState<string | null>(null);
-	const [loading, setLoading] = useState(false);
 	const [oauthLoading, setOauthLoading] = useState<string | null>(null);
 
-	const handleSubmit = async (e: FormEvent) => {
-		e.preventDefault();
-		setError(null);
-		setLoading(true);
+	const form = useForm<SignupValues>({
+		resolver: zodResolver(signupSchema),
+		defaultValues: { name: '', email: '', password: '' },
+	});
 
+	const onSubmit = async (values: SignupValues) => {
 		try {
-			const result = await authClient.signUp.email({ name, email, password });
+			const result = await authClient.signUp.email(values);
 			if (result.error) {
-				setError(result.error.message ?? 'Signup failed. Please try again.');
+				toast.error(result.error.message ?? 'Signup failed. Please try again.');
 			} else {
 				window.location.href = '/';
 			}
 		} catch {
-			setError('An unexpected error occurred. Please try again.');
-		} finally {
-			setLoading(false);
+			toast.error('An unexpected error occurred. Please try again.');
 		}
 	};
 
 	const handleOAuth = async (provider: 'github' | 'google') => {
-		setError(null);
 		setOauthLoading(provider);
 
 		try {
 			await authClient.signIn.social({ provider, callbackURL: '/' });
 		} catch {
-			setError(
+			toast.error(
 				`Failed to sign in with ${provider === 'github' ? 'GitHub' : 'Google'}. Please try again.`,
 			);
 			setOauthLoading(null);
 		}
 	};
 
-	const anyLoading = loading || oauthLoading !== null;
+	const anyLoading = form.formState.isSubmitting || oauthLoading !== null;
 
 	return (
 		<div className="w-full max-w-sm px-4">
@@ -64,15 +67,7 @@ function SignupPage() {
 			</div>
 
 			<h2 className="mb-1 text-lg font-semibold text-foreground">Create your account</h2>
-			<p className="mb-6 text-sm text-muted">
-				Get started with pleasehold in seconds.
-			</p>
-
-			{error && (
-				<div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-destructive">
-					{error}
-				</div>
-			)}
+			<p className="mb-6 text-sm text-muted">Get started with pleasehold in seconds.</p>
 
 			<div className="mb-6 flex flex-col gap-3">
 				<Button
@@ -104,45 +99,55 @@ function SignupPage() {
 				</span>
 			</div>
 
-			<form onSubmit={handleSubmit}>
-				<div className="mb-4 space-y-1.5">
-					<Label htmlFor="name">Name</Label>
-					<Input
-						id="name"
-						type="text"
-						value={name}
-						onChange={(e) => setName(e.target.value)}
-						required
+			<Form {...form}>
+				<form onSubmit={form.handleSubmit(onSubmit)}>
+					<FormField
+						control={form.control}
+						name="name"
+						render={({ field }) => (
+							<FormItem className="mb-4">
+								<FormLabel>Name</FormLabel>
+								<FormControl>
+									<Input type="text" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
 					/>
-				</div>
 
-				<div className="mb-4 space-y-1.5">
-					<Label htmlFor="email">Email</Label>
-					<Input
-						id="email"
-						type="email"
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
-						required
+					<FormField
+						control={form.control}
+						name="email"
+						render={({ field }) => (
+							<FormItem className="mb-4">
+								<FormLabel>Email</FormLabel>
+								<FormControl>
+									<Input type="email" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
 					/>
-				</div>
 
-				<div className="mb-6 space-y-1.5">
-					<Label htmlFor="password">Password</Label>
-					<Input
-						id="password"
-						type="password"
-						value={password}
-						onChange={(e) => setPassword(e.target.value)}
-						required
-						minLength={8}
+					<FormField
+						control={form.control}
+						name="password"
+						render={({ field }) => (
+							<FormItem className="mb-6">
+								<FormLabel>Password</FormLabel>
+								<FormControl>
+									<Input type="password" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
 					/>
-				</div>
 
-				<Button type="submit" className="w-full" disabled={anyLoading}>
-					{loading ? 'Creating account...' : 'Create account'}
-				</Button>
-			</form>
+					<Button type="submit" className="w-full" disabled={anyLoading}>
+						{form.formState.isSubmitting ? 'Creating account...' : 'Create account'}
+					</Button>
+				</form>
+			</Form>
 
 			<p className="mt-6 text-center text-sm text-muted">
 				Already have an account?{' '}

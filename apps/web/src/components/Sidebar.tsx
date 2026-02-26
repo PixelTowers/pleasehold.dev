@@ -2,12 +2,12 @@
 // ABOUTME: Shows workspace name, nav links with Lucide icons, project list, and user section.
 
 import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router';
-import { ChevronDown, LayoutGrid, LogOut, Settings } from 'lucide-react';
-import { authClient } from '@/lib/auth-client';
-import { useProjects } from '@/hooks/useProjects';
-import { cn } from '@/lib/utils';
+import { ChevronDown, LayoutGrid, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { useProjects } from '@/hooks/useProjects';
+import { authClient } from '@/lib/auth-client';
+import { cn } from '@/lib/utils';
 
 export function Sidebar() {
 	const { data: session } = authClient.useSession();
@@ -96,9 +96,7 @@ export function Sidebar() {
 							<div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
 								{(session.user.name?.[0] ?? session.user.email[0]).toUpperCase()}
 							</div>
-							<span className="truncate text-sm text-muted">
-								{session.user.email}
-							</span>
+							<span className="truncate text-sm text-muted">{session.user.email}</span>
 						</div>
 						<Button
 							variant="ghost"

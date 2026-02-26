@@ -1,10 +1,10 @@
 // ABOUTME: Button that fetches all project entries via tRPC export procedure and triggers a CSV download.
 // ABOUTME: Generates RFC 4180-compliant CSV with UTF-8 BOM and field-config-aware column headers.
 
-import { useState } from 'react';
 import { Download } from 'lucide-react';
-import { trpc } from '@/lib/trpc';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { trpc } from '@/lib/trpc';
 
 interface CsvExportButtonProps {
 	projectId: string;
@@ -66,7 +66,9 @@ function generateCsv(exportEntries: ExportEntry[], fieldConfig: FieldConfig): st
 		row.push(
 			escapeField(entry.status),
 			escapeField(entry.position),
-			escapeField(entry.createdAt instanceof Date ? entry.createdAt.toISOString() : String(entry.createdAt)),
+			escapeField(
+				entry.createdAt instanceof Date ? entry.createdAt.toISOString() : String(entry.createdAt),
+			),
 		);
 		if (fieldConfig.collectMessage) {
 			row.push(escapeField(entry.message));
@@ -75,7 +77,7 @@ function generateCsv(exportEntries: ExportEntry[], fieldConfig: FieldConfig): st
 		return row.join(',');
 	});
 
-	return BOM + headers.join(',') + '\r\n' + rows.join('\r\n');
+	return `${BOM}${headers.join(',')}\r\n${rows.join('\r\n')}`;
 }
 
 function downloadCsv(csvString: string, filename: string) {

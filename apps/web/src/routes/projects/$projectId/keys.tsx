@@ -1,13 +1,13 @@
 // ABOUTME: API key management page within the project context.
 // ABOUTME: Combines create dialog, key list, and breadcrumb navigation for key lifecycle management.
 
-import { Link, createFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { Plus } from 'lucide-react';
+import { useState } from 'react';
 import { ApiKeyCreateDialog } from '@/components/ApiKeyCreateDialog';
 import { ApiKeyList } from '@/components/ApiKeyList';
-import { useProject } from '@/hooks/useProjects';
 import { Button } from '@/components/ui/button';
+import { useProject } from '@/hooks/useProjects';
 
 export const Route = createFileRoute('/projects/$projectId/keys')({
 	component: ApiKeysPage,
@@ -45,9 +45,15 @@ function ApiKeysPage() {
 		<div className="mx-auto max-w-3xl">
 			{/* Breadcrumb */}
 			<div className="mb-6 flex items-center gap-1.5 text-sm text-muted">
-				<Link to="/" className="text-muted hover:text-foreground">Dashboard</Link>
+				<Link to="/" className="text-muted hover:text-foreground">
+					Dashboard
+				</Link>
 				<span>/</span>
-				<Link to="/projects/$projectId" params={{ projectId }} className="text-muted hover:text-foreground">
+				<Link
+					to="/projects/$projectId"
+					params={{ projectId }}
+					className="text-muted hover:text-foreground"
+				>
 					{project.name}
 				</Link>
 				<span>/</span>

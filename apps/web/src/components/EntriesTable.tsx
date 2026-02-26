@@ -3,12 +3,11 @@
 
 import {
 	type ColumnDef,
-	type RowSelectionState,
 	flexRender,
 	getCoreRowModel,
+	type RowSelectionState,
 	useReactTable,
 } from '@tanstack/react-table';
-import { EntryStatusBadge } from './EntryStatusBadge';
 import { Button } from '@/components/ui/button';
 import {
 	Table,
@@ -18,6 +17,7 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
+import { EntryStatusBadge } from './EntryStatusBadge';
 
 interface Entry {
 	id: string;
@@ -129,7 +129,10 @@ export function EntriesTable({
 					{table.getHeaderGroups().map((headerGroup) => (
 						<TableRow key={headerGroup.id}>
 							{headerGroup.headers.map((header) => (
-								<TableHead key={header.id} className="text-xs font-medium uppercase tracking-wider text-muted">
+								<TableHead
+									key={header.id}
+									className="text-xs font-medium uppercase tracking-wider text-muted"
+								>
 									{header.isPlaceholder
 										? null
 										: flexRender(header.column.columnDef.header, header.getContext())}
@@ -141,7 +144,10 @@ export function EntriesTable({
 				<TableBody>
 					{table.getRowModel().rows.length === 0 ? (
 						<TableRow>
-							<TableCell colSpan={columns.length} className="py-8 text-center text-muted-foreground">
+							<TableCell
+								colSpan={columns.length}
+								className="py-8 text-center text-muted-foreground"
+							>
 								No entries found
 							</TableCell>
 						</TableRow>
@@ -152,7 +158,10 @@ export function EntriesTable({
 								className="cursor-pointer hover:bg-accent"
 								onClick={(e) => {
 									const target = e.target as HTMLElement;
-									if (target.tagName === 'INPUT' && (target as HTMLInputElement).type === 'checkbox') {
+									if (
+										target.tagName === 'INPUT' &&
+										(target as HTMLInputElement).type === 'checkbox'
+									) {
 										return;
 									}
 									onEntryClick(row.original.id);

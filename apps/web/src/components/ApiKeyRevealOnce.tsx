@@ -1,10 +1,10 @@
 // ABOUTME: One-time API key display with copy button and security warning.
 // ABOUTME: The key is shown exactly once after creation; never stored in persistent client storage.
 
+import { AlertTriangle, Check, Copy } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import { AlertTriangle, Copy, Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface ApiKeyRevealOnceProps {
 	apiKey: string;
@@ -40,8 +40,8 @@ export function ApiKeyRevealOnce({ apiKey, onDismiss }: ApiKeyRevealOnceProps) {
 			<div className="mb-5 flex items-start gap-3 rounded-md border border-amber-200 bg-amber-50 px-4 py-3">
 				<AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
 				<p className="text-[0.8125rem] leading-relaxed text-amber-800">
-					This key will only be shown once. Copy it now and store it securely.
-					You will not be able to see it again.
+					This key will only be shown once. Copy it now and store it securely. You will not be able
+					to see it again.
 				</p>
 			</div>
 

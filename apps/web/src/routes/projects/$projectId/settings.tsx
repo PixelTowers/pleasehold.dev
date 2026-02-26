@@ -1,18 +1,30 @@
 // ABOUTME: Project settings page with editable name and field configuration toggles.
 // ABOUTME: Mode is displayed as read-only badge; field toggles auto-save via tRPC mutation.
 
-import { Link, createFileRoute } from '@tanstack/react-router';
-import { type FormEvent, useEffect, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { ArrowLeft } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { FieldConfigForm } from '@/components/FieldConfigForm';
-import { useProject } from '@/hooks/useProjects';
-import { trpc } from '@/lib/trpc';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useProject } from '@/hooks/useProjects';
+import { type ProjectNameValues, projectNameSchema } from '@/lib/schemas';
+import { trpc } from '@/lib/trpc';
+import { cn } from '@/lib/utils';
 
 export const Route = createFileRoute('/projects/$projectId/settings')({
 	component: ProjectSettingsPage,
@@ -26,28 +38,29 @@ const modeBadgeClasses: Record<string, string> = {
 function ProjectSettingsPage() {
 	const { projectId } = Route.useParams();
 	const { data: project, isPending, error } = useProject(projectId);
-	const [name, setName] = useState('');
-	const [nameStatus, setNameStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+
+	const form = useForm<ProjectNameValues>({
+		resolver: zodResolver(projectNameSchema),
+		defaultValues: { name: '' },
+	});
 
 	const utils = trpc.useUtils();
 	const updateProject = trpc.project.update.useMutation({
 		onSuccess: () => {
-			setNameStatus('saved');
+			toast.success('Name updated');
 			utils.project.getById.invalidate({ id: projectId });
 			utils.project.list.invalidate();
-			setTimeout(() => setNameStatus('idle'), 2000);
 		},
 		onError: () => {
-			setNameStatus('error');
-			setTimeout(() => setNameStatus('idle'), 3000);
+			toast.error('Failed to update name');
 		},
 	});
 
 	useEffect(() => {
 		if (project) {
-			setName(project.name);
+			form.reset({ name: project.name });
 		}
-	}, [project]);
+	}, [project, form]);
 
 	if (isPending) {
 		return (
@@ -61,7 +74,10 @@ function ProjectSettingsPage() {
 		return (
 			<div className="mx-auto max-w-3xl">
 				<div className="mb-4">
-					<Link to="/" className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground">
+					<Link
+						to="/"
+						className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground"
+					>
 						<ArrowLeft className="h-3.5 w-3.5" />
 						Back to dashboard
 					</Link>
@@ -73,18 +89,20 @@ function ProjectSettingsPage() {
 		);
 	}
 
-	const handleNameSave = (e: FormEvent) => {
-		e.preventDefault();
-		if (!name.trim() || name.trim() === project.name) return;
-		setNameStatus('saving');
-		updateProject.mutate({ id: projectId, name: name.trim() });
+	const onSubmit = (values: ProjectNameValues) => {
+		if (values.name.trim() === project.name) return;
+		updateProject.mutate({ id: projectId, name: values.name.trim() });
 	};
 
 	return (
 		<div className="mx-auto max-w-3xl">
 			{/* Breadcrumb */}
 			<div className="mb-6">
-				<Link to="/projects/$projectId" params={{ projectId }} className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground">
+				<Link
+					to="/projects/$projectId"
+					params={{ projectId }}
+					className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground"
+				>
 					<ArrowLeft className="h-3.5 w-3.5" />
 					Back to project
 				</Link>
@@ -96,39 +114,46 @@ function ProjectSettingsPage() {
 			<Card className="mb-6 p-5">
 				<h3 className="mb-4 text-base font-semibold">General</h3>
 
-				<form onSubmit={handleNameSave}>
-					<div className="mb-4">
-						<Label htmlFor="project-name" className="mb-1.5 block">Project name</Label>
-						<div className="flex gap-2">
-							<Input
-								id="project-name"
-								type="text"
-								value={name}
-								onChange={(e) => setName(e.target.value)}
-								maxLength={100}
-								className="flex-1"
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)}>
+						<div className="mb-4">
+							<FormField
+								control={form.control}
+								name="name"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Project name</FormLabel>
+										<div className="flex gap-2">
+											<FormControl>
+												<Input type="text" maxLength={100} className="flex-1" {...field} />
+											</FormControl>
+											<Button
+												type="submit"
+												disabled={
+													updateProject.isPending ||
+													!form.watch('name').trim() ||
+													form.watch('name').trim() === project.name
+												}
+											>
+												{updateProject.isPending ? 'Saving...' : 'Save'}
+											</Button>
+										</div>
+										<FormMessage />
+									</FormItem>
+								)}
 							/>
-							<Button
-								type="submit"
-								disabled={updateProject.isPending || !name.trim() || name.trim() === project.name}
-							>
-								{updateProject.isPending ? 'Saving...' : 'Save'}
-							</Button>
 						</div>
-						{nameStatus === 'saved' && (
-							<p className="mt-1 text-xs text-green-600">Name updated.</p>
-						)}
-						{nameStatus === 'error' && (
-							<p className="mt-1 text-xs text-destructive">Failed to update name.</p>
-						)}
-					</div>
-				</form>
+					</form>
+				</Form>
 
 				{/* Mode display (read-only) */}
 				<div>
 					<Label className="mb-1.5 block">Mode</Label>
 					<div className="flex items-center gap-2">
-						<Badge variant="secondary" className={cn('border-0 font-medium', modeBadgeClasses[project.mode])}>
+						<Badge
+							variant="secondary"
+							className={cn('border-0 font-medium', modeBadgeClasses[project.mode])}
+						>
 							{project.mode === 'demo-booking' ? 'Demo Booking' : 'Waitlist'}
 						</Badge>
 						<span className="text-xs text-muted-foreground">Cannot be changed after creation</span>

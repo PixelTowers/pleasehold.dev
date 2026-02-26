@@ -1,14 +1,14 @@
 // ABOUTME: Project overview page showing project details, stats, and quick links.
 // ABOUTME: Fetches project by ID with ownership guard; displays mode badge and field config summary.
 
-import { Link, createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { ArrowLeft, ArrowRight, Settings } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useProject } from '@/hooks/useProjects';
-import { trpc } from '@/lib/trpc';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { useProject } from '@/hooks/useProjects';
+import { trpc } from '@/lib/trpc';
+import { cn } from '@/lib/utils';
 
 export const Route = createFileRoute('/projects/$projectId/')({
 	component: ProjectOverviewPage,
@@ -22,14 +22,8 @@ const modeBadgeClasses: Record<string, string> = {
 function ProjectOverviewPage() {
 	const { projectId } = Route.useParams();
 	const { data: project, isPending, error } = useProject(projectId);
-	const { data: apiKeys } = trpc.apiKey.list.useQuery(
-		{ projectId },
-		{ enabled: !!project },
-	);
-	const { data: stats } = trpc.entry.stats.useQuery(
-		{ projectId },
-		{ enabled: !!project },
-	);
+	const { data: apiKeys } = trpc.apiKey.list.useQuery({ projectId }, { enabled: !!project });
+	const { data: stats } = trpc.entry.stats.useQuery({ projectId }, { enabled: !!project });
 	const { data: notificationChannels } = trpc.notification.list.useQuery(
 		{ projectId },
 		{ enabled: !!project },
@@ -49,7 +43,10 @@ function ProjectOverviewPage() {
 		return (
 			<div className="mx-auto max-w-3xl">
 				<div className="mb-4">
-					<Link to="/" className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground">
+					<Link
+						to="/"
+						className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground"
+					>
 						<ArrowLeft className="h-3.5 w-3.5" />
 						Back to dashboard
 					</Link>
@@ -72,7 +69,10 @@ function ProjectOverviewPage() {
 		<div className="mx-auto max-w-3xl">
 			{/* Breadcrumb */}
 			<div className="mb-6">
-				<Link to="/" className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground">
+				<Link
+					to="/"
+					className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground"
+				>
 					<ArrowLeft className="h-3.5 w-3.5" />
 					Back to dashboard
 				</Link>
@@ -83,7 +83,10 @@ function ProjectOverviewPage() {
 				<div>
 					<h1 className="text-2xl font-semibold text-foreground">{project.name}</h1>
 					<div className="mt-2">
-						<Badge variant="secondary" className={cn('border-0 font-medium', modeBadgeClasses[project.mode])}>
+						<Badge
+							variant="secondary"
+							className={cn('border-0 font-medium', modeBadgeClasses[project.mode])}
+						>
 							{project.mode === 'demo-booking' ? 'Demo Booking' : 'Waitlist'}
 						</Badge>
 					</div>

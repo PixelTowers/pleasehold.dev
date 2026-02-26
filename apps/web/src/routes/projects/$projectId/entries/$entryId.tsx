@@ -1,12 +1,13 @@
 // ABOUTME: Entry detail page displaying all fields, metadata, and timestamps for a single entry.
 // ABOUTME: Provides status management via dropdown and breadcrumb navigation back to entries list.
 
-import { Link, createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { ArrowLeft } from 'lucide-react';
-import { trpc } from '@/lib/trpc';
+import { toast } from 'sonner';
 import { EntryStatusBadge } from '@/components/EntryStatusBadge';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { trpc } from '@/lib/trpc';
 
 export const Route = createFileRoute('/projects/$projectId/entries/$entryId')({
 	component: EntryDetailPage,
@@ -16,19 +17,17 @@ function EntryDetailPage() {
 	const { projectId, entryId } = Route.useParams();
 	const utils = trpc.useUtils();
 
-	const {
-		data: entry,
-		isPending,
-		error,
-	} = trpc.entry.getById.useQuery({ projectId, entryId });
-
-	const { data: project } = trpc.project.getById.useQuery({ id: projectId });
+	const { data: entry, isPending, error } = trpc.entry.getById.useQuery({ projectId, entryId });
 
 	const mutation = trpc.entry.updateStatus.useMutation({
 		onSuccess: () => {
+			toast.success('Status updated');
 			utils.entry.getById.invalidate({ projectId, entryId });
 			utils.entry.list.invalidate();
 			utils.entry.stats.invalidate();
+		},
+		onError: () => {
+			toast.error('Failed to update status');
 		},
 	});
 
@@ -54,11 +53,13 @@ function EntryDetailPage() {
 						Back to entries
 					</Link>
 				</div>
-				<div className={
-					isNotFound
-						? 'rounded-md border bg-accent px-4 py-3 text-sm text-muted'
-						: 'rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-destructive'
-				}>
+				<div
+					className={
+						isNotFound
+							? 'rounded-md border bg-accent px-4 py-3 text-sm text-muted'
+							: 'rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-destructive'
+					}
+				>
 					{isNotFound
 						? 'Entry not found. It may have been deleted or belongs to a different project.'
 						: 'Failed to load entry. Please try again.'}
@@ -113,9 +114,6 @@ function EntryDetailPage() {
 					<option value="converted">Converted</option>
 					<option value="archived">Archived</option>
 				</select>
-				{mutation.isPending && (
-					<span className="text-xs text-muted">Saving...</span>
-				)}
 			</div>
 
 			{/* Details card */}
@@ -143,10 +141,14 @@ function EntryDetailPage() {
 					</span>
 
 					<span className="text-sm font-medium text-muted">Submitted</span>
-					<span className="text-sm text-foreground">{new Date(entry.createdAt).toLocaleString()}</span>
+					<span className="text-sm text-foreground">
+						{new Date(entry.createdAt).toLocaleString()}
+					</span>
 
 					<span className="text-sm font-medium text-muted">Last Updated</span>
-					<span className="text-sm text-foreground">{new Date(entry.updatedAt).toLocaleString()}</span>
+					<span className="text-sm text-foreground">
+						{new Date(entry.updatedAt).toLocaleString()}
+					</span>
 				</div>
 			</Card>
 
@@ -169,9 +171,7 @@ function EntryDetailPage() {
 				</Card>
 			) : (
 				<Card className="bg-accent p-6 text-center">
-					<p className="text-sm text-muted-foreground">
-						No metadata attached
-					</p>
+					<p className="text-sm text-muted-foreground">No metadata attached</p>
 				</Card>
 			)}
 		</div>

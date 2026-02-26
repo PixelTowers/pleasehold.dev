@@ -1,17 +1,17 @@
 // ABOUTME: Entries management page at /projects/$projectId/entries with search, filter, pagination, and bulk actions.
 // ABOUTME: Wires together EntriesTable, EntryStatsBar, BulkActionBar, and CsvExportButton with tRPC data queries.
 
-import { useEffect, useState } from 'react';
-import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import type { RowSelectionState } from '@tanstack/react-table';
 import { ArrowLeft, Search } from 'lucide-react';
-import { trpc } from '@/lib/trpc';
-import { EntriesTable } from '@/components/EntriesTable';
-import { EntryStatsBar } from '@/components/EntryStatsBar';
+import { useEffect, useState } from 'react';
 import { BulkActionBar } from '@/components/BulkActionBar';
 import { CsvExportButton } from '@/components/CsvExportButton';
-import { Input } from '@/components/ui/input';
+import { EntriesTable } from '@/components/EntriesTable';
+import { EntryStatsBar } from '@/components/EntryStatsBar';
 import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { trpc } from '@/lib/trpc';
 
 export const Route = createFileRoute('/projects/$projectId/entries')({
 	component: EntriesPage,
@@ -37,16 +37,25 @@ function EntriesPage() {
 	}, [search]);
 
 	// Reset page to 1 when search or filter changes
+	// biome-ignore lint/correctness/useExhaustiveDependencies: intentional triggers for resetting pagination
 	useEffect(() => {
 		setPage(1);
 		setRowSelection({});
 	}, [debouncedSearch, statusFilter]);
 
-	const { data: project, isPending: projectPending } = trpc.project.getById.useQuery({ id: projectId });
-	const { data: entriesData, isPending: entriesPending, error: entriesError } = trpc.entry.list.useQuery({
+	const { data: project, isPending: projectPending } = trpc.project.getById.useQuery({
+		id: projectId,
+	});
+	const {
+		data: entriesData,
+		isPending: entriesPending,
+		error: entriesError,
+	} = trpc.entry.list.useQuery({
 		projectId,
 		search: debouncedSearch || undefined,
-		status: (statusFilter as 'new' | 'contacted' | 'converted' | 'archived' | 'pending_verification') || undefined,
+		status:
+			(statusFilter as 'new' | 'contacted' | 'converted' | 'archived' | 'pending_verification') ||
+			undefined,
 		page,
 		pageSize: 25,
 	});
@@ -109,7 +118,8 @@ function EntriesPage() {
 				<h1 className="mb-6 text-2xl font-semibold text-foreground">Entries</h1>
 				<Card className="bg-accent p-8 text-center">
 					<p className="text-sm text-muted-foreground">
-						No entries yet. Entries will appear here once you start collecting submissions via the API.
+						No entries yet. Entries will appear here once you start collecting submissions via the
+						API.
 					</p>
 				</Card>
 			</div>
@@ -133,9 +143,7 @@ function EntriesPage() {
 			{/* Header */}
 			<div className="mb-6 flex items-center justify-between">
 				<h1 className="text-2xl font-semibold text-foreground">Entries</h1>
-				{project && (
-					<CsvExportButton projectId={projectId} projectName={project.name} />
-				)}
+				{project && <CsvExportButton projectId={projectId} projectName={project.name} />}
 			</div>
 
 			{/* Stats bar */}
