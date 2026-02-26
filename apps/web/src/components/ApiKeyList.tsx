@@ -2,7 +2,19 @@
 // ABOUTME: Only shows first 8 chars via start field; never displays full key or hash.
 
 import { useCallback, useState } from 'react';
-import { trpc } from '../lib/trpc';
+import { cn } from '@/lib/utils';
+import { trpc } from '@/lib/trpc';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from '@/components/ui/table';
 
 interface ApiKeyListProps {
 	projectId: string;
@@ -30,24 +42,15 @@ export function ApiKeyList({ projectId }: ApiKeyListProps) {
 
 	if (isPending) {
 		return (
-			<div style={{ textAlign: 'center', padding: '2rem' }}>
-				<p style={{ color: '#6b7280', fontSize: '0.875rem' }}>Loading keys...</p>
+			<div className="py-8 text-center">
+				<p className="text-sm text-muted">Loading keys...</p>
 			</div>
 		);
 	}
 
 	if (error) {
 		return (
-			<div
-				style={{
-					padding: '0.75rem 1rem',
-					backgroundColor: '#fef2f2',
-					border: '1px solid #fecaca',
-					borderRadius: '0.375rem',
-					color: '#dc2626',
-					fontSize: '0.875rem',
-				}}
-			>
+			<div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-destructive">
 				Failed to load API keys. Please try again.
 			</div>
 		);
@@ -55,247 +58,97 @@ export function ApiKeyList({ projectId }: ApiKeyListProps) {
 
 	if (!keys || keys.length === 0) {
 		return (
-			<div
-				style={{
-					padding: '3rem 2rem',
-					border: '1px solid #e5e7eb',
-					borderRadius: '0.5rem',
-					backgroundColor: '#f9fafb',
-					textAlign: 'center',
-				}}
-			>
-				<p style={{ color: '#6b7280', fontSize: '0.875rem', margin: 0 }}>
+			<Card className="bg-accent p-12 text-center">
+				<p className="text-sm text-muted">
 					No API keys yet. Create one to start accepting submissions.
 				</p>
-			</div>
+			</Card>
 		);
 	}
 
 	return (
-		<div
-			style={{
-				border: '1px solid #e5e7eb',
-				borderRadius: '0.5rem',
-				overflow: 'hidden',
-			}}
-		>
-			<table style={{ width: '100%', borderCollapse: 'collapse' }}>
-				<thead>
-					<tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-						<th
-							style={{
-								textAlign: 'left',
-								padding: '0.625rem 1rem',
-								fontSize: '0.75rem',
-								fontWeight: 600,
-								color: '#6b7280',
-								textTransform: 'uppercase',
-								letterSpacing: '0.025em',
-							}}
-						>
-							Label
-						</th>
-						<th
-							style={{
-								textAlign: 'left',
-								padding: '0.625rem 1rem',
-								fontSize: '0.75rem',
-								fontWeight: 600,
-								color: '#6b7280',
-								textTransform: 'uppercase',
-								letterSpacing: '0.025em',
-							}}
-						>
-							Key
-						</th>
-						<th
-							style={{
-								textAlign: 'left',
-								padding: '0.625rem 1rem',
-								fontSize: '0.75rem',
-								fontWeight: 600,
-								color: '#6b7280',
-								textTransform: 'uppercase',
-								letterSpacing: '0.025em',
-							}}
-						>
-							Status
-						</th>
-						<th
-							style={{
-								textAlign: 'left',
-								padding: '0.625rem 1rem',
-								fontSize: '0.75rem',
-								fontWeight: 600,
-								color: '#6b7280',
-								textTransform: 'uppercase',
-								letterSpacing: '0.025em',
-							}}
-						>
-							Created
-						</th>
-						<th
-							style={{
-								textAlign: 'right',
-								padding: '0.625rem 1rem',
-								fontSize: '0.75rem',
-								fontWeight: 600,
-								color: '#6b7280',
-								textTransform: 'uppercase',
-								letterSpacing: '0.025em',
-							}}
-						>
-							Actions
-						</th>
-					</tr>
-				</thead>
-				<tbody>
+		<Card className="overflow-hidden">
+			<Table>
+				<TableHeader>
+					<TableRow>
+						<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted">Label</TableHead>
+						<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted">Key</TableHead>
+						<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted">Status</TableHead>
+						<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted">Created</TableHead>
+						<TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted">Actions</TableHead>
+					</TableRow>
+				</TableHeader>
+				<TableBody>
 					{keys.map((key) => (
-						<tr
+						<TableRow
 							key={key.id}
-							style={{
-								borderBottom: '1px solid #e5e7eb',
-								backgroundColor: key.enabled ? '#fff' : '#f9fafb',
-							}}
+							className={cn(!key.enabled && 'bg-accent')}
 						>
-							{/* Label */}
-							<td
-								style={{
-									padding: '0.75rem 1rem',
-									fontSize: '0.875rem',
-									fontWeight: 500,
-									color: key.enabled ? '#111827' : '#9ca3af',
-								}}
-							>
+							<TableCell className={cn('font-medium', !key.enabled && 'text-muted-foreground')}>
 								{key.name || 'API Key'}
-							</td>
-
-							{/* Key preview */}
-							<td style={{ padding: '0.75rem 1rem' }}>
-								<code
-									style={{
-										fontFamily:
-											'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
-										fontSize: '0.8125rem',
-										color: key.enabled ? '#374151' : '#9ca3af',
-										backgroundColor: key.enabled ? '#f3f4f6' : 'transparent',
-										padding: '0.125rem 0.5rem',
-										borderRadius: '0.25rem',
-									}}
-								>
-									{key.prefix}
-									{key.start}...
+							</TableCell>
+							<TableCell>
+								<code className={cn(
+									'rounded px-2 py-0.5 font-mono text-[0.8125rem]',
+									key.enabled
+										? 'bg-gray-100 text-foreground'
+										: 'text-muted-foreground',
+								)}>
+									{key.prefix}{key.start}...
 								</code>
-							</td>
-
-							{/* Status badge */}
-							<td style={{ padding: '0.75rem 1rem' }}>
+							</TableCell>
+							<TableCell>
 								{key.enabled ? (
-									<span
-										style={{
-											display: 'inline-block',
-											padding: '0.125rem 0.5rem',
-											fontSize: '0.75rem',
-											fontWeight: 500,
-											borderRadius: '9999px',
-											backgroundColor: '#dcfce7',
-											color: '#166534',
-										}}
-									>
+									<Badge variant="secondary" className="border-0 bg-green-100 text-green-800 hover:bg-green-100">
 										Active
-									</span>
+									</Badge>
 								) : (
-									<span
-										style={{
-											display: 'inline-block',
-											padding: '0.125rem 0.5rem',
-											fontSize: '0.75rem',
-											fontWeight: 500,
-											borderRadius: '9999px',
-											backgroundColor: '#fee2e2',
-											color: '#991b1b',
-										}}
-									>
+									<Badge variant="secondary" className="border-0 bg-red-100 text-red-800 hover:bg-red-100">
 										Revoked
-									</span>
+									</Badge>
 								)}
-							</td>
-
-							{/* Created date */}
-							<td
-								style={{
-									padding: '0.75rem 1rem',
-									fontSize: '0.8125rem',
-									color: '#6b7280',
-								}}
-							>
+							</TableCell>
+							<TableCell className="text-[0.8125rem] text-muted">
 								{new Date(key.createdAt).toLocaleDateString()}
-							</td>
-
-							{/* Actions */}
-							<td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
+							</TableCell>
+							<TableCell className="text-right">
 								{key.enabled && revokeConfirmId !== key.id && (
-									<button
-										type="button"
+									<Button
+										variant="outline"
+										size="sm"
+										className="h-7 border-red-200 text-xs text-destructive hover:bg-red-50"
 										onClick={() => setRevokeConfirmId(key.id)}
-										style={{
-											padding: '0.25rem 0.625rem',
-											border: '1px solid #fecaca',
-											borderRadius: '0.25rem',
-											backgroundColor: '#fff',
-											color: '#dc2626',
-											fontSize: '0.75rem',
-											fontWeight: 500,
-											cursor: 'pointer',
-										}}
 									>
 										Revoke
-									</button>
+									</Button>
 								)}
 								{key.enabled && revokeConfirmId === key.id && (
-									<div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', justifyContent: 'flex-end' }}>
-										<span style={{ fontSize: '0.75rem', color: '#dc2626' }}>
-											Are you sure?
-										</span>
-										<button
-											type="button"
-											onClick={() => handleRevoke(key.id)}
+									<div className="flex items-center justify-end gap-1.5">
+										<span className="text-xs text-destructive">Are you sure?</span>
+										<Button
+											size="sm"
+											variant="destructive"
+											className="h-7 text-xs"
 											disabled={revokeKey.isPending}
-											style={{
-												padding: '0.25rem 0.5rem',
-												border: 'none',
-												borderRadius: '0.25rem',
-												backgroundColor: '#dc2626',
-												color: '#fff',
-												fontSize: '0.75rem',
-												fontWeight: 500,
-												cursor: revokeKey.isPending ? 'not-allowed' : 'pointer',
-											}}
+											onClick={() => handleRevoke(key.id)}
 										>
 											{revokeKey.isPending ? '...' : 'Yes'}
-										</button>
-										<button
-											type="button"
+										</Button>
+										<Button
+											size="sm"
+											variant="outline"
+											className="h-7 text-xs"
 											onClick={() => setRevokeConfirmId(null)}
-											style={{
-												padding: '0.25rem 0.5rem',
-												border: '1px solid #d1d5db',
-												borderRadius: '0.25rem',
-												backgroundColor: '#fff',
-												color: '#374151',
-												fontSize: '0.75rem',
-												cursor: 'pointer',
-											}}
 										>
 											No
-										</button>
+										</Button>
 									</div>
 								)}
-							</td>
-						</tr>
+							</TableCell>
+						</TableRow>
 					))}
-				</tbody>
-			</table>
-		</div>
+				</TableBody>
+			</Table>
+		</Card>
 	);
 }

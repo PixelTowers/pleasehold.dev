@@ -3,9 +3,15 @@
 
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
-import { NotificationChannelForm } from '../../../components/NotificationChannelForm';
-import { useProject } from '../../../hooks/useProjects';
-import { trpc } from '../../../lib/trpc';
+import { Copy, Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { NotificationChannelForm } from '@/components/NotificationChannelForm';
+import { useProject } from '@/hooks/useProjects';
+import { trpc } from '@/lib/trpc';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export const Route = createFileRoute('/projects/$projectId/notifications')({
 	component: NotificationSettingsPage,
@@ -14,184 +20,63 @@ export const Route = createFileRoute('/projects/$projectId/notifications')({
 type ChannelType = 'email' | 'slack' | 'discord' | 'telegram' | 'webhook';
 
 const channelTypeLabels: Record<ChannelType, string> = {
-	email: 'Email',
-	slack: 'Slack',
-	discord: 'Discord',
-	telegram: 'Telegram',
-	webhook: 'Webhook',
+	email: 'Email', slack: 'Slack', discord: 'Discord', telegram: 'Telegram', webhook: 'Webhook',
 };
 
 function channelConfigSummary(type: string, config: Record<string, unknown>): string {
 	switch (type) {
-		case 'email': {
-			const recipients = config.recipients as string[] | undefined;
-			return recipients ? `${recipients.length} recipient${recipients.length === 1 ? '' : 's'}` : 'No recipients';
-		}
-		case 'slack':
-		case 'discord': {
-			const url = config.webhookUrl as string | undefined;
-			return url ? `${url.substring(0, 40)}...` : 'No URL';
-		}
-		case 'telegram':
-			return `Chat: ${(config.chatId as string) ?? 'unknown'}`;
-		case 'webhook': {
-			const url = config.url as string | undefined;
-			return url ? `${url.substring(0, 40)}...` : 'No URL';
-		}
-		default:
-			return '';
+		case 'email': { const r = config.recipients as string[] | undefined; return r ? `${r.length} recipient${r.length === 1 ? '' : 's'}` : 'No recipients'; }
+		case 'slack': case 'discord': { const u = config.webhookUrl as string | undefined; return u ? `${u.substring(0, 40)}...` : 'No URL'; }
+		case 'telegram': return `Chat: ${(config.chatId as string) ?? 'unknown'}`;
+		case 'webhook': { const u = config.url as string | undefined; return u ? `${u.substring(0, 40)}...` : 'No URL'; }
+		default: return '';
 	}
 }
 
-function ToggleSwitch({ checked, onChange, disabled }: {
-	checked: boolean;
-	onChange: (val: boolean) => void;
-	disabled?: boolean;
-}) {
+function ToggleSwitch({ checked, onChange, disabled }: { checked: boolean; onChange: (val: boolean) => void; disabled?: boolean }) {
 	return (
 		<button
 			type="button"
 			onClick={() => !disabled && onChange(!checked)}
-			style={{
-				width: '2.75rem',
-				height: '1.5rem',
-				borderRadius: '9999px',
-				border: 'none',
-				backgroundColor: checked ? '#111' : '#d1d5db',
-				cursor: disabled ? 'not-allowed' : 'pointer',
-				position: 'relative',
-				transition: 'background-color 0.2s',
-				flexShrink: 0,
-				opacity: disabled ? 0.5 : 1,
-			}}
+			className={cn(
+				'relative h-6 w-11 shrink-0 rounded-full border-0 transition-colors',
+				checked ? 'bg-foreground' : 'bg-gray-300',
+				disabled && 'opacity-50 cursor-not-allowed',
+			)}
 		>
-			<div
-				style={{
-					width: '1.125rem',
-					height: '1.125rem',
-					borderRadius: '9999px',
-					backgroundColor: '#fff',
-					position: 'absolute',
-					top: '0.1875rem',
-					left: checked ? '1.4375rem' : '0.1875rem',
-					transition: 'left 0.2s',
-					boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-				}}
-			/>
+			<div className={cn('absolute top-[3px] h-[18px] w-[18px] rounded-full bg-white shadow-sm transition-[left]', checked ? 'left-[23px]' : 'left-[3px]')} />
 		</button>
 	);
 }
 
 function SecretRevealDialog({ secret, onClose }: { secret: string; onClose: () => void }) {
 	const [copied, setCopied] = useState(false);
-
-	const handleCopy = async () => {
-		await navigator.clipboard.writeText(secret);
-		setCopied(true);
-		setTimeout(() => setCopied(false), 2000);
-	};
+	const handleCopy = async () => { await navigator.clipboard.writeText(secret); setCopied(true); setTimeout(() => setCopied(false), 2000); };
 
 	return (
-		<div
-			style={{
-				position: 'fixed',
-				inset: 0,
-				backgroundColor: 'rgba(0, 0, 0, 0.5)',
-				display: 'flex',
-				alignItems: 'center',
-				justifyContent: 'center',
-				zIndex: 50,
-			}}
-		>
-			<div
-				style={{
-					backgroundColor: '#fff',
-					borderRadius: '0.5rem',
-					padding: '1.5rem',
-					maxWidth: '32rem',
-					width: '100%',
-					margin: '1rem',
-				}}
-			>
-				<h3 style={{ fontSize: '1rem', fontWeight: 600, marginTop: 0, marginBottom: '0.75rem' }}>
-					Webhook HMAC Secret
-				</h3>
-				<p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
-					This secret will only be shown once. Copy it now and store it securely. Use it to verify
-					incoming webhook payloads by computing an HMAC-SHA256 signature.
-				</p>
-				<div
-					style={{
-						display: 'flex',
-						gap: '0.5rem',
-						alignItems: 'center',
-						backgroundColor: '#f9fafb',
-						border: '1px solid #e5e7eb',
-						borderRadius: '0.375rem',
-						padding: '0.75rem',
-						marginBottom: '1rem',
-					}}
-				>
-					<code
-						style={{
-							flex: 1,
-							fontSize: '0.75rem',
-							fontFamily: 'monospace',
-							wordBreak: 'break-all',
-						}}
-					>
-						{secret}
-					</code>
-					<button
-						type="button"
-						onClick={handleCopy}
-						style={{
-							padding: '0.375rem 0.75rem',
-							border: '1px solid #d1d5db',
-							borderRadius: '0.375rem',
-							backgroundColor: '#fff',
-							fontSize: '0.75rem',
-							cursor: 'pointer',
-							flexShrink: 0,
-						}}
-					>
-						{copied ? 'Copied' : 'Copy'}
-					</button>
+		<Dialog open onOpenChange={(open) => !open && onClose()}>
+			<DialogContent className="max-w-lg">
+				<DialogHeader><DialogTitle>Webhook HMAC Secret</DialogTitle></DialogHeader>
+				<div className="space-y-4 p-1">
+					<p className="text-sm text-muted">This secret will only be shown once. Copy it now and store it securely. Use it to verify incoming webhook payloads by computing an HMAC-SHA256 signature.</p>
+					<div className="flex items-center gap-2 rounded-md border bg-accent p-3">
+						<code className="flex-1 break-all font-mono text-xs">{secret}</code>
+						<Button variant="outline" size="sm" className="h-7 shrink-0 text-xs" onClick={handleCopy}>
+							{copied ? <><Check className="mr-1 h-3 w-3" />Copied</> : <><Copy className="mr-1 h-3 w-3" />Copy</>}
+						</Button>
+					</div>
+					<div className="flex justify-end"><Button onClick={onClose}>Done</Button></div>
 				</div>
-				<div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-					<button
-						type="button"
-						onClick={onClose}
-						style={{
-							padding: '0.5rem 1rem',
-							backgroundColor: '#111',
-							color: '#fff',
-							border: 'none',
-							borderRadius: '0.375rem',
-							fontSize: '0.875rem',
-							fontWeight: 500,
-							cursor: 'pointer',
-						}}
-					>
-						Done
-					</button>
-				</div>
-			</div>
-		</div>
+			</DialogContent>
+		</Dialog>
 	);
 }
 
 function NotificationSettingsPage() {
 	const { projectId } = Route.useParams();
 	const { data: project, isPending: projectPending, error: projectError } = useProject(projectId);
-	const { data: channels, isPending: channelsPending } = trpc.notification.list.useQuery(
-		{ projectId },
-		{ enabled: !!project },
-	);
-	const { data: doubleOptInData } = trpc.notification.getDoubleOptIn.useQuery(
-		{ projectId },
-		{ enabled: !!project },
-	);
+	const { data: channels, isPending: channelsPending } = trpc.notification.list.useQuery({ projectId }, { enabled: !!project });
+	const { data: doubleOptInData } = trpc.notification.getDoubleOptIn.useQuery({ projectId }, { enabled: !!project });
 
 	const [addingType, setAddingType] = useState<ChannelType | null>(null);
 	const [editingChannelId, setEditingChannelId] = useState<string | null>(null);
@@ -207,466 +92,175 @@ function NotificationSettingsPage() {
 			setAddingType(null);
 			if (data.type === 'webhook' && data.config) {
 				const config = data.config as Record<string, unknown>;
-				if (typeof config.secret === 'string') {
-					setRevealedSecret(config.secret);
-				}
+				if (typeof config.secret === 'string') setRevealedSecret(config.secret);
 			}
 		},
 	});
 
 	const updateChannel = trpc.notification.update.useMutation({
-		onSuccess: () => {
-			utils.notification.list.invalidate({ projectId });
-			setEditingChannelId(null);
-		},
+		onSuccess: () => { utils.notification.list.invalidate({ projectId }); setEditingChannelId(null); },
 	});
 
 	const deleteChannel = trpc.notification.delete.useMutation({
-		onSuccess: () => {
-			utils.notification.list.invalidate({ projectId });
-			setDeleteConfirmId(null);
-		},
+		onSuccess: () => { utils.notification.list.invalidate({ projectId }); setDeleteConfirmId(null); },
 	});
 
 	const regenerateSecret = trpc.notification.regenerateSecret.useMutation({
-		onSuccess: (data) => {
-			setRevealedSecret(data.secret);
-		},
+		onSuccess: (data) => { setRevealedSecret(data.secret); },
 	});
 
 	const toggleDoubleOptIn = trpc.notification.toggleDoubleOptIn.useMutation({
-		onSuccess: () => {
-			setOptInStatus('saved');
-			utils.notification.getDoubleOptIn.invalidate({ projectId });
-			setTimeout(() => setOptInStatus('idle'), 2000);
-		},
-		onError: () => {
-			setOptInStatus('error');
-			setTimeout(() => setOptInStatus('idle'), 3000);
-		},
+		onSuccess: () => { setOptInStatus('saved'); utils.notification.getDoubleOptIn.invalidate({ projectId }); setTimeout(() => setOptInStatus('idle'), 2000); },
+		onError: () => { setOptInStatus('error'); setTimeout(() => setOptInStatus('idle'), 3000); },
 	});
 
-	const handleToggleEnabled = (channelId: string, enabled: boolean) => {
-		updateChannel.mutate({ projectId, channelId, enabled });
-	};
-
-	const handleDoubleOptInToggle = (enabled: boolean) => {
-		setOptInStatus('saving');
-		toggleDoubleOptIn.mutate({ projectId, enabled });
-	};
+	const handleToggleEnabled = (channelId: string, enabled: boolean) => { updateChannel.mutate({ projectId, channelId, enabled }); };
+	const handleDoubleOptInToggle = (enabled: boolean) => { setOptInStatus('saving'); toggleDoubleOptIn.mutate({ projectId, enabled }); };
 
 	if (projectPending) {
-		return (
-			<div style={{ textAlign: 'center', padding: '4rem' }}>
-				<p style={{ color: '#6b7280' }}>Loading...</p>
-			</div>
-		);
+		return <div className="py-16 text-center"><p className="text-muted">Loading...</p></div>;
 	}
 
 	if (projectError || !project) {
 		return (
-			<div style={{ maxWidth: '48rem', margin: '0 auto' }}>
-				<div style={{ marginBottom: '1rem' }}>
-					<Link to="/" style={{ fontSize: '0.875rem', color: '#6b7280', textDecoration: 'none' }}>
-						&larr; Back to dashboard
-					</Link>
-				</div>
-				<div
-					style={{
-						padding: '1rem',
-						backgroundColor: '#fef2f2',
-						border: '1px solid #fecaca',
-						borderRadius: '0.375rem',
-						color: '#dc2626',
-						fontSize: '0.875rem',
-					}}
-				>
-					Failed to load project. Please try again.
-				</div>
+			<div className="mx-auto max-w-3xl">
+				<div className="mb-4"><Link to="/" className="text-sm text-muted hover:text-foreground">&larr; Back to dashboard</Link></div>
+				<div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-destructive">Failed to load project. Please try again.</div>
 			</div>
 		);
 	}
 
 	return (
-		<div style={{ maxWidth: '48rem', margin: '0 auto' }}>
+		<div className="mx-auto max-w-3xl">
 			{/* Breadcrumb */}
-			<div
-				style={{
-					display: 'flex',
-					alignItems: 'center',
-					gap: '0.375rem',
-					marginBottom: '1.5rem',
-					fontSize: '0.875rem',
-					color: '#6b7280',
-				}}
-			>
-				<Link to="/" style={{ color: '#6b7280', textDecoration: 'none' }}>
-					Dashboard
-				</Link>
+			<div className="mb-6 flex items-center gap-1.5 text-sm text-muted">
+				<Link to="/" className="hover:text-foreground">Dashboard</Link>
 				<span>/</span>
-				<Link
-					to="/projects/$projectId"
-					params={{ projectId }}
-					style={{ color: '#6b7280', textDecoration: 'none' }}
-				>
-					{project.name}
-				</Link>
+				<Link to="/projects/$projectId" params={{ projectId }} className="hover:text-foreground">{project.name}</Link>
 				<span>/</span>
-				<span style={{ color: '#111827', fontWeight: 500 }}>Notifications</span>
+				<span className="font-medium text-foreground">Notifications</span>
 			</div>
 
-			<h1 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '2rem' }}>
-				Notification Settings
-			</h1>
+			<h1 className="mb-8 text-2xl font-semibold text-foreground">Notification Settings</h1>
 
 			{/* Double Opt-In Toggle */}
-			<div
-				style={{
-					padding: '1.25rem',
-					border: '1px solid #e5e7eb',
-					borderRadius: '0.5rem',
-					backgroundColor: '#fff',
-					marginBottom: '1.5rem',
-				}}
-			>
-				<div
-					style={{
-						display: 'flex',
-						justifyContent: 'space-between',
-						alignItems: 'center',
-						marginBottom: '0.25rem',
-					}}
-				>
-					<h3 style={{ fontSize: '1rem', fontWeight: 600, margin: 0 }}>Email Verification</h3>
-					{optInStatus === 'saving' && (
-						<span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Saving...</span>
-					)}
-					{optInStatus === 'saved' && (
-						<span style={{ fontSize: '0.75rem', color: '#059669' }}>Saved</span>
-					)}
-					{optInStatus === 'error' && (
-						<span style={{ fontSize: '0.75rem', color: '#dc2626' }}>Failed to save</span>
-					)}
+			<Card className="mb-6 p-5">
+				<div className="mb-1 flex items-center justify-between">
+					<h3 className="text-base font-semibold">Email Verification</h3>
+					{optInStatus === 'saving' && <span className="text-xs text-muted">Saving...</span>}
+					{optInStatus === 'saved' && <span className="text-xs text-green-600">Saved</span>}
+					{optInStatus === 'error' && <span className="text-xs text-destructive">Failed to save</span>}
 				</div>
-				<div
-					style={{
-						display: 'flex',
-						justifyContent: 'space-between',
-						alignItems: 'center',
-						padding: '0.75rem 0',
-					}}
-				>
+				<div className="flex items-center justify-between py-3">
 					<div>
-						<div style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-							Require email verification
-						</div>
-						<div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-							New submissions will require email confirmation before becoming active entries
-						</div>
+						<div className="text-sm font-medium">Require email verification</div>
+						<div className="text-xs text-muted-foreground">New submissions will require email confirmation before becoming active entries</div>
 					</div>
-					<ToggleSwitch
-						checked={doubleOptInData?.doubleOptIn ?? false}
-						onChange={handleDoubleOptInToggle}
-						disabled={toggleDoubleOptIn.isPending}
-					/>
+					<ToggleSwitch checked={doubleOptInData?.doubleOptIn ?? false} onChange={handleDoubleOptInToggle} disabled={toggleDoubleOptIn.isPending} />
 				</div>
-			</div>
+			</Card>
 
 			{/* Notification Channels */}
-			<div
-				style={{
-					padding: '1.25rem',
-					border: '1px solid #e5e7eb',
-					borderRadius: '0.5rem',
-					backgroundColor: '#fff',
-					marginBottom: '1.5rem',
-				}}
-			>
-				<div
-					style={{
-						display: 'flex',
-						justifyContent: 'space-between',
-						alignItems: 'center',
-						marginBottom: '1rem',
-					}}
-				>
-					<h3 style={{ fontSize: '1rem', fontWeight: 600, margin: 0 }}>
-						Notification Channels
-					</h3>
+			<Card className="mb-6 p-5">
+				<div className="mb-4 flex items-center justify-between">
+					<h3 className="text-base font-semibold">Notification Channels</h3>
 					{!addingType && (
-						<div style={{ position: 'relative' }}>
-							<select
-								value=""
-								onChange={(e) => {
-									if (e.target.value) {
-										setAddingType(e.target.value as ChannelType);
-									}
-								}}
-								style={{
-									padding: '0.5rem 1rem',
-									backgroundColor: '#111',
-									color: '#fff',
-									border: 'none',
-									borderRadius: '0.375rem',
-									fontSize: '0.875rem',
-									fontWeight: 500,
-									cursor: 'pointer',
-									appearance: 'none',
-									WebkitAppearance: 'none',
-								}}
-							>
-								<option value="" disabled>
-									+ Add channel
-								</option>
-								<option value="email">Email</option>
-								<option value="slack">Slack</option>
-								<option value="discord">Discord</option>
-								<option value="telegram">Telegram</option>
-								<option value="webhook">Webhook</option>
-							</select>
-						</div>
+						<select
+							value=""
+							onChange={(e) => { if (e.target.value) setAddingType(e.target.value as ChannelType); }}
+							className="rounded-md border border-input bg-card px-3 py-1.5 text-sm"
+						>
+							<option value="" disabled>+ Add channel</option>
+							<option value="email">Email</option>
+							<option value="slack">Slack</option>
+							<option value="discord">Discord</option>
+							<option value="telegram">Telegram</option>
+							<option value="webhook">Webhook</option>
+						</select>
 					)}
 				</div>
 
 				{/* Add channel form */}
 				{addingType && (
-					<div
-						style={{
-							padding: '1rem',
-							border: '1px solid #e5e7eb',
-							borderRadius: '0.375rem',
-							backgroundColor: '#f9fafb',
-							marginBottom: '1rem',
-						}}
-					>
-						<h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginTop: 0, marginBottom: '1rem' }}>
-							Add {channelTypeLabels[addingType]} Channel
-						</h4>
+					<div className="mb-4 rounded-md border bg-accent p-4">
+						<h4 className="mb-4 text-sm font-semibold">Add {channelTypeLabels[addingType]} Channel</h4>
 						<NotificationChannelForm
 							type={addingType}
-							onSubmit={(config) => {
-								createChannel.mutate({ projectId, type: addingType, config });
-							}}
+							onSubmit={(config) => { createChannel.mutate({ projectId, type: addingType, config }); }}
 							onCancel={() => setAddingType(null)}
 							isLoading={createChannel.isPending}
 						/>
 					</div>
 				)}
 
-				{/* Channel list */}
-				{channelsPending && (
-					<p style={{ color: '#6b7280', fontSize: '0.875rem' }}>Loading channels...</p>
-				)}
+				{channelsPending && <p className="text-sm text-muted">Loading channels...</p>}
 
 				{channels && channels.length === 0 && !addingType && (
-					<p
-						style={{
-							color: '#9ca3af',
-							fontSize: '0.875rem',
-							textAlign: 'center',
-							padding: '2rem 0',
-						}}
-					>
-						No notification channels configured. Add a channel to get notified about new
-						submissions.
+					<p className="py-8 text-center text-sm text-muted-foreground">
+						No notification channels configured. Add a channel to get notified about new submissions.
 					</p>
 				)}
 
 				{channels && channels.length > 0 && (
-					<div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+					<div className="flex flex-col gap-2">
 						{channels.map((channel) => (
-							<div
-								key={channel.id}
-								style={{
-									display: 'flex',
-									flexDirection: 'column',
-									border: '1px solid #e5e7eb',
-									borderRadius: '0.375rem',
-									backgroundColor: '#fff',
-								}}
-							>
-								<div
-									style={{
-										display: 'flex',
-										justifyContent: 'space-between',
-										alignItems: 'center',
-										padding: '0.75rem 1rem',
-									}}
-								>
-									<div style={{ flex: 1, minWidth: 0 }}>
-										<div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-											<span
-												style={{
-													fontSize: '0.875rem',
-													fontWeight: 500,
-													color: channel.enabled ? '#111827' : '#9ca3af',
-												}}
-											>
+							<div key={channel.id} className="flex flex-col rounded-md border bg-card">
+								<div className="flex items-center justify-between px-4 py-3">
+									<div className="min-w-0 flex-1">
+										<div className="flex items-center gap-2">
+											<span className={cn('text-sm font-medium', !channel.enabled && 'text-muted-foreground')}>
 												{channelTypeLabels[channel.type as ChannelType] ?? channel.type}
 											</span>
 											{!channel.enabled && (
-												<span
-													style={{
-														fontSize: '0.6875rem',
-														color: '#9ca3af',
-														backgroundColor: '#f3f4f6',
-														padding: '0.125rem 0.5rem',
-														borderRadius: '9999px',
-													}}
-												>
-													Disabled
-												</span>
+												<Badge variant="secondary" className="text-[0.6875rem]">Disabled</Badge>
 											)}
 										</div>
-										<div
-											style={{
-												fontSize: '0.75rem',
-												color: '#9ca3af',
-												marginTop: '0.125rem',
-												overflow: 'hidden',
-												textOverflow: 'ellipsis',
-												whiteSpace: 'nowrap',
-											}}
-										>
+										<div className="mt-0.5 truncate text-xs text-muted-foreground">
 											{channelConfigSummary(channel.type, channel.config)}
 										</div>
 									</div>
-
-									<div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+									<div className="flex items-center gap-2">
 										{channel.type === 'webhook' && (
-											<button
-												type="button"
-												onClick={() => regenerateSecret.mutate({ projectId, channelId: channel.id })}
-												disabled={regenerateSecret.isPending}
-												style={{
-													padding: '0.375rem 0.5rem',
-													border: '1px solid #d1d5db',
-													borderRadius: '0.375rem',
-													backgroundColor: '#fff',
-													fontSize: '0.75rem',
-													cursor: regenerateSecret.isPending ? 'not-allowed' : 'pointer',
-													color: '#374151',
-												}}
-											>
+											<Button variant="outline" size="sm" className="h-7 text-xs" disabled={regenerateSecret.isPending}
+												onClick={() => regenerateSecret.mutate({ projectId, channelId: channel.id })}>
 												Regenerate Secret
-											</button>
+											</Button>
 										)}
-										<button
-											type="button"
-											onClick={() =>
-												setEditingChannelId(
-													editingChannelId === channel.id ? null : channel.id,
-												)
-											}
-											style={{
-												padding: '0.375rem 0.5rem',
-												border: '1px solid #d1d5db',
-												borderRadius: '0.375rem',
-												backgroundColor: '#fff',
-												fontSize: '0.75rem',
-												cursor: 'pointer',
-												color: '#374151',
-											}}
-										>
+										<Button variant="outline" size="sm" className="h-7 text-xs"
+											onClick={() => setEditingChannelId(editingChannelId === channel.id ? null : channel.id)}>
 											{editingChannelId === channel.id ? 'Cancel' : 'Edit'}
-										</button>
-										<ToggleSwitch
-											checked={channel.enabled}
-											onChange={(val) => handleToggleEnabled(channel.id, val)}
-											disabled={updateChannel.isPending}
-										/>
-										<button
-											type="button"
-											onClick={() => setDeleteConfirmId(channel.id)}
-											style={{
-												padding: '0.375rem 0.5rem',
-												border: '1px solid #fecaca',
-												borderRadius: '0.375rem',
-												backgroundColor: '#fff',
-												fontSize: '0.75rem',
-												cursor: 'pointer',
-												color: '#dc2626',
-											}}
-										>
+										</Button>
+										<ToggleSwitch checked={channel.enabled} onChange={(val) => handleToggleEnabled(channel.id, val)} disabled={updateChannel.isPending} />
+										<Button variant="outline" size="sm" className="h-7 border-red-200 text-xs text-destructive hover:bg-red-50"
+											onClick={() => setDeleteConfirmId(channel.id)}>
 											Delete
-										</button>
+										</Button>
 									</div>
 								</div>
 
-								{/* Edit form */}
 								{editingChannelId === channel.id && (
-									<div
-										style={{
-											padding: '1rem',
-											borderTop: '1px solid #e5e7eb',
-											backgroundColor: '#f9fafb',
-										}}
-									>
+									<div className="border-t bg-accent p-4">
 										<NotificationChannelForm
 											type={channel.type as ChannelType}
 											initialConfig={channel.config}
-											onSubmit={(config) => {
-												updateChannel.mutate({
-													projectId,
-													channelId: channel.id,
-													config,
-												});
-											}}
+											onSubmit={(config) => { updateChannel.mutate({ projectId, channelId: channel.id, config }); }}
 											onCancel={() => setEditingChannelId(null)}
 											isLoading={updateChannel.isPending}
 										/>
 									</div>
 								)}
 
-								{/* Delete confirmation */}
 								{deleteConfirmId === channel.id && (
-									<div
-										style={{
-											padding: '1rem',
-											borderTop: '1px solid #fecaca',
-											backgroundColor: '#fef2f2',
-											display: 'flex',
-											justifyContent: 'space-between',
-											alignItems: 'center',
-										}}
-									>
-										<span style={{ fontSize: '0.875rem', color: '#dc2626' }}>
+									<div className="flex items-center justify-between border-t border-red-200 bg-red-50 p-4">
+										<span className="text-sm text-destructive">
 											Delete this {channelTypeLabels[channel.type as ChannelType] ?? channel.type} channel?
 										</span>
-										<div style={{ display: 'flex', gap: '0.5rem' }}>
-											<button
-												type="button"
-												onClick={() => setDeleteConfirmId(null)}
-												style={{
-													padding: '0.375rem 0.75rem',
-													border: '1px solid #d1d5db',
-													borderRadius: '0.375rem',
-													backgroundColor: '#fff',
-													fontSize: '0.8125rem',
-													cursor: 'pointer',
-												}}
-											>
-												Cancel
-											</button>
-											<button
-												type="button"
-												onClick={() =>
-													deleteChannel.mutate({ projectId, channelId: channel.id })
-												}
-												disabled={deleteChannel.isPending}
-												style={{
-													padding: '0.375rem 0.75rem',
-													border: 'none',
-													borderRadius: '0.375rem',
-													backgroundColor: '#dc2626',
-													color: '#fff',
-													fontSize: '0.8125rem',
-													fontWeight: 500,
-													cursor: deleteChannel.isPending ? 'not-allowed' : 'pointer',
-												}}
-											>
+										<div className="flex gap-2">
+											<Button variant="outline" size="sm" className="h-7" onClick={() => setDeleteConfirmId(null)}>Cancel</Button>
+											<Button variant="destructive" size="sm" className="h-7" disabled={deleteChannel.isPending}
+												onClick={() => deleteChannel.mutate({ projectId, channelId: channel.id })}>
 												{deleteChannel.isPending ? 'Deleting...' : 'Confirm Delete'}
-											</button>
+											</Button>
 										</div>
 									</div>
 								)}
@@ -674,15 +268,9 @@ function NotificationSettingsPage() {
 						))}
 					</div>
 				)}
-			</div>
+			</Card>
 
-			{/* Secret reveal dialog */}
-			{revealedSecret && (
-				<SecretRevealDialog
-					secret={revealedSecret}
-					onClose={() => setRevealedSecret(null)}
-				/>
-			)}
+			{revealedSecret && <SecretRevealDialog secret={revealedSecret} onClose={() => setRevealedSecret(null)} />}
 		</div>
 	);
 }

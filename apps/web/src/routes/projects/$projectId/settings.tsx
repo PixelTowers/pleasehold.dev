@@ -3,33 +3,24 @@
 
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { type FormEvent, useEffect, useState } from 'react';
-import { FieldConfigForm } from '../../../components/FieldConfigForm';
-import { useProject } from '../../../hooks/useProjects';
-import { trpc } from '../../../lib/trpc';
+import { ArrowLeft } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { FieldConfigForm } from '@/components/FieldConfigForm';
+import { useProject } from '@/hooks/useProjects';
+import { trpc } from '@/lib/trpc';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export const Route = createFileRoute('/projects/$projectId/settings')({
 	component: ProjectSettingsPage,
 });
 
-const modeBadgeStyles: Record<string, React.CSSProperties> = {
-	waitlist: {
-		display: 'inline-block',
-		padding: '0.25rem 0.75rem',
-		fontSize: '0.8125rem',
-		fontWeight: 500,
-		borderRadius: '9999px',
-		backgroundColor: '#dbeafe',
-		color: '#1d4ed8',
-	},
-	'demo-booking': {
-		display: 'inline-block',
-		padding: '0.25rem 0.75rem',
-		fontSize: '0.8125rem',
-		fontWeight: 500,
-		borderRadius: '9999px',
-		backgroundColor: '#ede9fe',
-		color: '#6d28d9',
-	},
+const modeBadgeClasses: Record<string, string> = {
+	waitlist: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
+	'demo-booking': 'bg-violet-100 text-violet-700 hover:bg-violet-100',
 };
 
 function ProjectSettingsPage() {
@@ -60,30 +51,22 @@ function ProjectSettingsPage() {
 
 	if (isPending) {
 		return (
-			<div style={{ textAlign: 'center', padding: '4rem' }}>
-				<p style={{ color: '#6b7280' }}>Loading settings...</p>
+			<div className="py-16 text-center">
+				<p className="text-muted">Loading settings...</p>
 			</div>
 		);
 	}
 
 	if (error || !project) {
 		return (
-			<div style={{ maxWidth: '48rem', margin: '0 auto' }}>
-				<div style={{ marginBottom: '1rem' }}>
-					<Link to="/" style={{ fontSize: '0.875rem', color: '#6b7280', textDecoration: 'none' }}>
-						&larr; Back to dashboard
+			<div className="mx-auto max-w-3xl">
+				<div className="mb-4">
+					<Link to="/" className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground">
+						<ArrowLeft className="h-3.5 w-3.5" />
+						Back to dashboard
 					</Link>
 				</div>
-				<div
-					style={{
-						padding: '1rem',
-						backgroundColor: '#fef2f2',
-						border: '1px solid #fecaca',
-						borderRadius: '0.375rem',
-						color: '#dc2626',
-						fontSize: '0.875rem',
-					}}
-				>
+				<div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-destructive">
 					Failed to load project settings. Please try again.
 				</div>
 			</div>
@@ -98,108 +81,63 @@ function ProjectSettingsPage() {
 	};
 
 	return (
-		<div style={{ maxWidth: '48rem', margin: '0 auto' }}>
+		<div className="mx-auto max-w-3xl">
 			{/* Breadcrumb */}
-			<div style={{ marginBottom: '1.5rem' }}>
-				<Link to="/projects/$projectId" params={{ projectId }} style={{ fontSize: '0.875rem', color: '#6b7280', textDecoration: 'none' }}>
-					&larr; Back to project
+			<div className="mb-6">
+				<Link to="/projects/$projectId" params={{ projectId }} className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground">
+					<ArrowLeft className="h-3.5 w-3.5" />
+					Back to project
 				</Link>
 			</div>
 
-			<h1 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '2rem' }}>Project Settings</h1>
+			<h1 className="mb-8 text-2xl font-semibold text-foreground">Project Settings</h1>
 
 			{/* Project Name */}
-			<div
-				style={{
-					padding: '1.25rem',
-					border: '1px solid #e5e7eb',
-					borderRadius: '0.5rem',
-					backgroundColor: '#fff',
-					marginBottom: '1.5rem',
-				}}
-			>
-				<h3 style={{ fontSize: '1rem', fontWeight: 600, marginTop: 0, marginBottom: '1rem' }}>General</h3>
+			<Card className="mb-6 p-5">
+				<h3 className="mb-4 text-base font-semibold">General</h3>
 
 				<form onSubmit={handleNameSave}>
-					<div style={{ marginBottom: '1rem' }}>
-						<label
-							htmlFor="project-name"
-							style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.25rem' }}
-						>
-							Project name
-						</label>
-						<div style={{ display: 'flex', gap: '0.5rem' }}>
-							<input
+					<div className="mb-4">
+						<Label htmlFor="project-name" className="mb-1.5 block">Project name</Label>
+						<div className="flex gap-2">
+							<Input
 								id="project-name"
 								type="text"
 								value={name}
 								onChange={(e) => setName(e.target.value)}
 								maxLength={100}
-								style={{
-									flex: 1,
-									padding: '0.5rem 0.75rem',
-									border: '1px solid #d1d5db',
-									borderRadius: '0.375rem',
-									fontSize: '0.875rem',
-									boxSizing: 'border-box',
-								}}
+								className="flex-1"
 							/>
-							<button
+							<Button
 								type="submit"
 								disabled={updateProject.isPending || !name.trim() || name.trim() === project.name}
-								style={{
-									padding: '0.5rem 1rem',
-									backgroundColor:
-										updateProject.isPending || !name.trim() || name.trim() === project.name
-											? '#d1d5db'
-											: '#111',
-									color: '#fff',
-									border: 'none',
-									borderRadius: '0.375rem',
-									fontSize: '0.875rem',
-									cursor:
-										updateProject.isPending || !name.trim() || name.trim() === project.name
-											? 'not-allowed'
-											: 'pointer',
-								}}
 							>
 								{updateProject.isPending ? 'Saving...' : 'Save'}
-							</button>
+							</Button>
 						</div>
 						{nameStatus === 'saved' && (
-							<p style={{ fontSize: '0.75rem', color: '#059669', marginTop: '0.25rem' }}>Name updated.</p>
+							<p className="mt-1 text-xs text-green-600">Name updated.</p>
 						)}
 						{nameStatus === 'error' && (
-							<p style={{ fontSize: '0.75rem', color: '#dc2626', marginTop: '0.25rem' }}>Failed to update name.</p>
+							<p className="mt-1 text-xs text-destructive">Failed to update name.</p>
 						)}
 					</div>
 				</form>
 
 				{/* Mode display (read-only) */}
 				<div>
-					<label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.25rem' }}>
-						Mode
-					</label>
-					<div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-						<span style={modeBadgeStyles[project.mode]}>
+					<Label className="mb-1.5 block">Mode</Label>
+					<div className="flex items-center gap-2">
+						<Badge variant="secondary" className={cn('border-0 font-medium', modeBadgeClasses[project.mode])}>
 							{project.mode === 'demo-booking' ? 'Demo Booking' : 'Waitlist'}
-						</span>
-						<span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-							Cannot be changed after creation
-						</span>
+						</Badge>
+						<span className="text-xs text-muted-foreground">Cannot be changed after creation</span>
 					</div>
 				</div>
-			</div>
+			</Card>
 
 			{/* Field Configuration */}
-			<div
-				style={{
-					padding: '1.25rem',
-					border: '1px solid #e5e7eb',
-					borderRadius: '0.5rem',
-					backgroundColor: '#fff',
-				}}
-			>
+			<Card className="p-5">
 				{project.fieldConfig && (
 					<FieldConfigForm
 						projectId={projectId}
@@ -208,7 +146,7 @@ function ProjectSettingsPage() {
 						collectMessage={project.fieldConfig.collectMessage}
 					/>
 				)}
-			</div>
+			</Card>
 		</div>
 	);
 }
