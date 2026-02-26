@@ -12,7 +12,7 @@ Requirements for QA & Hardening milestone. Each maps to roadmap phases.
 - [x] **QA-01**: Developer can complete full signup → project → field config → API key → entry submission → dashboard view flow without errors
 - [ ] **QA-02**: Notification pipeline delivers to all 5 channels (email, Slack, Discord, Telegram, webhook) when entries are submitted
 - [ ] **QA-03**: Double opt-in email verification flow works end to end (enable → submit → email → click verify → status flips → notification fires)
-- [ ] **QA-04**: Self-hosting via `docker-compose up` works (migrate → API + web accessible → entries can be submitted)
+- [x] **QA-04**: Self-hosting via `docker-compose up` works (migrate → API + web accessible → entries can be submitted)
 - [x] **QA-05**: API key security works correctly (generate → POST with key → rate limit enforced → auth validated → entry inserted)
 
 ### Integration Fixes
@@ -62,7 +62,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QA-01 | Phase 9 | Complete |
 | QA-02 | Phase 9 | Pending |
 | QA-03 | Phase 9 | Pending |
-| QA-04 | Phase 9 | Pending |
+| QA-04 | Phase 9 | Complete |
 | QA-05 | Phase 9 | Complete |
 | INTG-01 | Phase 6 | Complete |
 | INTG-02 | Phase 6 | Complete |

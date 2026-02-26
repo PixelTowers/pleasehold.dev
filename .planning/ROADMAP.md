@@ -87,7 +87,7 @@ Plans:
 
 Plans:
 - [x] 09-01-PLAN.md — Developer flow and API key security QA (signup → project → fields → key → entries → dashboard + auth/rate-limit verification)
-- [ ] 09-02-PLAN.md — Docker self-hosting QA (clean docker-compose up → health checks → entry submission → dashboard)
+- [x] 09-02-PLAN.md — Docker self-hosting QA (clean docker-compose up → health checks → entry submission → dashboard)
 - [ ] 09-03-PLAN.md — Notification pipeline and double opt-in verification QA (5 channels + enable opt-in → submit → verify → status flip → notifications)
 
 ## Progress
@@ -105,4 +105,4 @@ Phases execute in numeric order: 6 -> 7 -> 8 -> 9
 | 6. Code Fixes | v1.1 | 2/2 | Complete | 2026-02-26 |
 | 7. Build and Config | v1.1 | 2/2 | Complete | 2026-02-26 |
 | 8. Test Harness | v1.1 | 1/1 | Complete | 2026-02-26 |
-| 9. QA Verification | v1.1 | 1/3 | In progress | - |
+| 9. QA Verification | v1.1 | 2/3 | In progress | - |
