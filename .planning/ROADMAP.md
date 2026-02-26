@@ -55,10 +55,11 @@ Plans:
   1. Running `pnpm build --filter @pleasehold/api` succeeds locally and produces a runnable artifact
   2. Docker build does not depend on the gitignored drizzle/ migrations directory — migrations are generated as part of the build or migration step
   3. Starting the API without SMTP_HOST configured produces a clear, actionable warning that tells the developer exactly what will not work and how to fix it
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 07-01: TBD
+- [ ] 07-01-PLAN.md — Add tsup configs for API and worker local builds, improve SMTP missing-config warning
+- [ ] 07-02-PLAN.md — Fix Docker migration flow to generate migrations from schema at deploy time
 
 ### Phase 8: Test Harness
 **Goal**: Integration tests for entry submission are enabled and passing against a real seeded database
@@ -101,6 +102,6 @@ Phases execute in numeric order: 6 -> 7 -> 8 -> 9
 | 4. Notification System | v1.0 | 3/3 | Complete | 2026-02-26 |
 | 5. Documentation and Self-Hosting | v1.0 | 2/2 | Complete | 2026-02-26 |
 | 6. Code Fixes | v1.1 | 0/2 | Not started | - |
-| 7. Build and Config | v1.1 | 0/? | Not started | - |
+| 7. Build and Config | v1.1 | 0/2 | Not started | - |
 | 8. Test Harness | v1.1 | 0/? | Not started | - |
 | 9. QA Verification | v1.1 | 0/? | Not started | - |
