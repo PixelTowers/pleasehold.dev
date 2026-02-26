@@ -296,13 +296,19 @@ The BullMQ worker successfully processed notification jobs (logged "No enabled c
 ### Environment Issue Found
 The `.env` file had been overwritten by a previous Docker QA test with production-format variables (missing `DATABASE_URL`, different `BETTER_AUTH_SECRET`). The original was restored from `.env.backup-pre-qa`.
 
-## Dashboard Verification
+## Dashboard Verification -- PASS
 
-**Status:** PENDING -- awaiting human verification
+**Status:** PASSED (human-verified)
+**Verified by:** Chris (manual browser verification)
+**Date:** 2026-02-26
 
-Steps for human:
-1. Open http://localhost:5173
-2. Log in with: email=qa-tester@pleasehold.dev, password=SecurePass12345
-3. Verify "QA Waitlist" project visible
-4. Navigate to entries -- verify 60 entries with sequential positions
-5. Test filters and search functionality
+**Steps performed:**
+1. Opened http://localhost:5173 in browser
+2. Logged in with: email=qa-tester@pleasehold.dev, password=SecurePass12345
+3. "QA Waitlist" project visible on dashboard
+4. Navigated to entries -- entries display with sequential position numbers
+5. Clicked entry detail view -- loads correctly with all fields displayed
+6. Status filter dropdown works (filtered by "new")
+7. Search box works (searched for "first-entry")
+
+**Result:** All entries visible, navigation works, filters and search respond correctly. No console errors observed.
