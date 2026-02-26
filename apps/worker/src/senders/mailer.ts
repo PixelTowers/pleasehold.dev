@@ -9,7 +9,18 @@ const SMTP_USER = process.env.SMTP_USER;
 const SMTP_PASS = process.env.SMTP_PASS;
 
 if (!SMTP_HOST) {
-	console.warn('WARNING: SMTP_HOST is not set -- email sending will fail until configured.');
+	console.warn(`[pleasehold] SMTP is not configured -- the following features will not work:
+  - Email notifications (channel type: email)
+  - Double opt-in verification emails
+
+  To enable email, set these environment variables:
+    SMTP_HOST=your-smtp-server.com
+    SMTP_PORT=587          (default: 587)
+    SMTP_USER=your-username
+    SMTP_PASS=your-password
+    SMTP_FROM=noreply@yourdomain.com
+
+  Set these in your .env file or docker-compose.yml environment block.`);
 }
 
 export const transporter = nodemailer.createTransport({
