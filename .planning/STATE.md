@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: QA & Hardening
 status: unknown
-last_updated: "2026-02-26T12:40:15.129Z"
+last_updated: "2026-02-26T13:35:01Z"
 progress:
-  total_phases: 1
-  completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_phases: 3
+  completed_phases: 2
+  total_plans: 6
+  completed_plans: 4
 ---
 
 # Project State
@@ -18,14 +18,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-02-26)
 
 **Core value:** Developers can add a waitlist or demo-booking form to any landing page in minutes by hitting an API -- no backend work, no form infrastructure, just a token and a POST request.
-**Current focus:** v1.1 QA & Hardening -- Phase 6 (Code Fixes)
+**Current focus:** v1.1 QA & Hardening -- Phase 7 (Build & Config)
 
 ## Current Position
 
-Phase: 6 of 9 (Code Fixes) -- first phase of v1.1
-Plan: 2 of 2 (phase complete)
-Status: Phase 6 complete -- ready for Phase 7
-Last activity: 2026-02-26 -- Completed 06-01-PLAN.md (routing and filter fixes)
+Phase: 7 of 9 (Build & Config)
+Plan: 2 of 2 (07-02 complete)
+Status: Executing Phase 7 -- 07-02 Docker migration fix complete
+Last activity: 2026-02-26 -- Completed 07-02-PLAN.md (Docker migration fix)
 
 Progress: [############........] 67% (6/9 phases complete across all milestones)
 
@@ -56,6 +56,7 @@ All v1.0 decisions archived in PROJECT.md Key Decisions table.
 - [06-01] Split entryStatusEnum into entryManualStatusEnum (user-settable) and entryFilterStatusEnum (includes pending_verification) to prevent users from manually setting system-assigned statuses
 - [06-02] Kept middleware.ts and verify-project-key.ts source files -- only removed barrel re-exports to reduce public API surface
 - [06-02] Added WEB_URL to worker service for consistency with API service env pattern
+- [07-02] Chain db:generate and db:migrate in single sh -c command for Docker migration -- simpler than separate service
 
 ### Pending Todos
 
@@ -69,5 +70,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-26
-Stopped at: Completed 06-01-PLAN.md -- Phase 6 fully complete (both plans done)
+Stopped at: Completed 07-02-PLAN.md (Docker migration fix)
 Resume file: None
