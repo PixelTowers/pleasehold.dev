@@ -3,8 +3,13 @@
 
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { type FormEvent, useState } from 'react';
-import { authClient } from '../../lib/auth-client';
-import { trpc } from '../../lib/trpc';
+import { ArrowLeft } from 'lucide-react';
+import { authClient } from '@/lib/auth-client';
+import { trpc } from '@/lib/trpc';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type Mode = 'waitlist' | 'demo-booking';
 
@@ -30,8 +35,8 @@ function NewProjectPage() {
 
 	if (sessionLoading) {
 		return (
-			<div style={{ textAlign: 'center', padding: '4rem' }}>
-				<p style={{ color: '#6b7280' }}>Loading...</p>
+			<div className="py-16 text-center">
+				<p className="text-muted">Loading...</p>
 			</div>
 		);
 	}
@@ -49,45 +54,29 @@ function NewProjectPage() {
 	};
 
 	return (
-		<div style={{ maxWidth: '32rem', margin: '0 auto' }}>
-			<div style={{ marginBottom: '0.5rem' }}>
-				<Link to="/" style={{ fontSize: '0.875rem', color: '#6b7280', textDecoration: 'none' }}>
-					&larr; Back to dashboard
+		<div className="mx-auto max-w-lg">
+			<div className="mb-2">
+				<Link to="/" className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground">
+					<ArrowLeft className="h-3.5 w-3.5" />
+					Back to dashboard
 				</Link>
 			</div>
 
-			<h1 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-				Create a new project
-			</h1>
-			<p style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '2rem' }}>
+			<h1 className="mb-2 text-2xl font-semibold text-foreground">Create a new project</h1>
+			<p className="mb-8 text-sm text-muted">
 				Each project has its own field configuration and API keys.
 			</p>
 
 			{error && (
-				<div
-					style={{
-						padding: '0.75rem 1rem',
-						marginBottom: '1rem',
-						backgroundColor: '#fef2f2',
-						border: '1px solid #fecaca',
-						borderRadius: '0.375rem',
-						color: '#dc2626',
-						fontSize: '0.875rem',
-					}}
-				>
+				<div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-destructive">
 					{error}
 				</div>
 			)}
 
 			<form onSubmit={handleSubmit}>
-				<div style={{ marginBottom: '1.5rem' }}>
-					<label
-						htmlFor="project-name"
-						style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.25rem' }}
-					>
-						Project name
-					</label>
-					<input
+				<div className="mb-6 space-y-1.5">
+					<Label htmlFor="project-name">Project name</Label>
+					<Input
 						id="project-name"
 						type="text"
 						value={name}
@@ -95,22 +84,12 @@ function NewProjectPage() {
 						placeholder="My Landing Page"
 						maxLength={100}
 						required
-						style={{
-							width: '100%',
-							padding: '0.5rem 0.75rem',
-							border: '1px solid #d1d5db',
-							borderRadius: '0.375rem',
-							fontSize: '0.875rem',
-							boxSizing: 'border-box',
-						}}
 					/>
 				</div>
 
-				<div style={{ marginBottom: '1.5rem' }}>
-					<label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>
-						Mode
-					</label>
-					<div style={{ display: 'flex', gap: '0.75rem' }}>
+				<div className="mb-6">
+					<Label className="mb-2 block">Mode</Label>
+					<div className="flex gap-3">
 						{(['waitlist', 'demo-booking'] as const).map((m) => {
 							const isSelected = mode === m;
 							return (
@@ -118,48 +97,35 @@ function NewProjectPage() {
 									key={m}
 									type="button"
 									onClick={() => setMode(m)}
-									style={{
-										flex: 1,
-										padding: '0.75rem',
-										border: isSelected ? '2px solid #111' : '1px solid #e5e7eb',
-										borderRadius: '0.5rem',
-										backgroundColor: isSelected ? '#f9fafb' : '#fff',
-										cursor: 'pointer',
-										textAlign: 'center',
-									}}
+									className={cn(
+										'flex-1 rounded-lg border p-3 text-center transition-colors',
+										isSelected
+											? 'border-2 border-foreground bg-accent'
+											: 'border-border bg-card hover:bg-accent/50',
+									)}
 								>
-									<div style={{ fontWeight: 600, fontSize: '0.875rem' }}>
+									<div className="text-sm font-semibold">
 										{m === 'demo-booking' ? 'Demo Booking' : 'Waitlist'}
 									</div>
-									<div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>
+									<div className="mt-1 text-xs text-muted">
 										{m === 'waitlist' ? 'Email only' : 'Full form'}
 									</div>
 								</button>
 							);
 						})}
 					</div>
-					<p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.5rem' }}>
+					<p className="mt-2 text-xs text-muted-foreground">
 						Mode cannot be changed after creation.
 					</p>
 				</div>
 
-				<button
+				<Button
 					type="submit"
+					className="w-full"
 					disabled={createProject.isPending || !name.trim()}
-					style={{
-						width: '100%',
-						padding: '0.625rem',
-						backgroundColor: createProject.isPending || !name.trim() ? '#6b7280' : '#111',
-						color: '#fff',
-						border: 'none',
-						borderRadius: '0.375rem',
-						fontSize: '0.875rem',
-						fontWeight: 500,
-						cursor: createProject.isPending || !name.trim() ? 'not-allowed' : 'pointer',
-					}}
 				>
 					{createProject.isPending ? 'Creating...' : 'Create Project'}
-				</button>
+				</Button>
 			</form>
 		</div>
 	);

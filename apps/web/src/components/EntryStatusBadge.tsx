@@ -1,33 +1,14 @@
 // ABOUTME: Color-coded pill badge that displays entry status values (new, contacted, converted, archived).
-// ABOUTME: Uses inline styles matching the existing mode badge pattern from the project overview page.
+// ABOUTME: Uses shadcn Badge with status-specific Tailwind color classes.
 
-import type React from 'react';
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
-const statusStyles: Record<string, React.CSSProperties> = {
-	new: {
-		backgroundColor: '#dbeafe',
-		color: '#1d4ed8',
-	},
-	contacted: {
-		backgroundColor: '#fef3c7',
-		color: '#92400e',
-	},
-	converted: {
-		backgroundColor: '#dcfce7',
-		color: '#166534',
-	},
-	archived: {
-		backgroundColor: '#f3f4f6',
-		color: '#6b7280',
-	},
-};
-
-const baseStyle: React.CSSProperties = {
-	display: 'inline-block',
-	borderRadius: '9999px',
-	padding: '0.125rem 0.5rem',
-	fontSize: '0.75rem',
-	fontWeight: 500,
+const statusClasses: Record<string, string> = {
+	new: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
+	contacted: 'bg-amber-100 text-amber-800 hover:bg-amber-100',
+	converted: 'bg-green-100 text-green-800 hover:bg-green-100',
+	archived: 'bg-gray-100 text-muted hover:bg-gray-100',
 };
 
 interface EntryStatusBadgeProps {
@@ -35,8 +16,12 @@ interface EntryStatusBadgeProps {
 }
 
 export function EntryStatusBadge({ status }: EntryStatusBadgeProps) {
-	const colorStyle = statusStyles[status] ?? statusStyles.archived;
+	const colorClass = statusClasses[status] ?? statusClasses.archived;
 	const label = status.charAt(0).toUpperCase() + status.slice(1);
 
-	return <span style={{ ...baseStyle, ...colorStyle }}>{label}</span>;
+	return (
+		<Badge variant="secondary" className={cn('border-0 font-medium', colorClass)}>
+			{label}
+		</Badge>
+	);
 }

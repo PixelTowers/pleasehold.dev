@@ -1,32 +1,8 @@
 // ABOUTME: Row of stat cards displaying total entry count and per-status breakdowns above the entries table.
-// ABOUTME: Uses the established stat card styling pattern from the project overview page.
+// ABOUTME: Uses Tailwind grid layout with card styling and shadcn EntryStatusBadge for labels.
 
-import type React from 'react';
+import { Card } from '@/components/ui/card';
 import { EntryStatusBadge } from './EntryStatusBadge';
-
-const gridStyle: React.CSSProperties = {
-	display: 'grid',
-	gridTemplateColumns: 'repeat(5, 1fr)',
-	gap: '1rem',
-};
-
-const cardStyle: React.CSSProperties = {
-	padding: '1rem',
-	border: '1px solid #e5e7eb',
-	borderRadius: '0.5rem',
-	backgroundColor: '#fff',
-};
-
-const labelStyle: React.CSSProperties = {
-	fontSize: '0.75rem',
-	color: '#9ca3af',
-	marginBottom: '0.25rem',
-};
-
-const valueStyle: React.CSSProperties = {
-	fontSize: '1.5rem',
-	fontWeight: 600,
-};
 
 interface EntryStatsBarProps {
 	total: number;
@@ -37,18 +13,18 @@ const statuses = ['new', 'contacted', 'converted', 'archived'] as const;
 
 export function EntryStatsBar({ total, byStatus }: EntryStatsBarProps) {
 	return (
-		<div style={gridStyle}>
-			<div style={cardStyle}>
-				<div style={labelStyle}>Total Entries</div>
-				<div style={valueStyle}>{total}</div>
-			</div>
+		<div className="grid grid-cols-5 gap-4">
+			<Card className="p-4">
+				<div className="mb-1 text-xs text-muted-foreground">Total Entries</div>
+				<div className="text-2xl font-semibold">{total}</div>
+			</Card>
 			{statuses.map((status) => (
-				<div key={status} style={cardStyle}>
-					<div style={labelStyle}>
+				<Card key={status} className="p-4">
+					<div className="mb-1">
 						<EntryStatusBadge status={status} />
 					</div>
-					<div style={valueStyle}>{byStatus[status] ?? 0}</div>
-				</div>
+					<div className="text-2xl font-semibold">{byStatus[status] ?? 0}</div>
+				</Card>
 			))}
 		</div>
 	);

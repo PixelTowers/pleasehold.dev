@@ -2,7 +2,8 @@
 // ABOUTME: Displays email as always required and provides toggle switches for name, company, and message fields.
 
 import { useState } from 'react';
-import { trpc } from '../lib/trpc';
+import { cn } from '@/lib/utils';
+import { trpc } from '@/lib/trpc';
 
 interface FieldConfigFormProps {
 	projectId: string;
@@ -18,46 +19,24 @@ function ToggleSwitch({ checked, onChange, label, description }: {
 	description: string;
 }) {
 	return (
-		<div
-			style={{
-				display: 'flex',
-				justifyContent: 'space-between',
-				alignItems: 'center',
-				padding: '0.75rem 0',
-				borderBottom: '1px solid #f3f4f6',
-			}}
-		>
+		<div className="flex items-center justify-between border-b border-gray-100 py-3">
 			<div>
-				<div style={{ fontSize: '0.875rem', fontWeight: 500 }}>{label}</div>
-				<div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{description}</div>
+				<div className="text-sm font-medium">{label}</div>
+				<div className="text-xs text-muted-foreground">{description}</div>
 			</div>
 			<button
 				type="button"
 				onClick={() => onChange(!checked)}
-				style={{
-					width: '2.75rem',
-					height: '1.5rem',
-					borderRadius: '9999px',
-					border: 'none',
-					backgroundColor: checked ? '#111' : '#d1d5db',
-					cursor: 'pointer',
-					position: 'relative',
-					transition: 'background-color 0.2s',
-					flexShrink: 0,
-				}}
+				className={cn(
+					'relative h-6 w-11 shrink-0 rounded-full border-0 transition-colors',
+					checked ? 'bg-foreground' : 'bg-gray-300',
+				)}
 			>
 				<div
-					style={{
-						width: '1.125rem',
-						height: '1.125rem',
-						borderRadius: '9999px',
-						backgroundColor: '#fff',
-						position: 'absolute',
-						top: '0.1875rem',
-						left: checked ? '1.4375rem' : '0.1875rem',
-						transition: 'left 0.2s',
-						boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-					}}
+					className={cn(
+						'absolute top-[3px] h-[18px] w-[18px] rounded-full bg-white shadow-sm transition-[left]',
+						checked ? 'left-[23px]' : 'left-[3px]',
+					)}
 				/>
 			</button>
 		</div>
@@ -94,36 +73,26 @@ export function FieldConfigForm({ projectId, collectName, collectCompany, collec
 
 	return (
 		<div>
-			<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-				<h3 style={{ fontSize: '1rem', fontWeight: 600, margin: 0 }}>Field Configuration</h3>
+			<div className="mb-4 flex items-center justify-between">
+				<h3 className="text-base font-semibold">Field Configuration</h3>
 				{saveStatus === 'saving' && (
-					<span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Saving...</span>
+					<span className="text-xs text-muted">Saving...</span>
 				)}
 				{saveStatus === 'saved' && (
-					<span style={{ fontSize: '0.75rem', color: '#059669' }}>Saved</span>
+					<span className="text-xs text-green-600">Saved</span>
 				)}
 				{saveStatus === 'error' && (
-					<span style={{ fontSize: '0.75rem', color: '#dc2626' }}>Failed to save</span>
+					<span className="text-xs text-destructive">Failed to save</span>
 				)}
 			</div>
 
 			{/* Email is always required */}
-			<div
-				style={{
-					display: 'flex',
-					justifyContent: 'space-between',
-					alignItems: 'center',
-					padding: '0.75rem 0',
-					borderBottom: '1px solid #f3f4f6',
-				}}
-			>
+			<div className="flex items-center justify-between border-b border-gray-100 py-3">
 				<div>
-					<div style={{ fontSize: '0.875rem', fontWeight: 500 }}>Email</div>
-					<div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>Primary contact field</div>
+					<div className="text-sm font-medium">Email</div>
+					<div className="text-xs text-muted-foreground">Primary contact field</div>
 				</div>
-				<span style={{ fontSize: '0.75rem', color: '#6b7280', fontStyle: 'italic' }}>
-					Always required
-				</span>
+				<span className="text-xs italic text-muted">Always required</span>
 			</div>
 
 			<ToggleSwitch

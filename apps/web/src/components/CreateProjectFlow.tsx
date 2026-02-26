@@ -3,7 +3,11 @@
 
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import { trpc } from '../lib/trpc';
+import { trpc } from '@/lib/trpc';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type Mode = 'waitlist' | 'demo-booking';
 
@@ -43,44 +47,31 @@ export function CreateProjectFlow() {
 	};
 
 	return (
-		<div style={{ maxWidth: '32rem', margin: '0 auto' }}>
-			<div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-				<h1 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.5rem' }}>
+		<div className="mx-auto max-w-lg">
+			<div className="mb-8 text-center">
+				<h1 className="mb-2 text-2xl font-semibold text-foreground">
 					Create your first project
 				</h1>
-				<p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
+				<p className="text-sm text-muted">
 					Projects organize your signups. Let&apos;s get started.
 				</p>
 			</div>
 
 			{/* Step indicator */}
-			<div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '2rem' }}>
+			<div className="mb-8 flex justify-center gap-2">
 				{[1, 2, 3].map((s) => (
 					<div
 						key={s}
-						style={{
-							width: '2rem',
-							height: '0.25rem',
-							borderRadius: '9999px',
-							backgroundColor: s <= step ? '#111' : '#e5e7eb',
-							transition: 'background-color 0.2s',
-						}}
+						className={cn(
+							'h-1 w-8 rounded-full transition-colors',
+							s <= step ? 'bg-foreground' : 'bg-border',
+						)}
 					/>
 				))}
 			</div>
 
 			{error && (
-				<div
-					style={{
-						padding: '0.75rem 1rem',
-						marginBottom: '1rem',
-						backgroundColor: '#fef2f2',
-						border: '1px solid #fecaca',
-						borderRadius: '0.375rem',
-						color: '#dc2626',
-						fontSize: '0.875rem',
-					}}
-				>
+				<div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-destructive">
 					{error}
 				</div>
 			)}
@@ -88,60 +79,36 @@ export function CreateProjectFlow() {
 			{/* Step 1: Project Name */}
 			{step === 1 && (
 				<div>
-					<label
-						htmlFor="project-name"
-						style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}
-					>
-						Project name
-					</label>
-					<input
+					<div className="mb-1.5">
+						<Label htmlFor="project-name">Project name</Label>
+					</div>
+					<Input
 						id="project-name"
 						type="text"
 						value={name}
 						onChange={(e) => setName(e.target.value)}
 						placeholder="My Landing Page"
 						maxLength={100}
-						style={{
-							width: '100%',
-							padding: '0.625rem 0.75rem',
-							border: '1px solid #d1d5db',
-							borderRadius: '0.375rem',
-							fontSize: '0.875rem',
-							boxSizing: 'border-box',
-						}}
 					/>
-					<p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.5rem' }}>
+					<p className="mt-2 text-xs text-muted-foreground">
 						Give your project a name you&apos;ll recognize in the dashboard.
 					</p>
-					<button
+					<Button
 						type="button"
 						onClick={() => setStep(2)}
 						disabled={!name.trim()}
-						style={{
-							marginTop: '1.5rem',
-							width: '100%',
-							padding: '0.625rem',
-							backgroundColor: name.trim() ? '#111' : '#d1d5db',
-							color: '#fff',
-							border: 'none',
-							borderRadius: '0.375rem',
-							fontSize: '0.875rem',
-							fontWeight: 500,
-							cursor: name.trim() ? 'pointer' : 'not-allowed',
-						}}
+						className="mt-6 w-full"
 					>
 						Continue
-					</button>
+					</Button>
 				</div>
 			)}
 
 			{/* Step 2: Mode Selection */}
 			{step === 2 && (
 				<div>
-					<p style={{ fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.75rem' }}>
-						Choose a mode
-					</p>
-					<div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+					<p className="mb-3 text-sm font-medium">Choose a mode</p>
+					<div className="flex flex-col gap-3">
 						{(['waitlist', 'demo-booking'] as const).map((m) => {
 							const info = modeDescriptions[m];
 							const isSelected = mode === m;
@@ -150,66 +117,30 @@ export function CreateProjectFlow() {
 									key={m}
 									type="button"
 									onClick={() => setMode(m)}
-									style={{
-										padding: '1rem',
-										border: isSelected ? '2px solid #111' : '1px solid #e5e7eb',
-										borderRadius: '0.5rem',
-										backgroundColor: isSelected ? '#f9fafb' : '#fff',
-										cursor: 'pointer',
-										textAlign: 'left',
-									}}
+									className={cn(
+										'rounded-lg border p-4 text-left transition-colors',
+										isSelected
+											? 'border-2 border-foreground bg-accent'
+											: 'border-border bg-card hover:bg-accent/50',
+									)}
 								>
-									<div style={{ fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.25rem' }}>
-										{info.label}
-									</div>
-									<div style={{ fontSize: '0.8125rem', color: '#6b7280', marginBottom: '0.375rem' }}>
-										{info.description}
-									</div>
-									<div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-										{info.fields}
-									</div>
+									<div className="mb-1 text-sm font-semibold">{info.label}</div>
+									<div className="mb-1.5 text-[0.8125rem] text-muted">{info.description}</div>
+									<div className="text-xs text-muted-foreground">{info.fields}</div>
 								</button>
 							);
 						})}
 					</div>
-					<p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.75rem' }}>
+					<p className="mt-3 text-xs text-muted-foreground">
 						Mode cannot be changed after project creation.
 					</p>
-					<div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
-						<button
-							type="button"
-							onClick={() => setStep(1)}
-							style={{
-								flex: 1,
-								padding: '0.625rem',
-								backgroundColor: '#fff',
-								color: '#374151',
-								border: '1px solid #d1d5db',
-								borderRadius: '0.375rem',
-								fontSize: '0.875rem',
-								cursor: 'pointer',
-							}}
-						>
+					<div className="mt-6 flex gap-3">
+						<Button variant="outline" className="flex-1" onClick={() => setStep(1)}>
 							Back
-						</button>
-						<button
-							type="button"
-							onClick={() => setStep(3)}
-							disabled={!mode}
-							style={{
-								flex: 1,
-								padding: '0.625rem',
-								backgroundColor: mode ? '#111' : '#d1d5db',
-								color: '#fff',
-								border: 'none',
-								borderRadius: '0.375rem',
-								fontSize: '0.875rem',
-								fontWeight: 500,
-								cursor: mode ? 'pointer' : 'not-allowed',
-							}}
-						>
+						</Button>
+						<Button className="flex-1" disabled={!mode} onClick={() => setStep(3)}>
 							Continue
-						</button>
+						</Button>
 					</div>
 				</div>
 			)}
@@ -217,70 +148,34 @@ export function CreateProjectFlow() {
 			{/* Step 3: Review and Create */}
 			{step === 3 && mode && (
 				<div>
-					<p style={{ fontSize: '0.875rem', fontWeight: 500, marginBottom: '1rem' }}>
-						Review your project
-					</p>
-					<div
-						style={{
-							padding: '1rem',
-							border: '1px solid #e5e7eb',
-							borderRadius: '0.5rem',
-							backgroundColor: '#f9fafb',
-							marginBottom: '1.5rem',
-						}}
-					>
-						<div style={{ marginBottom: '0.75rem' }}>
-							<span style={{ fontSize: '0.75rem', color: '#9ca3af', display: 'block' }}>Name</span>
-							<span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{name}</span>
+					<p className="mb-4 text-sm font-medium">Review your project</p>
+					<div className="mb-6 rounded-lg border bg-accent p-4">
+						<div className="mb-3">
+							<span className="block text-xs text-muted-foreground">Name</span>
+							<span className="text-sm font-medium">{name}</span>
 						</div>
-						<div style={{ marginBottom: '0.75rem' }}>
-							<span style={{ fontSize: '0.75rem', color: '#9ca3af', display: 'block' }}>Mode</span>
-							<span style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-								{modeDescriptions[mode].label}
-							</span>
+						<div className="mb-3">
+							<span className="block text-xs text-muted-foreground">Mode</span>
+							<span className="text-sm font-medium">{modeDescriptions[mode].label}</span>
 						</div>
 						<div>
-							<span style={{ fontSize: '0.75rem', color: '#9ca3af', display: 'block' }}>Fields collected</span>
-							<span style={{ fontSize: '0.875rem' }}>
+							<span className="block text-xs text-muted-foreground">Fields collected</span>
+							<span className="text-sm">
 								{mode === 'waitlist' ? 'Email only' : 'Email, Name, Company, Message'}
 							</span>
 						</div>
 					</div>
-					<div style={{ display: 'flex', gap: '0.75rem' }}>
-						<button
-							type="button"
-							onClick={() => setStep(2)}
-							style={{
-								flex: 1,
-								padding: '0.625rem',
-								backgroundColor: '#fff',
-								color: '#374151',
-								border: '1px solid #d1d5db',
-								borderRadius: '0.375rem',
-								fontSize: '0.875rem',
-								cursor: 'pointer',
-							}}
-						>
+					<div className="flex gap-3">
+						<Button variant="outline" className="flex-1" onClick={() => setStep(2)}>
 							Back
-						</button>
-						<button
-							type="button"
-							onClick={handleCreate}
+						</Button>
+						<Button
+							className="flex-1"
 							disabled={createProject.isPending}
-							style={{
-								flex: 1,
-								padding: '0.625rem',
-								backgroundColor: createProject.isPending ? '#6b7280' : '#111',
-								color: '#fff',
-								border: 'none',
-								borderRadius: '0.375rem',
-								fontSize: '0.875rem',
-								fontWeight: 500,
-								cursor: createProject.isPending ? 'not-allowed' : 'pointer',
-							}}
+							onClick={handleCreate}
 						>
 							{createProject.isPending ? 'Creating...' : 'Create Project'}
-						</button>
+						</Button>
 					</div>
 				</div>
 			)}

@@ -2,32 +2,21 @@
 // ABOUTME: Fetches project by ID with ownership guard; displays mode badge and field config summary.
 
 import { Link, createFileRoute } from '@tanstack/react-router';
-import { useProject } from '../../../hooks/useProjects';
-import { trpc } from '../../../lib/trpc';
+import { ArrowLeft, ArrowRight, Settings } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useProject } from '@/hooks/useProjects';
+import { trpc } from '@/lib/trpc';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 export const Route = createFileRoute('/projects/$projectId/')({
 	component: ProjectOverviewPage,
 });
 
-const modeBadgeStyles: Record<string, React.CSSProperties> = {
-	waitlist: {
-		display: 'inline-block',
-		padding: '0.25rem 0.75rem',
-		fontSize: '0.8125rem',
-		fontWeight: 500,
-		borderRadius: '9999px',
-		backgroundColor: '#dbeafe',
-		color: '#1d4ed8',
-	},
-	'demo-booking': {
-		display: 'inline-block',
-		padding: '0.25rem 0.75rem',
-		fontSize: '0.8125rem',
-		fontWeight: 500,
-		borderRadius: '9999px',
-		backgroundColor: '#ede9fe',
-		color: '#6d28d9',
-	},
+const modeBadgeClasses: Record<string, string> = {
+	waitlist: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
+	'demo-booking': 'bg-violet-100 text-violet-700 hover:bg-violet-100',
 };
 
 function ProjectOverviewPage() {
@@ -50,30 +39,22 @@ function ProjectOverviewPage() {
 
 	if (isPending) {
 		return (
-			<div style={{ textAlign: 'center', padding: '4rem' }}>
-				<p style={{ color: '#6b7280' }}>Loading project...</p>
+			<div className="py-16 text-center">
+				<p className="text-muted">Loading project...</p>
 			</div>
 		);
 	}
 
 	if (error || !project) {
 		return (
-			<div style={{ maxWidth: '48rem', margin: '0 auto' }}>
-				<div style={{ marginBottom: '1rem' }}>
-					<Link to="/" style={{ fontSize: '0.875rem', color: '#6b7280', textDecoration: 'none' }}>
-						&larr; Back to dashboard
+			<div className="mx-auto max-w-3xl">
+				<div className="mb-4">
+					<Link to="/" className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground">
+						<ArrowLeft className="h-3.5 w-3.5" />
+						Back to dashboard
 					</Link>
 				</div>
-				<div
-					style={{
-						padding: '1rem',
-						backgroundColor: '#fef2f2',
-						border: '1px solid #fecaca',
-						borderRadius: '0.375rem',
-						color: '#dc2626',
-						fontSize: '0.875rem',
-					}}
-				>
+				<div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-destructive">
 					{error?.message === 'Project not found'
 						? 'Project not found. It may have been deleted or you may not have access.'
 						: 'Failed to load project. Please try again.'}
@@ -88,246 +69,142 @@ function ProjectOverviewPage() {
 	if (project.fieldConfig?.collectMessage) collectedFields.push('Message');
 
 	return (
-		<div style={{ maxWidth: '48rem', margin: '0 auto' }}>
+		<div className="mx-auto max-w-3xl">
 			{/* Breadcrumb */}
-			<div style={{ marginBottom: '1.5rem' }}>
-				<Link to="/" style={{ fontSize: '0.875rem', color: '#6b7280', textDecoration: 'none' }}>
-					&larr; Back to dashboard
+			<div className="mb-6">
+				<Link to="/" className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground">
+					<ArrowLeft className="h-3.5 w-3.5" />
+					Back to dashboard
 				</Link>
 			</div>
 
 			{/* Header */}
-			<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+			<div className="mb-8 flex items-start justify-between">
 				<div>
-					<h1 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0 }}>{project.name}</h1>
-					<div style={{ marginTop: '0.5rem' }}>
-						<span style={modeBadgeStyles[project.mode]}>
+					<h1 className="text-2xl font-semibold text-foreground">{project.name}</h1>
+					<div className="mt-2">
+						<Badge variant="secondary" className={cn('border-0 font-medium', modeBadgeClasses[project.mode])}>
 							{project.mode === 'demo-booking' ? 'Demo Booking' : 'Waitlist'}
-						</span>
+						</Badge>
 					</div>
 				</div>
-				<Link
-					to="/projects/$projectId/settings"
-					params={{ projectId }}
-					style={{
-						padding: '0.5rem 1rem',
-						border: '1px solid #d1d5db',
-						borderRadius: '0.375rem',
-						backgroundColor: '#fff',
-						fontSize: '0.875rem',
-						textDecoration: 'none',
-						color: '#374151',
-					}}
-				>
-					Settings
-				</Link>
+				<Button variant="outline" size="sm" asChild>
+					<Link to="/projects/$projectId/settings" params={{ projectId }}>
+						<Settings className="mr-1.5 h-4 w-4" />
+						Settings
+					</Link>
+				</Button>
 			</div>
 
 			{/* Stats section */}
-			<div
-				style={{
-					display: 'grid',
-					gridTemplateColumns: 'repeat(4, 1fr)',
-					gap: '1rem',
-					marginBottom: '2rem',
-				}}
-			>
-				<div
-					style={{
-						padding: '1rem',
-						border: '1px solid #e5e7eb',
-						borderRadius: '0.5rem',
-						backgroundColor: '#fff',
-					}}
-				>
-					<div style={{ fontSize: '0.75rem', color: '#9ca3af', marginBottom: '0.25rem' }}>Entries</div>
-					<div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{stats?.total ?? 0}</div>
-				</div>
-				<div
-					style={{
-						padding: '1rem',
-						border: '1px solid #e5e7eb',
-						borderRadius: '0.5rem',
-						backgroundColor: '#fff',
-					}}
-				>
-					<div style={{ fontSize: '0.75rem', color: '#9ca3af', marginBottom: '0.25rem' }}>API Keys</div>
-					<div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{activeKeyCount}</div>
-				</div>
-				<div
-					style={{
-						padding: '1rem',
-						border: '1px solid #e5e7eb',
-						borderRadius: '0.5rem',
-						backgroundColor: '#fff',
-					}}
-				>
-					<div style={{ fontSize: '0.75rem', color: '#9ca3af', marginBottom: '0.25rem' }}>Fields Collected</div>
-					<div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{collectedFields.length}</div>
-				</div>
-				<div
-					style={{
-						padding: '1rem',
-						border: '1px solid #e5e7eb',
-						borderRadius: '0.5rem',
-						backgroundColor: '#fff',
-					}}
-				>
-					<div style={{ fontSize: '0.75rem', color: '#9ca3af', marginBottom: '0.25rem' }}>Created</div>
-					<div style={{ fontSize: '0.875rem', fontWeight: 500, marginTop: '0.375rem' }}>
+			<div className="mb-8 grid grid-cols-4 gap-4">
+				<Card className="p-4">
+					<div className="mb-1 text-xs text-muted-foreground">Entries</div>
+					<div className="text-2xl font-semibold">{stats?.total ?? 0}</div>
+				</Card>
+				<Card className="p-4">
+					<div className="mb-1 text-xs text-muted-foreground">API Keys</div>
+					<div className="text-2xl font-semibold">{activeKeyCount}</div>
+				</Card>
+				<Card className="p-4">
+					<div className="mb-1 text-xs text-muted-foreground">Fields Collected</div>
+					<div className="text-2xl font-semibold">{collectedFields.length}</div>
+				</Card>
+				<Card className="p-4">
+					<div className="mb-1 text-xs text-muted-foreground">Created</div>
+					<div className="mt-1 text-sm font-medium">
 						{new Date(project.createdAt).toLocaleDateString()}
 					</div>
-				</div>
+				</Card>
 			</div>
 
 			{/* Quick Links */}
-			<div style={{ marginBottom: '2rem' }}>
-				<h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem' }}>Quick Links</h2>
-				<div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+			<div className="mb-8">
+				<h2 className="mb-3 text-base font-semibold">Quick Links</h2>
+				<div className="flex flex-col gap-2">
 					<Link
 						to="/projects/$projectId/settings"
 						params={{ projectId }}
-						style={{
-							display: 'flex',
-							justifyContent: 'space-between',
-							alignItems: 'center',
-							padding: '0.75rem 1rem',
-							border: '1px solid #e5e7eb',
-							borderRadius: '0.375rem',
-							backgroundColor: '#fff',
-							textDecoration: 'none',
-							color: 'inherit',
-							fontSize: '0.875rem',
-						}}
+						className="flex items-center justify-between rounded-md border bg-card px-4 py-3 text-sm text-foreground no-underline transition-colors hover:bg-accent"
 					>
 						<span>Field Configuration</span>
-						<span style={{ color: '#9ca3af' }}>&rarr;</span>
+						<ArrowRight className="h-4 w-4 text-muted-foreground" />
 					</Link>
 					<Link
 						to="/projects/$projectId/keys"
 						params={{ projectId }}
-						style={{
-							display: 'flex',
-							justifyContent: 'space-between',
-							alignItems: 'center',
-							padding: '0.75rem 1rem',
-							border: '1px solid #e5e7eb',
-							borderRadius: '0.375rem',
-							backgroundColor: '#fff',
-							textDecoration: 'none',
-							color: 'inherit',
-							fontSize: '0.875rem',
-						}}
+						className="flex items-center justify-between rounded-md border bg-card px-4 py-3 text-sm text-foreground no-underline transition-colors hover:bg-accent"
 					>
-						<span>API Keys {activeKeyCount > 0 && <span style={{ color: '#6b7280', fontWeight: 400 }}>({activeKeyCount} active)</span>}</span>
-						<span style={{ color: '#9ca3af' }}>&rarr;</span>
+						<span>
+							API Keys{' '}
+							{activeKeyCount > 0 && (
+								<span className="font-normal text-muted">({activeKeyCount} active)</span>
+							)}
+						</span>
+						<ArrowRight className="h-4 w-4 text-muted-foreground" />
 					</Link>
 					<Link
 						to="/projects/$projectId/entries"
 						params={{ projectId }}
-						style={{
-							display: 'flex',
-							justifyContent: 'space-between',
-							alignItems: 'center',
-							padding: '0.75rem 1rem',
-							border: '1px solid #e5e7eb',
-							borderRadius: '0.375rem',
-							backgroundColor: '#fff',
-							textDecoration: 'none',
-							color: 'inherit',
-							fontSize: '0.875rem',
-						}}
+						className="flex items-center justify-between rounded-md border bg-card px-4 py-3 text-sm text-foreground no-underline transition-colors hover:bg-accent"
 					>
-						<span>Entries {(stats?.total ?? 0) > 0 && <span style={{ color: '#6b7280', fontWeight: 400 }}>({stats?.total} total)</span>}</span>
-						<span style={{ color: '#9ca3af' }}>&rarr;</span>
+						<span>
+							Entries{' '}
+							{(stats?.total ?? 0) > 0 && (
+								<span className="font-normal text-muted">({stats?.total} total)</span>
+							)}
+						</span>
+						<ArrowRight className="h-4 w-4 text-muted-foreground" />
 					</Link>
 					<Link
 						to="/projects/$projectId/notifications"
 						params={{ projectId }}
-						style={{
-							display: 'flex',
-							justifyContent: 'space-between',
-							alignItems: 'center',
-							padding: '0.75rem 1rem',
-							border: '1px solid #e5e7eb',
-							borderRadius: '0.375rem',
-							backgroundColor: '#fff',
-							textDecoration: 'none',
-							color: 'inherit',
-							fontSize: '0.875rem',
-						}}
+						className="flex items-center justify-between rounded-md border bg-card px-4 py-3 text-sm text-foreground no-underline transition-colors hover:bg-accent"
 					>
-						<span>Notifications {enabledChannelCount > 0 && <span style={{ color: '#6b7280', fontWeight: 400 }}>({enabledChannelCount} active)</span>}</span>
-						<span style={{ color: '#9ca3af' }}>&rarr;</span>
+						<span>
+							Notifications{' '}
+							{enabledChannelCount > 0 && (
+								<span className="font-normal text-muted">({enabledChannelCount} active)</span>
+							)}
+						</span>
+						<ArrowRight className="h-4 w-4 text-muted-foreground" />
 					</Link>
 				</div>
 			</div>
 
 			{/* Field config summary */}
-			<div style={{ marginBottom: '2rem' }}>
-				<h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem' }}>Fields Collected</h2>
-				<div
-					style={{
-						padding: '1rem',
-						border: '1px solid #e5e7eb',
-						borderRadius: '0.5rem',
-						backgroundColor: '#fff',
-					}}
-				>
-					<div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+			<div className="mb-8">
+				<h2 className="mb-3 text-base font-semibold">Fields Collected</h2>
+				<Card className="p-4">
+					<div className="flex flex-wrap gap-2">
 						{collectedFields.map((field) => (
-							<span
-								key={field}
-								style={{
-									padding: '0.25rem 0.75rem',
-									backgroundColor: '#f3f4f6',
-									borderRadius: '9999px',
-									fontSize: '0.8125rem',
-									color: '#374151',
-								}}
-							>
+							<Badge key={field} variant="secondary" className="font-normal">
 								{field}
-							</span>
+							</Badge>
 						))}
 					</div>
-				</div>
+				</Card>
 			</div>
 
 			{/* Recent Activity */}
 			<div>
-				<h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem' }}>Recent Activity</h2>
+				<h2 className="mb-3 text-base font-semibold">Recent Activity</h2>
 				{(stats?.total ?? 0) > 0 ? (
-					<div
-						style={{
-							padding: '2rem',
-							border: '1px solid #e5e7eb',
-							borderRadius: '0.5rem',
-							backgroundColor: '#f9fafb',
-							textAlign: 'center',
-						}}
-					>
+					<Card className="bg-accent p-8 text-center">
 						<Link
 							to="/projects/$projectId/entries"
 							params={{ projectId }}
-							style={{ color: '#2563eb', fontSize: '0.875rem', textDecoration: 'none' }}
+							className="text-sm font-medium text-primary hover:underline"
 						>
 							View all {stats?.total} entries &rarr;
 						</Link>
-					</div>
+					</Card>
 				) : (
-					<div
-						style={{
-							padding: '2rem',
-							border: '1px solid #e5e7eb',
-							borderRadius: '0.5rem',
-							backgroundColor: '#f9fafb',
-							textAlign: 'center',
-						}}
-					>
-						<p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>
+					<Card className="bg-accent p-8 text-center">
+						<p className="text-sm text-muted-foreground">
 							No entries yet. Entries will appear here once you start collecting submissions.
 						</p>
-					</div>
+					</Card>
 				)}
 			</div>
 		</div>
