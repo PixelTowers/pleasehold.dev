@@ -26,7 +26,7 @@ Full details: `milestones/v1.0-ROADMAP.md`
 
 - [x] **Phase 6: Code Fixes** - Fix router, integration, and cleanup issues from v1.0 audit
 - [x] **Phase 7: Build and Config** - Fix local build, Docker migrations, and SMTP config clarity
-- [ ] **Phase 8: Test Harness** - Enable integration tests for entry submission with seeded DB
+- [x] **Phase 8: Test Harness** - Enable integration tests for entry submission with seeded DB
 - [ ] **Phase 9: QA Verification** - Walk through every E2E flow like a real developer
 
 ## Phase Details
@@ -71,7 +71,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 08-01-PLAN.md — Test database harness and entry submission integration tests
+- [x] 08-01-PLAN.md — Test database harness and entry submission integration tests
 
 ### Phase 9: QA Verification
 **Goal**: Every E2E user flow works without surprises when walked through like a real developer would

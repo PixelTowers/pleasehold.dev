@@ -27,7 +27,7 @@ Requirements for QA & Hardening milestone. Each maps to roadmap phases.
 
 ### Tech Debt — Testing
 
-- [ ] **TEST-01**: Integration tests for entry submission route are enabled with a seeded database harness
+- [x] **TEST-01**: Integration tests for entry submission route are enabled with a seeded database harness
 
 ### Tech Debt — Build & Config
 
@@ -68,7 +68,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INTG-02 | Phase 6 | Complete |
 | ROUT-01 | Phase 6 | Complete |
 | ROUT-02 | Phase 6 | Complete |
-| TEST-01 | Phase 8 | Pending |
+| TEST-01 | Phase 8 | Complete |
 | BILD-01 | Phase 7 | Complete |
 | BILD-02 | Phase 7 | Complete |
 | BILD-03 | Phase 7 | Complete |

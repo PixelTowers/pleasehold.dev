@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: QA & Hardening
 status: unknown
-last_updated: "2026-02-26T13:40:32.022Z"
+last_updated: "2026-02-26T14:22:12.462Z"
 progress:
-  total_phases: 2
-  completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  total_phases: 3
+  completed_phases: 3
+  total_plans: 5
+  completed_plans: 5
 ---
 
 # Project State
@@ -18,16 +18,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-02-26)
 
 **Core value:** Developers can add a waitlist or demo-booking form to any landing page in minutes by hitting an API -- no backend work, no form infrastructure, just a token and a POST request.
-**Current focus:** v1.1 QA & Hardening -- Phase 7 complete, ready for Phase 8
+**Current focus:** v1.1 QA & Hardening -- Phase 8 plan 01 complete
 
 ## Current Position
 
-Phase: 7 of 9 (Build & Config)
-Plan: 2 of 2 (phase complete)
-Status: Phase 7 complete -- ready for Phase 8
-Last activity: 2026-02-26 -- Completed 07-01-PLAN.md (tsup build configs and SMTP warning)
+Phase: 8 of 9 (Test Harness)
+Plan: 1 of 1 (phase complete)
+Status: Phase 8 complete -- ready for Phase 9
+Last activity: 2026-02-26 -- Completed 08-01-PLAN.md (entry API test harness)
 
-Progress: [############........] 67% (6/9 phases complete across all milestones)
+Progress: [##############......] 78% (7/9 phases complete across all milestones)
 
 ## Performance Metrics
 
@@ -45,6 +45,7 @@ Progress: [############........] 67% (6/9 phases complete across all milestones)
 | 3. Dashboard | 3 | ~3h | ~1h |
 | 4. Notifications | 3 | ~3h | ~1h |
 | 5. Docs/Deploy | 2 | ~2h | ~1h |
+| Phase 08 P01 | 8min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -59,6 +60,9 @@ All v1.0 decisions archived in PROJECT.md Key Decisions table.
 - [07-02] Chain db:generate and db:migrate in single sh -c command for Docker migration -- simpler than separate service
 - [07-01] Used noExternal regex to bundle workspace packages into single dist/index.js for Docker runner stage
 - [07-01] Added createRequire banner shim for CJS dependencies (nodemailer, ioredis) in ESM output
+- [08-01] Used Better Auth server-side API for test API key seeding instead of direct DB insertion
+- [08-01] Built minimal test Hono app (apiKeyAuth + entriesRoute) to avoid BullMQ/Redis/tRPC dependencies
+- [08-01] Passed TEST_API_KEY via process.env for cross-process vitest data sharing
 
 ### Pending Todos
 
@@ -72,5 +76,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-26
-Stopped at: Completed 07-01-PLAN.md -- Phase 7 fully complete (both plans done)
+Stopped at: Completed 08-01-PLAN.md -- Phase 8 fully complete (1/1 plans done)
 Resume file: None
