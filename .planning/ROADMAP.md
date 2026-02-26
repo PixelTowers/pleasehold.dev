@@ -41,11 +41,11 @@ Full details: `milestones/v1.0-ROADMAP.md`
   3. Worker service in Docker uses the correct API_URL for verification email links (not hardcoded localhost)
   4. Dashboard status filter dropdown includes "pending_verification" and correctly isolates those entries
   5. No dead exports remain in @pleasehold/auth — verifyProjectKey and authMiddleware are removed or wired up
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
+- [ ] 06-01-PLAN.md — Fix router redirects, type-safe entry navigation, and pending_verification filter
+- [ ] 06-02-PLAN.md — Add worker API_URL, remove dead auth exports, proxy /health through nginx
 
 ### Phase 7: Build and Config
 **Goal**: The build pipeline works locally and in Docker without workarounds, and missing config produces clear guidance instead of silent failure
@@ -100,7 +100,7 @@ Phases execute in numeric order: 6 -> 7 -> 8 -> 9
 | 3. Dashboard and Data Management | v1.0 | 3/3 | Complete | 2026-02-25 |
 | 4. Notification System | v1.0 | 3/3 | Complete | 2026-02-26 |
 | 5. Documentation and Self-Hosting | v1.0 | 2/2 | Complete | 2026-02-26 |
-| 6. Code Fixes | v1.1 | 0/? | Not started | - |
+| 6. Code Fixes | v1.1 | 0/2 | Not started | - |
 | 7. Build and Config | v1.1 | 0/? | Not started | - |
 | 8. Test Harness | v1.1 | 0/? | Not started | - |
 | 9. QA Verification | v1.1 | 0/? | Not started | - |
