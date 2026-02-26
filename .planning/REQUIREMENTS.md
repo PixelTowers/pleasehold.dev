@@ -18,12 +18,12 @@ Requirements for QA & Hardening milestone. Each maps to roadmap phases.
 ### Integration Fixes
 
 - [x] **INTG-01**: Worker service has `API_URL` env var in docker-compose.yml so verification email links use the correct host
-- [ ] **INTG-02**: Dashboard status filter includes `pending_verification` so those entries can be isolated
+- [x] **INTG-02**: Dashboard status filter includes `pending_verification` so those entries can be isolated
 
 ### Tech Debt — Router
 
-- [ ] **ROUT-01**: Unauthenticated redirects use TanStack Router `navigate` instead of `window.location.href`
-- [ ] **ROUT-02**: Entry navigation uses TanStack Router type-safe links instead of template strings
+- [x] **ROUT-01**: Unauthenticated redirects use TanStack Router `navigate` instead of `window.location.href`
+- [x] **ROUT-02**: Entry navigation uses TanStack Router type-safe links instead of template strings
 
 ### Tech Debt — Testing
 
@@ -65,9 +65,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QA-04 | Phase 9 | Pending |
 | QA-05 | Phase 9 | Pending |
 | INTG-01 | Phase 6 | Complete |
-| INTG-02 | Phase 6 | Pending |
-| ROUT-01 | Phase 6 | Pending |
-| ROUT-02 | Phase 6 | Pending |
+| INTG-02 | Phase 6 | Complete |
+| ROUT-01 | Phase 6 | Complete |
+| ROUT-02 | Phase 6 | Complete |
 | TEST-01 | Phase 8 | Pending |
 | BILD-01 | Phase 7 | Pending |
 | BILD-02 | Phase 7 | Pending |

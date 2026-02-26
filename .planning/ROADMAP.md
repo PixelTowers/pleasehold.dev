@@ -24,7 +24,7 @@ Full details: `milestones/v1.0-ROADMAP.md`
 
 **Milestone Goal:** Manually QA every user flow, fix all bugs and tech debt from v1.0 — leave the product solid before building new features.
 
-- [ ] **Phase 6: Code Fixes** - Fix router, integration, and cleanup issues from v1.0 audit
+- [x] **Phase 6: Code Fixes** - Fix router, integration, and cleanup issues from v1.0 audit
 - [ ] **Phase 7: Build and Config** - Fix local build, Docker migrations, and SMTP config clarity
 - [ ] **Phase 8: Test Harness** - Enable integration tests for entry submission with seeded DB
 - [ ] **Phase 9: QA Verification** - Walk through every E2E flow like a real developer
@@ -44,8 +44,8 @@ Full details: `milestones/v1.0-ROADMAP.md`
 **Plans**: 2 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Fix router redirects, type-safe entry navigation, and pending_verification filter
-- [ ] 06-02-PLAN.md — Add worker API_URL, remove dead auth exports, proxy /health through nginx
+- [x] 06-01-PLAN.md — Fix router redirects, type-safe entry navigation, and pending_verification filter
+- [x] 06-02-PLAN.md — Add worker API_URL, remove dead auth exports, proxy /health through nginx
 
 ### Phase 7: Build and Config
 **Goal**: The build pipeline works locally and in Docker without workarounds, and missing config produces clear guidance instead of silent failure
