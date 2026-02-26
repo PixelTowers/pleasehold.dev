@@ -4,11 +4,14 @@
 import { useEffect, useState } from 'react';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import type { RowSelectionState } from '@tanstack/react-table';
-import { trpc } from '../../../lib/trpc';
-import { EntriesTable } from '../../../components/EntriesTable';
-import { EntryStatsBar } from '../../../components/EntryStatsBar';
-import { BulkActionBar } from '../../../components/BulkActionBar';
-import { CsvExportButton } from '../../../components/CsvExportButton';
+import { ArrowLeft, Search } from 'lucide-react';
+import { trpc } from '@/lib/trpc';
+import { EntriesTable } from '@/components/EntriesTable';
+import { EntryStatsBar } from '@/components/EntryStatsBar';
+import { BulkActionBar } from '@/components/BulkActionBar';
+import { CsvExportButton } from '@/components/CsvExportButton';
+import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
 
 export const Route = createFileRoute('/projects/$projectId/entries')({
 	component: EntriesPage,
@@ -63,34 +66,26 @@ function EntriesPage() {
 
 	if (isLoading) {
 		return (
-			<div style={{ textAlign: 'center', padding: '4rem' }}>
-				<p style={{ color: '#6b7280' }}>Loading entries...</p>
+			<div className="py-16 text-center">
+				<p className="text-muted">Loading entries...</p>
 			</div>
 		);
 	}
 
 	if (entriesError) {
 		return (
-			<div style={{ maxWidth: '48rem', margin: '0 auto' }}>
-				<div style={{ marginBottom: '1rem' }}>
+			<div className="mx-auto max-w-3xl">
+				<div className="mb-4">
 					<Link
 						to="/projects/$projectId"
 						params={{ projectId }}
-						style={{ fontSize: '0.875rem', color: '#6b7280', textDecoration: 'none' }}
+						className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground"
 					>
-						&larr; Back to project
+						<ArrowLeft className="h-3.5 w-3.5" />
+						Back to project
 					</Link>
 				</div>
-				<div
-					style={{
-						padding: '1rem',
-						backgroundColor: '#fef2f2',
-						border: '1px solid #fecaca',
-						borderRadius: '0.375rem',
-						color: '#dc2626',
-						fontSize: '0.875rem',
-					}}
-				>
+				<div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-destructive">
 					Failed to load entries. Please try again.
 				</div>
 			</div>
@@ -100,57 +95,44 @@ function EntriesPage() {
 	// Empty state when no entries at all
 	if (statsData && statsData.total === 0 && !debouncedSearch && !statusFilter) {
 		return (
-			<div style={{ maxWidth: '48rem', margin: '0 auto' }}>
-				<div style={{ marginBottom: '1.5rem' }}>
+			<div className="mx-auto max-w-3xl">
+				<div className="mb-6">
 					<Link
 						to="/projects/$projectId"
 						params={{ projectId }}
-						style={{ fontSize: '0.875rem', color: '#6b7280', textDecoration: 'none' }}
+						className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground"
 					>
-						&larr; Back to project
+						<ArrowLeft className="h-3.5 w-3.5" />
+						Back to project
 					</Link>
 				</div>
-				<h1 style={{ fontSize: '1.5rem', fontWeight: 600, margin: '0 0 1.5rem 0' }}>Entries</h1>
-				<div
-					style={{
-						padding: '2rem',
-						border: '1px solid #e5e7eb',
-						borderRadius: '0.5rem',
-						backgroundColor: '#f9fafb',
-						textAlign: 'center',
-					}}
-				>
-					<p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>
+				<h1 className="mb-6 text-2xl font-semibold text-foreground">Entries</h1>
+				<Card className="bg-accent p-8 text-center">
+					<p className="text-sm text-muted-foreground">
 						No entries yet. Entries will appear here once you start collecting submissions via the API.
 					</p>
-				</div>
+				</Card>
 			</div>
 		);
 	}
 
 	return (
-		<div style={{ maxWidth: '48rem', margin: '0 auto' }}>
+		<div className="mx-auto max-w-3xl">
 			{/* Breadcrumb */}
-			<div style={{ marginBottom: '1.5rem' }}>
+			<div className="mb-6">
 				<Link
 					to="/projects/$projectId"
 					params={{ projectId }}
-					style={{ fontSize: '0.875rem', color: '#6b7280', textDecoration: 'none' }}
+					className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground"
 				>
-					&larr; Back to project
+					<ArrowLeft className="h-3.5 w-3.5" />
+					Back to project
 				</Link>
 			</div>
 
 			{/* Header */}
-			<div
-				style={{
-					display: 'flex',
-					justifyContent: 'space-between',
-					alignItems: 'center',
-					marginBottom: '1.5rem',
-				}}
-			>
-				<h1 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0 }}>Entries</h1>
+			<div className="mb-6 flex items-center justify-between">
+				<h1 className="text-2xl font-semibold text-foreground">Entries</h1>
 				{project && (
 					<CsvExportButton projectId={projectId} projectName={project.name} />
 				)}
@@ -158,43 +140,27 @@ function EntriesPage() {
 
 			{/* Stats bar */}
 			{statsData && (
-				<div style={{ marginBottom: '1.5rem' }}>
+				<div className="mb-6">
 					<EntryStatsBar total={statsData.total} byStatus={statsData.byStatus} />
 				</div>
 			)}
 
 			{/* Search and filter row */}
-			<div
-				style={{
-					display: 'flex',
-					gap: '0.75rem',
-					marginBottom: '1rem',
-				}}
-			>
-				<input
-					type="text"
-					placeholder="Search by email, name, or company..."
-					value={search}
-					onChange={(e) => setSearch(e.target.value)}
-					style={{
-						flex: 1,
-						padding: '0.5rem 0.75rem',
-						border: '1px solid #d1d5db',
-						borderRadius: '0.375rem',
-						fontSize: '0.875rem',
-						outline: 'none',
-					}}
-				/>
+			<div className="mb-4 flex gap-3">
+				<div className="relative flex-1">
+					<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+					<Input
+						type="text"
+						placeholder="Search by email, name, or company..."
+						value={search}
+						onChange={(e) => setSearch(e.target.value)}
+						className="pl-9"
+					/>
+				</div>
 				<select
 					value={statusFilter ?? ''}
 					onChange={(e) => setStatusFilter(e.target.value || undefined)}
-					style={{
-						padding: '0.5rem 0.75rem',
-						border: '1px solid #d1d5db',
-						borderRadius: '0.375rem',
-						fontSize: '0.875rem',
-						backgroundColor: '#fff',
-					}}
+					className="rounded-md border border-input bg-card px-3 py-2 text-sm"
 				>
 					<option value="">All Statuses</option>
 					<option value="new">New</option>
@@ -219,14 +185,7 @@ function EntriesPage() {
 			/>
 
 			{/* Entries table */}
-			<div
-				style={{
-					border: '1px solid #e5e7eb',
-					borderRadius: '0.5rem',
-					backgroundColor: '#fff',
-					overflow: 'hidden',
-				}}
-			>
+			<Card className="overflow-hidden">
 				<EntriesTable
 					data={entriesData?.entries ?? []}
 					total={entriesData?.total ?? 0}
@@ -242,7 +201,7 @@ function EntriesPage() {
 						});
 					}}
 				/>
-			</div>
+			</Card>
 		</div>
 	);
 }

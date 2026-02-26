@@ -2,23 +2,15 @@
 // ABOUTME: Provides status management via dropdown and breadcrumb navigation back to entries list.
 
 import { Link, createFileRoute } from '@tanstack/react-router';
-import { trpc } from '../../../../lib/trpc';
-import { EntryStatusBadge } from '../../../../components/EntryStatusBadge';
+import { ArrowLeft } from 'lucide-react';
+import { trpc } from '@/lib/trpc';
+import { EntryStatusBadge } from '@/components/EntryStatusBadge';
+import { Card } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 
 export const Route = createFileRoute('/projects/$projectId/entries/$entryId')({
 	component: EntryDetailPage,
 });
-
-const labelStyle: React.CSSProperties = {
-	fontWeight: 500,
-	color: '#6b7280',
-	fontSize: '0.875rem',
-};
-
-const valueStyle: React.CSSProperties = {
-	fontSize: '0.875rem',
-	color: '#111827',
-};
 
 function EntryDetailPage() {
 	const { projectId, entryId } = Route.useParams();
@@ -42,8 +34,8 @@ function EntryDetailPage() {
 
 	if (isPending) {
 		return (
-			<div style={{ textAlign: 'center', padding: '4rem' }}>
-				<p style={{ color: '#6b7280' }}>Loading entry...</p>
+			<div className="py-16 text-center">
+				<p className="text-muted">Loading entry...</p>
 			</div>
 		);
 	}
@@ -51,26 +43,22 @@ function EntryDetailPage() {
 	if (error) {
 		const isNotFound = error.message === 'Entry not found';
 		return (
-			<div style={{ maxWidth: '48rem', margin: '0 auto' }}>
-				<div style={{ marginBottom: '1rem' }}>
+			<div className="mx-auto max-w-3xl">
+				<div className="mb-4">
 					<Link
 						to="/projects/$projectId/entries"
 						params={{ projectId }}
-						style={{ fontSize: '0.875rem', color: '#6b7280', textDecoration: 'none' }}
+						className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground"
 					>
-						&larr; Back to entries
+						<ArrowLeft className="h-3.5 w-3.5" />
+						Back to entries
 					</Link>
 				</div>
-				<div
-					style={{
-						padding: '1rem',
-						backgroundColor: isNotFound ? '#f9fafb' : '#fef2f2',
-						border: `1px solid ${isNotFound ? '#e5e7eb' : '#fecaca'}`,
-						borderRadius: '0.375rem',
-						color: isNotFound ? '#6b7280' : '#dc2626',
-						fontSize: '0.875rem',
-					}}
-				>
+				<div className={
+					isNotFound
+						? 'rounded-md border bg-accent px-4 py-3 text-sm text-muted'
+						: 'rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-destructive'
+				}>
 					{isNotFound
 						? 'Entry not found. It may have been deleted or belongs to a different project.'
 						: 'Failed to load entry. Please try again.'}
@@ -85,38 +73,28 @@ function EntryDetailPage() {
 			: [];
 
 	return (
-		<div style={{ maxWidth: '48rem', margin: '0 auto' }}>
+		<div className="mx-auto max-w-3xl">
 			{/* Breadcrumb */}
-			<div style={{ marginBottom: '1.5rem' }}>
+			<div className="mb-6">
 				<Link
 					to="/projects/$projectId/entries"
 					params={{ projectId }}
-					style={{ fontSize: '0.875rem', color: '#6b7280', textDecoration: 'none' }}
+					className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground"
 				>
-					&larr; Back to entries
+					<ArrowLeft className="h-3.5 w-3.5" />
+					Back to entries
 				</Link>
 			</div>
 
 			{/* Header row */}
-			<div
-				style={{
-					display: 'flex',
-					justifyContent: 'space-between',
-					alignItems: 'center',
-					marginBottom: '1.5rem',
-				}}
-			>
-				<div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-					<h1 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0 }}>{entry.email}</h1>
-					<EntryStatusBadge status={entry.status} />
-				</div>
+			<div className="mb-6 flex items-center gap-3">
+				<h1 className="text-2xl font-semibold text-foreground">{entry.email}</h1>
+				<EntryStatusBadge status={entry.status} />
 			</div>
 
 			{/* Status selector */}
-			<div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-				<label htmlFor="status-select" style={{ fontSize: '0.875rem', fontWeight: 500, color: '#374151' }}>
-					Status:
-				</label>
+			<div className="mb-6 flex items-center gap-3">
+				<Label htmlFor="status-select">Status:</Label>
 				<select
 					id="status-select"
 					value={entry.status}
@@ -128,13 +106,7 @@ function EntryDetailPage() {
 						})
 					}
 					disabled={mutation.isPending}
-					style={{
-						padding: '0.375rem 0.75rem',
-						border: '1px solid #d1d5db',
-						borderRadius: '0.375rem',
-						fontSize: '0.875rem',
-						backgroundColor: '#fff',
-					}}
+					className="rounded-md border border-input bg-card px-3 py-1.5 text-sm"
 				>
 					<option value="new">New</option>
 					<option value="contacted">Contacted</option>
@@ -142,101 +114,65 @@ function EntryDetailPage() {
 					<option value="archived">Archived</option>
 				</select>
 				{mutation.isPending && (
-					<span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Saving...</span>
+					<span className="text-xs text-muted">Saving...</span>
 				)}
 			</div>
 
 			{/* Details card */}
-			<div
-				style={{
-					border: '1px solid #e5e7eb',
-					borderRadius: '0.5rem',
-					backgroundColor: '#fff',
-					padding: '1.5rem',
-				}}
-			>
-				<h2 style={{ fontSize: '1rem', fontWeight: 600, margin: '0 0 1rem 0' }}>Details</h2>
-				<div
-					style={{
-						display: 'grid',
-						gridTemplateColumns: '10rem 1fr',
-						gap: '0.75rem 1rem',
-					}}
-				>
-					<span style={labelStyle}>Email</span>
-					<span style={valueStyle}>{entry.email}</span>
+			<Card className="mb-6 p-6">
+				<h2 className="mb-4 text-base font-semibold">Details</h2>
+				<div className="grid grid-cols-[10rem_1fr] gap-x-4 gap-y-3">
+					<span className="text-sm font-medium text-muted">Email</span>
+					<span className="text-sm text-foreground">{entry.email}</span>
 
-					<span style={labelStyle}>Name</span>
-					<span style={valueStyle}>{entry.name ?? '\u2014'}</span>
+					<span className="text-sm font-medium text-muted">Name</span>
+					<span className="text-sm text-foreground">{entry.name ?? '\u2014'}</span>
 
-					<span style={labelStyle}>Company</span>
-					<span style={valueStyle}>{entry.company ?? '\u2014'}</span>
+					<span className="text-sm font-medium text-muted">Company</span>
+					<span className="text-sm text-foreground">{entry.company ?? '\u2014'}</span>
 
-					<span style={labelStyle}>Message</span>
-					<span style={valueStyle}>{entry.message ?? '\u2014'}</span>
+					<span className="text-sm font-medium text-muted">Message</span>
+					<span className="text-sm text-foreground">{entry.message ?? '\u2014'}</span>
 
-					<span style={labelStyle}>Queue Position</span>
-					<span style={valueStyle}>#{entry.position}</span>
+					<span className="text-sm font-medium text-muted">Queue Position</span>
+					<span className="text-sm text-foreground">#{entry.position}</span>
 
-					<span style={labelStyle}>Status</span>
-					<span style={valueStyle}>
+					<span className="text-sm font-medium text-muted">Status</span>
+					<span className="text-sm">
 						<EntryStatusBadge status={entry.status} />
 					</span>
 
-					<span style={labelStyle}>Submitted</span>
-					<span style={valueStyle}>{new Date(entry.createdAt).toLocaleString()}</span>
+					<span className="text-sm font-medium text-muted">Submitted</span>
+					<span className="text-sm text-foreground">{new Date(entry.createdAt).toLocaleString()}</span>
 
-					<span style={labelStyle}>Last Updated</span>
-					<span style={valueStyle}>{new Date(entry.updatedAt).toLocaleString()}</span>
+					<span className="text-sm font-medium text-muted">Last Updated</span>
+					<span className="text-sm text-foreground">{new Date(entry.updatedAt).toLocaleString()}</span>
 				</div>
-			</div>
+			</Card>
 
 			{/* Metadata section */}
-			<h2 style={{ fontSize: '1rem', fontWeight: 600, marginTop: '1.5rem', marginBottom: '0.75rem' }}>
-				Metadata
-			</h2>
+			<h2 className="mb-3 text-base font-semibold">Metadata</h2>
 			{metadataEntries.length > 0 ? (
-				<div
-					style={{
-						border: '1px solid #e5e7eb',
-						borderRadius: '0.5rem',
-						backgroundColor: '#fff',
-						padding: '1.5rem',
-					}}
-				>
-					<div
-						style={{
-							display: 'grid',
-							gridTemplateColumns: '10rem 1fr',
-							gap: '0.75rem 1rem',
-						}}
-					>
+				<Card className="p-6">
+					<div className="grid grid-cols-[10rem_1fr] gap-x-4 gap-y-3">
 						{metadataEntries.map(([key, value]) => (
 							<>
-								<span key={`${key}-label`} style={labelStyle}>
+								<span key={`${key}-label`} className="text-sm font-medium text-muted">
 									{key}
 								</span>
-								<span key={`${key}-value`} style={valueStyle}>
+								<span key={`${key}-value`} className="text-sm text-foreground">
 									{String(value)}
 								</span>
 							</>
 						))}
 					</div>
-				</div>
+				</Card>
 			) : (
-				<div
-					style={{
-						padding: '1.5rem',
-						border: '1px solid #e5e7eb',
-						borderRadius: '0.5rem',
-						backgroundColor: '#f9fafb',
-						textAlign: 'center',
-					}}
-				>
-					<p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>
+				<Card className="bg-accent p-6 text-center">
+					<p className="text-sm text-muted-foreground">
 						No metadata attached
 					</p>
-				</div>
+				</Card>
 			)}
 		</div>
 	);

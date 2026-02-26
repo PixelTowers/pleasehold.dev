@@ -2,7 +2,9 @@
 // ABOUTME: Generates RFC 4180-compliant CSV with UTF-8 BOM and field-config-aware column headers.
 
 import { useState } from 'react';
-import { trpc } from '../lib/trpc';
+import { Download } from 'lucide-react';
+import { trpc } from '@/lib/trpc';
+import { Button } from '@/components/ui/button';
 
 interface CsvExportButtonProps {
 	projectId: string;
@@ -89,21 +91,6 @@ function downloadCsv(csvString: string, filename: string) {
 	URL.revokeObjectURL(url);
 }
 
-const buttonStyle: React.CSSProperties = {
-	padding: '0.5rem 1rem',
-	border: '1px solid #d1d5db',
-	borderRadius: '0.375rem',
-	backgroundColor: '#fff',
-	fontSize: '0.875rem',
-	cursor: 'pointer',
-};
-
-const disabledStyle: React.CSSProperties = {
-	...buttonStyle,
-	cursor: 'not-allowed',
-	opacity: 0.6,
-};
-
 export function CsvExportButton({ projectId, projectName }: CsvExportButtonProps) {
 	const [isExporting, setIsExporting] = useState(false);
 	const utils = trpc.useUtils();
@@ -122,13 +109,9 @@ export function CsvExportButton({ projectId, projectName }: CsvExportButtonProps
 	}
 
 	return (
-		<button
-			type="button"
-			style={isExporting ? disabledStyle : buttonStyle}
-			disabled={isExporting}
-			onClick={handleExport}
-		>
+		<Button variant="outline" size="sm" disabled={isExporting} onClick={handleExport}>
+			<Download className="mr-1.5 h-4 w-4" />
 			{isExporting ? 'Exporting...' : 'Export CSV'}
-		</button>
+		</Button>
 	);
 }

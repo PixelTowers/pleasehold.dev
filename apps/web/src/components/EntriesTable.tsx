@@ -1,7 +1,6 @@
 // ABOUTME: Headless TanStack Table wrapper for entry data with column definitions and pagination controls.
 // ABOUTME: Uses manual pagination mode with entry UUID row IDs to prevent stale selection across page changes.
 
-import { useState } from 'react';
 import {
 	type ColumnDef,
 	type RowSelectionState,
@@ -10,6 +9,15 @@ import {
 	useReactTable,
 } from '@tanstack/react-table';
 import { EntryStatusBadge } from './EntryStatusBadge';
+import { Button } from '@/components/ui/button';
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from '@/components/ui/table';
 
 interface Entry {
 	id: string;
@@ -39,6 +47,7 @@ const columns: ColumnDef<Entry, unknown>[] = [
 				type="checkbox"
 				checked={table.getIsAllPageRowsSelected()}
 				onChange={table.getToggleAllPageRowsSelectedHandler()}
+				className="h-4 w-4 rounded border-gray-300"
 			/>
 		),
 		cell: ({ row }) => (
@@ -46,6 +55,7 @@ const columns: ColumnDef<Entry, unknown>[] = [
 				type="checkbox"
 				checked={row.getIsSelected()}
 				onChange={row.getToggleSelectedHandler()}
+				className="h-4 w-4 rounded border-gray-300"
 			/>
 		),
 		size: 40,
@@ -82,46 +92,6 @@ const columns: ColumnDef<Entry, unknown>[] = [
 	},
 ];
 
-const headerCellStyle: React.CSSProperties = {
-	padding: '0.5rem 0.75rem',
-	textAlign: 'left',
-	fontWeight: 500,
-	borderBottom: '2px solid #e5e7eb',
-	color: '#6b7280',
-	fontSize: '0.75rem',
-	textTransform: 'uppercase',
-	letterSpacing: '0.05em',
-};
-
-const cellStyle: React.CSSProperties = {
-	padding: '0.5rem 0.75rem',
-	borderBottom: '1px solid #f3f4f6',
-};
-
-const paginationStyle: React.CSSProperties = {
-	display: 'flex',
-	justifyContent: 'space-between',
-	alignItems: 'center',
-	padding: '0.75rem 0',
-	fontSize: '0.875rem',
-	color: '#6b7280',
-};
-
-const pageButtonStyle: React.CSSProperties = {
-	padding: '0.25rem 0.75rem',
-	border: '1px solid #d1d5db',
-	borderRadius: '0.25rem',
-	backgroundColor: '#fff',
-	fontSize: '0.875rem',
-	cursor: 'pointer',
-};
-
-const pageButtonDisabledStyle: React.CSSProperties = {
-	...pageButtonStyle,
-	opacity: 0.5,
-	cursor: 'not-allowed',
-};
-
 export function EntriesTable({
 	data,
 	total,
@@ -132,7 +102,6 @@ export function EntriesTable({
 	onRowSelectionChange,
 	onEntryClick,
 }: EntriesTableProps) {
-	const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
 	const totalPages = Math.ceil(total / pageSize);
 
 	const table = useReactTable({
@@ -155,40 +124,32 @@ export function EntriesTable({
 
 	return (
 		<div>
-			<table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
-				<thead>
+			<Table>
+				<TableHeader>
 					{table.getHeaderGroups().map((headerGroup) => (
-						<tr key={headerGroup.id}>
+						<TableRow key={headerGroup.id}>
 							{headerGroup.headers.map((header) => (
-								<th key={header.id} style={headerCellStyle}>
+								<TableHead key={header.id} className="text-xs font-medium uppercase tracking-wider text-muted">
 									{header.isPlaceholder
 										? null
 										: flexRender(header.column.columnDef.header, header.getContext())}
-								</th>
+								</TableHead>
 							))}
-						</tr>
+						</TableRow>
 					))}
-				</thead>
-				<tbody>
+				</TableHeader>
+				<TableBody>
 					{table.getRowModel().rows.length === 0 ? (
-						<tr>
-							<td
-								colSpan={columns.length}
-								style={{ textAlign: 'center', padding: '2rem', color: '#9ca3af' }}
-							>
+						<TableRow>
+							<TableCell colSpan={columns.length} className="py-8 text-center text-muted-foreground">
 								No entries found
-							</td>
-						</tr>
+							</TableCell>
+						</TableRow>
 					) : (
 						table.getRowModel().rows.map((row) => (
-							<tr
+							<TableRow
 								key={row.id}
-								style={{
-									backgroundColor: hoveredRowId === row.id ? '#f9fafb' : 'transparent',
-									cursor: 'pointer',
-								}}
-								onMouseEnter={() => setHoveredRowId(row.id)}
-								onMouseLeave={() => setHoveredRowId(null)}
+								className="cursor-pointer hover:bg-accent"
 								onClick={(e) => {
 									const target = e.target as HTMLElement;
 									if (target.tagName === 'INPUT' && (target as HTMLInputElement).type === 'checkbox') {
@@ -198,41 +159,43 @@ export function EntriesTable({
 								}}
 							>
 								{row.getVisibleCells().map((cell) => (
-									<td key={cell.id} style={cellStyle}>
+									<TableCell key={cell.id}>
 										{flexRender(cell.column.columnDef.cell, cell.getContext())}
-									</td>
+									</TableCell>
 								))}
-							</tr>
+							</TableRow>
 						))
 					)}
-				</tbody>
-			</table>
+				</TableBody>
+			</Table>
 
 			{/* Pagination controls */}
-			<div style={paginationStyle}>
+			<div className="flex items-center justify-between px-3 py-3 text-sm text-muted">
 				<span>
 					Showing {startEntry} to {endEntry} of {total} entries
 				</span>
-				<div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-					<button
-						type="button"
-						style={page <= 1 ? pageButtonDisabledStyle : pageButtonStyle}
+				<div className="flex items-center gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-7"
 						disabled={page <= 1}
 						onClick={() => onPageChange(page - 1)}
 					>
 						Previous
-					</button>
+					</Button>
 					<span>
 						Page {page} of {totalPages || 1}
 					</span>
-					<button
-						type="button"
-						style={page >= totalPages ? pageButtonDisabledStyle : pageButtonStyle}
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-7"
 						disabled={page >= totalPages}
 						onClick={() => onPageChange(page + 1)}
 					>
 						Next
-					</button>
+					</Button>
 				</div>
 			</div>
 		</div>
