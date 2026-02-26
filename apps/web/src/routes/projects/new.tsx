@@ -37,7 +37,7 @@ function NewProjectPage() {
 	}
 
 	if (!session?.user) {
-		window.location.href = '/login';
+		void navigate({ to: '/login' });
 		return null;
 	}
 
