@@ -26,7 +26,22 @@ Developers can add a waitlist or demo-booking form to any landing page in minute
 
 ### Active
 
-(None yet — define with `/gsd:new-milestone`)
+<!-- Current scope: v1.1 QA & Hardening -->
+
+- [ ] Manual QA of every user flow — signup through notifications, Docker deployment
+- [ ] Fix integration gaps found in v1.0 audit (worker API_URL, pending_verification filter)
+- [ ] Fix all 8 tech debt items from v1.0 audit
+- [ ] Every end-to-end flow works without surprises
+
+## Current Milestone: v1.1 QA & Hardening
+
+**Goal:** Manually QA every user flow, fix all bugs and tech debt from v1.0 — leave the product solid before building new features.
+
+**Target features:**
+- Manual QA walkthrough of all 5 E2E flows (signup → entry → notifications → dashboard → Docker)
+- Fix 2 integration issues (worker API_URL in Docker, pending_verification filter)
+- Fix 8 tech debt items across all phases
+- Every flow works end to end like a real developer would expect
 
 ### Out of Scope
 
@@ -85,4 +100,4 @@ Shipped v1.0 MVP with 8,008 lines of TypeScript across 144 files.
 | nginx reverse proxy in Docker | Preferred over VITE_API_URL build-time env for API routing | ✓ Good |
 
 ---
-*Last updated: 2026-02-26 after v1.0 milestone*
+*Last updated: 2026-02-26 after v1.1 milestone started*
