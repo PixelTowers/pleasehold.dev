@@ -38,7 +38,7 @@ services:
       context: .
       dockerfile: apps/api/Dockerfile
       target: builder
-    command: pnpm db:migrate
+    command: sh -c "pnpm db:generate && pnpm db:migrate"
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-pleasehold}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-pleasehold}
     depends_on:
