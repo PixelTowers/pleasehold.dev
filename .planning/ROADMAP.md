@@ -83,11 +83,12 @@ Plans:
   3. Enabling double opt-in, submitting an entry, clicking the verification link in the email, and confirming the status flips to verified — followed by the notification firing — all works end to end
   4. Running `docker-compose up` from a clean state results in a working instance where the API and dashboard are accessible and entries can be submitted
   5. API key auth is enforced (rejected without key), rate limiting triggers at threshold, and a valid key correctly inserts entries
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 09-01: TBD
-- [ ] 09-02: TBD
+- [ ] 09-01-PLAN.md — Developer flow and API key security QA (signup → project → fields → key → entries → dashboard + auth/rate-limit verification)
+- [ ] 09-02-PLAN.md — Docker self-hosting QA (clean docker-compose up → health checks → entry submission → dashboard)
+- [ ] 09-03-PLAN.md — Notification pipeline and double opt-in verification QA (5 channels + enable opt-in → submit → verify → status flip → notifications)
 
 ## Progress
 
@@ -103,5 +104,5 @@ Phases execute in numeric order: 6 -> 7 -> 8 -> 9
 | 5. Documentation and Self-Hosting | v1.0 | 2/2 | Complete | 2026-02-26 |
 | 6. Code Fixes | v1.1 | 2/2 | Complete | 2026-02-26 |
 | 7. Build and Config | v1.1 | 2/2 | Complete | 2026-02-26 |
-| 8. Test Harness | v1.1 | 0/? | Not started | - |
-| 9. QA Verification | v1.1 | 0/? | Not started | - |
+| 8. Test Harness | v1.1 | 1/1 | Complete | 2026-02-26 |
+| 9. QA Verification | v1.1 | 0/3 | Not started | - |
