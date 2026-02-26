@@ -1,14 +1,14 @@
 # QA-04: Docker Self-Hosting Flow Verification Report
 
 **Date:** 2026-02-26
-**Tester:** Claude (automated) + Human (visual verification pending)
+**Tester:** Claude (automated) + Human (visual verification completed)
 **Environment:** macOS Darwin 25.3.0, Docker Desktop, Node 22 Alpine containers
 
 ## Summary
 
-**Result: 10/10 automated steps PASSED**
+**Result: 11/11 checks PASSED (10 automated + 1 human verification)**
 
-The Docker self-hosting flow works end-to-end from a clean state. All services build, start, and function correctly. Entry submission through the full Docker stack succeeds.
+The Docker self-hosting flow works end-to-end from a clean state. All services build, start, and function correctly. Entry submission through the full Docker stack succeeds. Human verified dashboard accessibility and correctness.
 
 ## Pre-Test Setup
 
@@ -100,11 +100,19 @@ The Docker self-hosting flow works end-to-end from a clean state. All services b
 - **Root cause:** `better-auth` internally uses Zod v4 features (`.meta()`) via `better-call@1.1.8`, but tsup bundled the code with Zod v3 resolution
 
 ## Docker Dashboard Verification
-**PENDING** - Awaiting human visual verification (Task 2)
+**PASSED** - Human verified on 2026-02-26
 
-## Test Credentials (for human verification)
-- **URL:** http://localhost:8080
-- **Email:** docker-qa@pleasehold.dev
-- **Password:** DockerTest1234
-- **Project:** Docker Test Project
-- **Entry:** docker-entry@example.com
+Human visual verification confirmed:
+- Dashboard loads at http://localhost:8080
+- "Docker Test Project" appears on dashboard
+- Entries visible (docker-entry@example.com)
+- Settings tab loads correctly
+- Keys tab loads correctly (Docker QA Key visible)
+- No console errors
+- Navigation between pages is smooth (SPA routing, no full-page reloads)
+
+## Final Result
+
+**11/11 checks PASSED (10 automated + 1 human verification)**
+
+The Docker self-hosting flow works end-to-end. A developer can copy .env.example, fill in required values, run docker-compose up, and have a fully working instance with accessible API and dashboard.
