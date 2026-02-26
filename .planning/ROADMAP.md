@@ -25,7 +25,7 @@ Full details: `milestones/v1.0-ROADMAP.md`
 **Milestone Goal:** Manually QA every user flow, fix all bugs and tech debt from v1.0 — leave the product solid before building new features.
 
 - [x] **Phase 6: Code Fixes** - Fix router, integration, and cleanup issues from v1.0 audit
-- [ ] **Phase 7: Build and Config** - Fix local build, Docker migrations, and SMTP config clarity
+- [x] **Phase 7: Build and Config** - Fix local build, Docker migrations, and SMTP config clarity
 - [ ] **Phase 8: Test Harness** - Enable integration tests for entry submission with seeded DB
 - [ ] **Phase 9: QA Verification** - Walk through every E2E flow like a real developer
 
@@ -58,8 +58,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 07-01-PLAN.md — Add tsup configs for API and worker local builds, improve SMTP missing-config warning
-- [ ] 07-02-PLAN.md — Fix Docker migration flow to generate migrations from schema at deploy time
+- [x] 07-01-PLAN.md — Add tsup configs for API and worker local builds, improve SMTP missing-config warning
+- [x] 07-02-PLAN.md — Fix Docker migration flow to generate migrations from schema at deploy time
 
 ### Phase 8: Test Harness
 **Goal**: Integration tests for entry submission are enabled and passing against a real seeded database
@@ -101,7 +101,7 @@ Phases execute in numeric order: 6 -> 7 -> 8 -> 9
 | 3. Dashboard and Data Management | v1.0 | 3/3 | Complete | 2026-02-25 |
 | 4. Notification System | v1.0 | 3/3 | Complete | 2026-02-26 |
 | 5. Documentation and Self-Hosting | v1.0 | 2/2 | Complete | 2026-02-26 |
-| 6. Code Fixes | v1.1 | 0/2 | Not started | - |
-| 7. Build and Config | v1.1 | 0/2 | Not started | - |
+| 6. Code Fixes | v1.1 | 2/2 | Complete | 2026-02-26 |
+| 7. Build and Config | v1.1 | 2/2 | Complete | 2026-02-26 |
 | 8. Test Harness | v1.1 | 0/? | Not started | - |
 | 9. QA Verification | v1.1 | 0/? | Not started | - |

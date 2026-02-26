@@ -31,8 +31,8 @@ Requirements for QA & Hardening milestone. Each maps to roadmap phases.
 
 ### Tech Debt — Build & Config
 
-- [ ] **BILD-01**: Missing SMTP_HOST produces clear actionable guidance (not silent failure)
-- [ ] **BILD-02**: `pnpm build --filter @pleasehold/api` works locally with proper tsup config
+- [x] **BILD-01**: Missing SMTP_HOST produces clear actionable guidance (not silent failure)
+- [x] **BILD-02**: `pnpm build --filter @pleasehold/api` works locally with proper tsup config
 - [x] **BILD-03**: Drizzle migrations are properly handled in Docker build (not dependent on gitignored directory)
 
 ### Tech Debt — Cleanup
@@ -69,8 +69,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ROUT-01 | Phase 6 | Complete |
 | ROUT-02 | Phase 6 | Complete |
 | TEST-01 | Phase 8 | Pending |
-| BILD-01 | Phase 7 | Pending |
-| BILD-02 | Phase 7 | Pending |
+| BILD-01 | Phase 7 | Complete |
+| BILD-02 | Phase 7 | Complete |
 | BILD-03 | Phase 7 | Complete |
 | CLEN-01 | Phase 6 | Complete |
 | CLEN-02 | Phase 6 | Complete |
