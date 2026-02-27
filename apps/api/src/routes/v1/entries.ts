@@ -87,38 +87,39 @@ app.openapi(submitEntryRoute, async (c) => {
 
 	const data = parseResult.data;
 
-	const insertResult = await db
-		.insert(entries)
-		.values({
-			projectId: project.id,
-			email: data.email,
-			name: data.name ?? null,
-			company: data.company ?? null,
-			message: data.message ?? null,
-			metadata: data.metadata ?? null,
-			position: sql`(SELECT COALESCE(MAX(${entries.position}), 0) + 1 FROM ${entries} WHERE ${entries.projectId} = ${project.id})`,
-		})
-		.onConflictDoNothing({ target: [entries.projectId, entries.email] })
-		.returning();
+	const verificationToken = project.doubleOptIn ? crypto.randomUUID() : null;
+	const verificationExpiresAt = project.doubleOptIn
+		? new Date(Date.now() + 48 * 60 * 60 * 1000)
+		: null;
+
+	// Use a transaction with serializable isolation to prevent position race conditions
+	// and ensure atomic insert+status for double opt-in
+	const insertResult = await db.transaction(
+		async (tx) => {
+			return tx
+				.insert(entries)
+				.values({
+					projectId: project.id,
+					email: data.email,
+					name: data.name ?? null,
+					company: data.company ?? null,
+					message: data.message ?? null,
+					metadata: data.metadata ?? null,
+					status: project.doubleOptIn ? 'pending_verification' : 'new',
+					verificationToken,
+					verificationExpiresAt,
+					position: sql`(SELECT COALESCE(MAX(${entries.position}), 0) + 1 FROM ${entries} WHERE ${entries.projectId} = ${project.id})`,
+				})
+				.onConflictDoNothing({ target: [entries.projectId, entries.email] })
+				.returning();
+		},
+		{ isolationLevel: 'serializable' },
+	);
 
 	if (insertResult.length > 0) {
 		const entry = insertResult[0];
 
 		if (project.doubleOptIn) {
-			// Double opt-in enabled: mark entry as pending verification and send verification email
-			const verificationToken = crypto.randomUUID();
-			const verificationExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
-
-			await db
-				.update(entries)
-				.set({
-					status: 'pending_verification',
-					verificationToken,
-					verificationExpiresAt,
-					updatedAt: new Date(),
-				})
-				.where(eq(entries.id, entry.id));
-
 			enqueueNotification({
 				entryId: entry.id,
 				projectId: project.id,

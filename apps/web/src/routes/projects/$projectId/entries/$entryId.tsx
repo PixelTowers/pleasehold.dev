@@ -151,23 +151,27 @@ function EntryDetailPage() {
 					<div className="border-t border-border/50">
 						<div className="border-b border-border/50 py-2">
 							<div className="mb-1 text-xs text-muted-foreground">Status</div>
-							<select
-								value={entry.status}
-								onChange={(e) =>
-									mutation.mutate({
-										projectId,
-										entryId,
-										status: e.target.value as 'new' | 'contacted' | 'converted' | 'archived',
-									})
-								}
-								disabled={mutation.isPending}
-								className="w-full rounded border-0 bg-transparent py-0 text-sm font-medium text-foreground focus:ring-0"
-							>
-								<option value="new">New</option>
-								<option value="contacted">Contacted</option>
-								<option value="converted">Converted</option>
-								<option value="archived">Archived</option>
-							</select>
+							{entry.status === 'pending_verification' ? (
+								<span className="text-sm font-medium text-amber-600">Pending Verification</span>
+							) : (
+								<select
+									value={entry.status}
+									onChange={(e) =>
+										mutation.mutate({
+											projectId,
+											entryId,
+											status: e.target.value as 'new' | 'contacted' | 'converted' | 'archived',
+										})
+									}
+									disabled={mutation.isPending}
+									className="w-full rounded border-0 bg-transparent py-0 text-sm font-medium text-foreground focus:ring-0"
+								>
+									<option value="new">New</option>
+									<option value="contacted">Contacted</option>
+									<option value="converted">Converted</option>
+									<option value="archived">Archived</option>
+								</select>
+							)}
 						</div>
 						<div className="border-b border-border/50 py-2">
 							<div className="mb-0.5 text-xs text-muted-foreground">Display Status</div>

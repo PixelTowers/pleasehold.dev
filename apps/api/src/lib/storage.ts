@@ -38,7 +38,7 @@ export function isStorageConfigured(): boolean {
 export async function createPresignedUploadUrl(
 	key: string,
 	contentType: string,
-	maxSizeBytes = 512 * 1024,
+	_maxSizeBytes = 512 * 1024,
 ): Promise<{ uploadUrl: string; publicUrl: string }> {
 	const client = getS3Client();
 
@@ -46,7 +46,6 @@ export async function createPresignedUploadUrl(
 		Bucket: S3_BUCKET!,
 		Key: key,
 		ContentType: contentType,
-		ContentLength: maxSizeBytes,
 	});
 
 	const uploadUrl = await getSignedUrl(client, command, { expiresIn: 300 });
