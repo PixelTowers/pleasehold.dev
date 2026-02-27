@@ -22,6 +22,11 @@ export const createProjectSchema = z.object({
 		.min(1, 'Project name is required')
 		.max(100, 'Project name must be 100 characters or fewer'),
 	mode: z.enum(['waitlist', 'demo-booking']),
+	companyName: z.string().max(100).optional(),
+	brandColor: z
+		.string()
+		.regex(/^#[0-9a-fA-F]{6}$/, 'Must be a valid hex color')
+		.optional(),
 });
 export type CreateProjectValues = z.infer<typeof createProjectSchema>;
 

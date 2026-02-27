@@ -1,8 +1,10 @@
 // ABOUTME: Dashboard index route showing project card grid or guided creation flow.
 // ABOUTME: Protected route; redirects to login if unauthenticated; shows CreateProjectFlow for zero-project users.
 
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Plus } from 'lucide-react';
+import { useState } from 'react';
+import { CreateProjectDialog } from '@/components/CreateProjectDialog';
 import { CreateProjectFlow } from '@/components/CreateProjectFlow';
 import { ProjectCard } from '@/components/ProjectCard';
 import { Button } from '@/components/ui/button';
@@ -17,6 +19,7 @@ function DashboardIndex() {
 	const { data: session, isPending: sessionLoading } = authClient.useSession();
 	const navigate = useNavigate();
 	const { data: projects, isPending: projectsLoading, error } = useProjects();
+	const [createOpen, setCreateOpen] = useState(false);
 
 	if (sessionLoading) {
 		return (
@@ -66,11 +69,9 @@ function DashboardIndex() {
 					<h1 className="text-xl font-semibold text-foreground">Projects</h1>
 					<span className="text-sm text-muted">{projects.length}</span>
 				</div>
-				<Button asChild size="sm" className="h-7 text-xs">
-					<Link to="/projects/new">
-						<Plus className="mr-1 h-3.5 w-3.5" />
-						New Project
-					</Link>
+				<Button size="sm" className="h-7 text-xs" onClick={() => setCreateOpen(true)}>
+					<Plus className="mr-1 h-3.5 w-3.5" />
+					New Project
 				</Button>
 			</div>
 
@@ -86,6 +87,8 @@ function DashboardIndex() {
 					/>
 				))}
 			</div>
+
+			<CreateProjectDialog open={createOpen} onClose={() => setCreateOpen(false)} />
 		</div>
 	);
 }

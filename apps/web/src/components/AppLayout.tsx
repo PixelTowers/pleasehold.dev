@@ -3,6 +3,7 @@
 
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
+import { CreateProjectDialog } from './CreateProjectDialog';
 import { Sidebar } from './Sidebar';
 
 interface AppLayoutProps {
@@ -11,6 +12,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const [createOpen, setCreateOpen] = useState(false);
 
 	return (
 		<div className="flex h-screen">
@@ -52,12 +54,17 @@ export function AppLayout({ children }: AppLayoutProps) {
 						<X className="h-4 w-4" />
 					</button>
 				</div>
-				<Sidebar onClose={() => setMobileMenuOpen(false)} />
+				<Sidebar
+					onClose={() => setMobileMenuOpen(false)}
+					onCreateProject={() => setCreateOpen(true)}
+				/>
 			</div>
 
 			<main className="flex-1 overflow-y-auto bg-background p-4 pt-14 md:px-5 md:py-4">
 				{children}
 			</main>
+
+			<CreateProjectDialog open={createOpen} onClose={() => setCreateOpen(false)} />
 		</div>
 	);
 }

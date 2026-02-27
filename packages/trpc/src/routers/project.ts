@@ -13,6 +13,11 @@ export const projectRouter = router({
 			z.object({
 				name: z.string().min(1).max(100),
 				mode: z.enum(['waitlist', 'demo-booking']),
+				companyName: z.string().max(100).nullish(),
+				brandColor: z
+					.string()
+					.regex(/^#[0-9a-fA-F]{6}$/)
+					.optional(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -23,6 +28,8 @@ export const projectRouter = router({
 						userId: ctx.user.id,
 						name: input.name,
 						mode: input.mode,
+						companyName: input.companyName ?? null,
+						brandColor: input.brandColor,
 					})
 					.returning();
 
