@@ -1,11 +1,25 @@
 // ABOUTME: tRPC router for project CRUD and field configuration management.
 // ABOUTME: All queries enforce userId ownership checks; mode is immutable after creation.
 
-import { projectFieldConfigs, projects } from '@pleasehold/db';
+import { emailTemplates, projectFieldConfigs, projects } from '@pleasehold/db';
 import { TRPCError } from '@trpc/server';
 import { and, desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { protectedProcedure, router } from '../trpc';
+
+const DEFAULT_VERIFICATION_TEMPLATE = {
+	subject: 'Confirm your email for {{project_name}}',
+	bodyHtml:
+		"<h2>Confirm your email</h2><p>Thanks for signing up for <strong>{{project_name}}</strong>. To complete your submission, please verify your email address by clicking the button below.</p><p>This link will expire in 48 hours. If you didn't request this, you can safely ignore this email.</p>",
+	buttonText: 'Verify Email Address',
+};
+
+const DEFAULT_CONFIRMATION_TEMPLATE = {
+	subject: "You're on the {{project_name}} waitlist!",
+	bodyHtml:
+		"<h2>You're on the list!</h2><p>Hey {{name}}, thanks for joining <strong>{{project_name}}</strong>!</p><p>You're <strong>#{{position}}</strong> on the waitlist. We'll keep you updated as things progress.</p><p>Welcome aboard — we're excited to have you.</p>",
+	buttonText: null,
+};
 
 export const projectRouter = router({
 	create: protectedProcedure
@@ -46,6 +60,24 @@ export const projectRouter = router({
 						collectMessage: isDemoBooking,
 					})
 					.returning();
+
+				// Seed email templates so projects start with polished defaults
+				await tx.insert(emailTemplates).values([
+					{
+						projectId: project.id,
+						type: 'verification' as const,
+						subject: DEFAULT_VERIFICATION_TEMPLATE.subject,
+						bodyHtml: DEFAULT_VERIFICATION_TEMPLATE.bodyHtml,
+						buttonText: DEFAULT_VERIFICATION_TEMPLATE.buttonText,
+					},
+					{
+						projectId: project.id,
+						type: 'confirmation' as const,
+						subject: DEFAULT_CONFIRMATION_TEMPLATE.subject,
+						bodyHtml: DEFAULT_CONFIRMATION_TEMPLATE.bodyHtml,
+						buttonText: DEFAULT_CONFIRMATION_TEMPLATE.buttonText,
+					},
+				]);
 
 				return { ...project, fieldConfig };
 			});

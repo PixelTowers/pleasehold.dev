@@ -3,7 +3,7 @@
 
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ArrowLeft, RotateCcw } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { EmailTemplateEditor } from '@/components/EmailTemplateEditor';
 import { Button } from '@/components/ui/button';
@@ -17,15 +17,15 @@ export const Route = createFileRoute('/projects/$projectId/emails')({
 
 const DEFAULT_TEMPLATES = {
 	verification: {
-		subject: 'Confirm your submission to {{project_name}}',
+		subject: 'Confirm your email for {{project_name}}',
 		bodyHtml:
-			'<p>You submitted your email to <strong>{{project_name}}</strong>. Please click the button below to confirm.</p><p>If you did not submit this, you can safely ignore this email.</p>',
-		buttonText: 'Confirm Submission',
+			"<h2>Confirm your email</h2><p>Thanks for signing up for <strong>{{project_name}}</strong>. To complete your submission, please verify your email address by clicking the button below.</p><p>This link will expire in 48 hours. If you didn't request this, you can safely ignore this email.</p>",
+		buttonText: 'Verify Email Address',
 	},
 	confirmation: {
 		subject: "You're on the {{project_name}} waitlist!",
 		bodyHtml:
-			"<p>Hi {{name}},</p><p>Thanks for joining <strong>{{project_name}}</strong>! You are number <strong>#{{position}}</strong> on the waitlist.</p><p>We'll be in touch soon.</p>",
+			"<h2>You're on the list!</h2><p>Hey {{name}}, thanks for joining <strong>{{project_name}}</strong>!</p><p>You're <strong>#{{position}}</strong> on the waitlist. We'll keep you updated as things progress.</p><p>Welcome aboard — we're excited to have you.</p>",
 		buttonText: '',
 	},
 } satisfies Record<TemplateType, { subject: string; bodyHtml: string; buttonText: string }>;
@@ -45,27 +45,69 @@ const TAB_CONFIG: { type: TemplateType; label: string; description: string }[] =
 	},
 ];
 
+/**
+ * Wrapper that waits for the template query to resolve before rendering the
+ * editor. This guarantees TipTap initializes with the correct content instead
+ * of flashing defaults and then trying to sync after mount.
+ */
 function TemplatePanel({ projectId, type }: { projectId: string; type: TemplateType }) {
 	const defaults = DEFAULT_TEMPLATES[type];
+	const { data: template, isLoading } = trpc.emailTemplate.get.useQuery({ projectId, type });
 
-	const { data: template } = trpc.emailTemplate.get.useQuery({ projectId, type });
+	if (isLoading) {
+		return (
+			<div className="py-8 text-center text-sm text-muted-foreground">Loading template...</div>
+		);
+	}
+
+	return (
+		<TemplatePanelEditor
+			key={`${projectId}-${type}`}
+			projectId={projectId}
+			type={type}
+			initialSubject={template?.subject ?? defaults.subject}
+			initialBodyHtml={template?.bodyHtml ?? defaults.bodyHtml}
+			initialButtonText={template?.buttonText ?? defaults.buttonText}
+			hasCustomTemplate={!!template}
+		/>
+	);
+}
+
+interface TemplatePanelEditorProps {
+	projectId: string;
+	type: TemplateType;
+	initialSubject: string;
+	initialBodyHtml: string;
+	initialButtonText: string;
+	hasCustomTemplate: boolean;
+}
+
+/**
+ * Inner editor component that mounts with the resolved template content.
+ * State is initialized once from props — subsequent edits are local until saved.
+ */
+function TemplatePanelEditor({
+	projectId,
+	type,
+	initialSubject,
+	initialBodyHtml,
+	initialButtonText,
+	hasCustomTemplate,
+}: TemplatePanelEditorProps) {
+	const defaults = DEFAULT_TEMPLATES[type];
 	const utils = trpc.useUtils();
 
-	const [subject, setSubject] = useState(defaults.subject);
-	const [bodyHtml, setBodyHtml] = useState(defaults.bodyHtml);
-	const [buttonText, setButtonText] = useState(defaults.buttonText);
-
-	useEffect(() => {
-		if (template) {
-			setSubject(template.subject);
-			setBodyHtml(template.bodyHtml);
-			setButtonText(template.buttonText ?? '');
-		}
-	}, [template]);
+	const [subject, setSubject] = useState(initialSubject);
+	const [bodyHtml, setBodyHtml] = useState(initialBodyHtml);
+	const [buttonText, setButtonText] = useState(initialButtonText);
+	const [showReset, setShowReset] = useState(hasCustomTemplate);
+	// Incrementing this key forces TipTap to remount with fresh content on reset
+	const [editorKey, setEditorKey] = useState(0);
 
 	const upsert = trpc.emailTemplate.upsert.useMutation({
 		onSuccess: () => {
 			toast.success('Template saved');
+			setShowReset(true);
 			utils.emailTemplate.get.invalidate({ projectId, type });
 		},
 		onError: () => toast.error('Failed to save template'),
@@ -77,6 +119,8 @@ function TemplatePanel({ projectId, type }: { projectId: string; type: TemplateT
 			setSubject(defaults.subject);
 			setBodyHtml(defaults.bodyHtml);
 			setButtonText(defaults.buttonText);
+			setShowReset(false);
+			setEditorKey((k) => k + 1);
 			utils.emailTemplate.get.invalidate({ projectId, type });
 		},
 		onError: () => toast.error('Failed to reset template'),
@@ -88,6 +132,7 @@ function TemplatePanel({ projectId, type }: { projectId: string; type: TemplateT
 		<div>
 			<p className="mb-4 text-xs text-muted-foreground">{desc}</p>
 			<EmailTemplateEditor
+				key={editorKey}
 				subject={subject}
 				onSubjectChange={setSubject}
 				bodyHtml={bodyHtml}
@@ -112,7 +157,7 @@ function TemplatePanel({ projectId, type }: { projectId: string; type: TemplateT
 				>
 					{upsert.isPending ? 'Saving...' : 'Save Template'}
 				</Button>
-				{template && (
+				{showReset && (
 					<Button
 						variant="outline"
 						size="sm"

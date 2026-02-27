@@ -70,6 +70,21 @@ describe('sendConfirmationEmail', () => {
 			const call = mockSend.mock.calls[0][0];
 			expect(call.html).toContain('Hey there');
 		});
+
+		it('wraps body in the email layout', async () => {
+			await sendConfirmationEmail(basePayload);
+
+			const call = mockSend.mock.calls[0][0];
+			expect(call.html).toContain('<!DOCTYPE html>');
+			expect(call.html).toContain('border-radius: 12px');
+		});
+
+		it('includes heading in default template', async () => {
+			await sendConfirmationEmail(basePayload);
+
+			const call = mockSend.mock.calls[0][0];
+			expect(call.html).toContain("You're on the list!");
+		});
 	});
 
 	describe('with branding context', () => {
@@ -140,7 +155,7 @@ describe('sendConfirmationEmail', () => {
 
 			const call = mockSend.mock.calls[0][0];
 			// No button element expected in the body
-			expect(call.html).not.toContain('border-radius: 6px');
+			expect(call.html).not.toContain('border-radius: 8px; font-weight: 600');
 		});
 
 		it('renders a button when buttonText is provided', async () => {

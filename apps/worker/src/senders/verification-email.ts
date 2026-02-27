@@ -15,6 +15,14 @@ interface VerificationEmailContext {
 	customTemplate?: TemplateContext | null;
 }
 
+function buildButtonHtml(text: string, url: string, brandColor: string): string {
+	return `<div style="text-align: center; margin: 32px 0 8px;">
+    <a href="${escapeHtml(url)}" style="background-color: ${escapeHtml(brandColor)}; color: #ffffff; padding: 14px 40px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; display: inline-block;">
+      ${text}
+    </a>
+  </div>`;
+}
+
 export async function sendVerificationEmail(
 	email: string,
 	verificationToken: string,
@@ -26,6 +34,7 @@ export async function sendVerificationEmail(
 	const fromName = context?.emailOptions?.fromName;
 	const from = fromName ? `${fromName} <${fromAddress}>` : fromAddress;
 	const client = getResendClient(context?.emailOptions?.resendApiKey);
+	const brandColor = context?.branding?.brandColor ?? '#5e6ad2';
 
 	const variables: Record<string, string> = {
 		name: '',
@@ -44,35 +53,27 @@ export async function sendVerificationEmail(
 		const renderedBody = renderTemplate(context.customTemplate.bodyHtml, variables);
 		const buttonText = context.customTemplate.buttonText
 			? renderTemplate(context.customTemplate.buttonText, variables)
-			: 'Confirm Submission';
-		const buttonHtml = `<div style="text-align: center; margin: 32px 0;">
-    <a href="${escapeHtml(verificationUrl)}" style="background-color: ${escapeHtml(context?.branding?.brandColor ?? '#5e6ad2')}; color: #fff; padding: 12px 32px; border-radius: 6px; text-decoration: none; font-weight: bold;">
-      ${buttonText}
-    </a>
-  </div>`;
-		htmlBody = `${renderedBody}${buttonHtml}`;
+			: 'Verify Email Address';
+		htmlBody = `${renderedBody}${buildButtonHtml(buttonText, verificationUrl, brandColor)}`;
 	} else {
-		subject = `Confirm your submission to ${projectName}`;
-		htmlBody = `<h2 style="color: #1a1a2e; margin: 0 0 16px;">Confirm your submission</h2>
-  <p>You submitted your email to <strong>${escapeHtml(projectName)}</strong>. Please click the button below to confirm.</p>
-  <div style="text-align: center; margin: 32px 0;">
-    <a href="${escapeHtml(verificationUrl)}" style="background-color: ${escapeHtml(context?.branding?.brandColor ?? '#5e6ad2')}; color: #fff; padding: 12px 32px; border-radius: 6px; text-decoration: none; font-weight: bold;">
-      Confirm Submission
-    </a>
-  </div>
-  <p style="color: #666; font-size: 14px;">If you did not submit this, you can safely ignore this email.</p>
-  <p style="color: #999; font-size: 12px;">Or copy this link: ${escapeHtml(verificationUrl)}</p>`;
+		subject = `Confirm your email for ${projectName}`;
+		htmlBody = `<h2>Confirm your email</h2>
+  <p>Thanks for signing up for <strong>${escapeHtml(projectName)}</strong>. To complete your submission, please verify your email address by clicking the button below.</p>
+  ${buildButtonHtml('Verify Email Address', verificationUrl, brandColor)}
+  <p style="font-size: 13px; color: #a1a1aa; margin: 24px 0 0; line-height: 1.5;">This link will expire in 48 hours. If you didn't request this, you can safely ignore this email.</p>
+  <p style="font-size: 12px; color: #a1a1aa; margin: 8px 0 0; word-break: break-all;">Or copy this link: ${escapeHtml(verificationUrl)}</p>`;
 	}
 
 	const wrappedHtml = wrapInLayout(htmlBody, context?.branding);
 
 	const textBody = [
-		`Please confirm your submission to ${projectName}.`,
+		`Please confirm your email for ${projectName}.`,
 		'',
 		'Click the link below to verify your email:',
 		verificationUrl,
 		'',
-		'If you did not submit this, you can safely ignore this email.',
+		'This link will expire in 48 hours.',
+		'If you did not request this, you can safely ignore this email.',
 	].join('\n');
 
 	await client.emails.send({

@@ -28,7 +28,7 @@ const SAMPLE_DATA: Record<string, string> = {
 	company: 'Acme Corp',
 	project_name: 'My Waitlist',
 	verification_url: 'https://example.com/verify/abc123',
-	logo_url: 'https://placehold.co/120x40/5e6ad2/white?text=Logo',
+	logo_url: 'https://placehold.co/120x40/0d9488/white?text=Logo',
 	company_name: 'Acme Inc',
 };
 

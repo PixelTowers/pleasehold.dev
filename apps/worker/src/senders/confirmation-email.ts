@@ -51,8 +51,8 @@ export async function sendConfirmationEmail(
 		if (context.customTemplate.buttonText) {
 			const buttonText = renderTemplate(context.customTemplate.buttonText, variables);
 			const brandColor = context?.branding?.brandColor ?? '#5e6ad2';
-			htmlBody = `${renderedBody}<div style="text-align: center; margin: 32px 0;">
-    <span style="background-color: ${escapeHtml(brandColor)}; color: #fff; padding: 12px 32px; border-radius: 6px; font-weight: bold; display: inline-block;">
+			htmlBody = `${renderedBody}<div style="text-align: center; margin: 32px 0 8px;">
+    <span style="background-color: ${escapeHtml(brandColor)}; color: #ffffff; padding: 14px 40px; border-radius: 8px; font-weight: 600; font-size: 15px; display: inline-block;">
       ${buttonText}
     </span>
   </div>`;
@@ -62,10 +62,10 @@ export async function sendConfirmationEmail(
 	} else {
 		subject = `You're on the ${payload.projectName} waitlist!`;
 		const displayName = payload.name ? escapeHtml(payload.name) : 'there';
-		htmlBody = `<h2 style="color: #1a1a2e; margin: 0 0 16px;">You're in!</h2>
-  <p>Hey ${displayName}, you've been added to the <strong>${escapeHtml(payload.projectName)}</strong> waitlist.</p>
-  <p>Your position is <strong>#${payload.position}</strong>. We'll keep you posted on updates.</p>
-  <p style="color: #666; font-size: 14px;">Thanks for your interest — stay tuned!</p>`;
+		htmlBody = `<h2>You're on the list!</h2>
+  <p>Hey ${displayName}, thanks for joining <strong>${escapeHtml(payload.projectName)}</strong>!</p>
+  <p>You're <strong>#${payload.position}</strong> on the waitlist. We'll keep you updated as things progress.</p>
+  <p>Welcome aboard — we're excited to have you.</p>`;
 	}
 
 	const wrappedHtml = wrapInLayout(htmlBody, context?.branding);
@@ -75,7 +75,7 @@ export async function sendConfirmationEmail(
 		'',
 		`Your position is #${payload.position}.`,
 		'',
-		"We'll keep you posted on updates. Thanks for your interest!",
+		"We'll keep you updated as things progress. Welcome aboard!",
 	].join('\n');
 
 	await client.emails.send({
