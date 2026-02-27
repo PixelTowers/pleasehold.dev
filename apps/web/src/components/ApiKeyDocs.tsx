@@ -37,7 +37,7 @@ export async function joinWaitlist(formData: FormData) {
   const res = await fetch("${endpoint}", {
     method: "POST",
     headers: {
-      "Authorization": "Bearer ${key}",
+      "x-api-key": "${key}",
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -91,7 +91,7 @@ export const POST: APIRoute = async ({ request }) => {
   const res = await fetch("${endpoint}", {
     method: "POST",
     headers: {
-      "Authorization": "Bearer ${key}",
+      "x-api-key": "${key}",
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -165,7 +165,7 @@ export function WaitlistForm() {
     const res = await fetch("${endpoint}", {
       method: "POST",
       headers: {
-        "Authorization": "Bearer ${key}",
+        "x-api-key": "${key}",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -244,7 +244,7 @@ const res = await fetch("/api/waitlist", {
       const res = await fetch("${endpoint}", {
         method: "POST",
         headers: {
-          "Authorization": "Bearer ${key}",
+          "x-api-key": "${key}",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -273,7 +273,7 @@ const res = await fetch("/api/waitlist", {
 					description:
 						'Use cURL to verify your API key works. Run this in your terminal to submit a test entry.',
 					code: `curl -X POST ${endpoint} \\
-  -H "Authorization: Bearer ${key}" \\
+  -H "x-api-key: ${key}" \\
   -H "Content-Type: application/json" \\
   -d '{
     "email": "test@example.com",
@@ -297,7 +297,7 @@ const res = await fetch("/api/waitlist", {
 					title: 'Include optional fields',
 					description: 'You can also send company, phone, and arbitrary metadata with each entry.',
 					code: `curl -X POST ${endpoint} \\
-  -H "Authorization: Bearer ${key}" \\
+  -H "x-api-key: ${key}" \\
   -H "Content-Type: application/json" \\
   -d '{
     "email": "jane@acme.co",
