@@ -41,7 +41,7 @@ function DashboardIndex() {
 
 	if (error) {
 		return (
-			<div className="mx-auto max-w-3xl">
+			<div className="mx-auto max-w-5xl">
 				<div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-destructive">
 					Failed to load projects. Please try refreshing the page.
 				</div>
@@ -61,22 +61,20 @@ function DashboardIndex() {
 	// Returning user: show project card grid
 	return (
 		<div className="mx-auto max-w-5xl">
-			<div className="mb-6 flex items-center justify-between">
-				<div>
-					<h1 className="text-2xl font-semibold text-foreground">Projects</h1>
-					<p className="mt-1 text-sm text-muted">
-						{projects.length} project{projects.length === 1 ? '' : 's'}
-					</p>
+			<div className="mb-4 flex items-center justify-between">
+				<div className="flex items-baseline gap-2">
+					<h1 className="text-xl font-semibold text-foreground">Projects</h1>
+					<span className="text-sm text-muted">{projects.length}</span>
 				</div>
-				<Button asChild size="sm">
+				<Button asChild size="sm" className="h-7 text-xs">
 					<Link to="/projects/new">
-						<Plus className="mr-1.5 h-4 w-4" />
+						<Plus className="mr-1 h-3.5 w-3.5" />
 						New Project
 					</Link>
 				</Button>
 			</div>
 
-			<div className="grid grid-cols-[repeat(auto-fill,minmax(18rem,1fr))] gap-4">
+			<div className="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-3">
 				{projects.map((project) => (
 					<ProjectCard
 						key={project.id}

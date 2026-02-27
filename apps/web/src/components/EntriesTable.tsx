@@ -8,7 +8,6 @@ import {
 	type RowSelectionState,
 	useReactTable,
 } from '@tanstack/react-table';
-import { Button } from '@/components/ui/button';
 import {
 	Table,
 	TableBody,
@@ -47,7 +46,7 @@ const columns: ColumnDef<Entry, unknown>[] = [
 				type="checkbox"
 				checked={table.getIsAllPageRowsSelected()}
 				onChange={table.getToggleAllPageRowsSelectedHandler()}
-				className="h-4 w-4 rounded border-gray-300"
+				className="h-3.5 w-3.5 rounded border-gray-300"
 			/>
 		),
 		cell: ({ row }) => (
@@ -55,21 +54,24 @@ const columns: ColumnDef<Entry, unknown>[] = [
 				type="checkbox"
 				checked={row.getIsSelected()}
 				onChange={row.getToggleSelectedHandler()}
-				className="h-4 w-4 rounded border-gray-300"
+				className="h-3.5 w-3.5 rounded border-gray-300"
 			/>
 		),
-		size: 40,
+		size: 32,
 	},
 	{
 		accessorKey: 'email',
 		header: 'Email',
+		cell: ({ getValue }) => (
+			<span className="font-medium text-foreground">{getValue() as string}</span>
+		),
 	},
 	{
 		accessorKey: 'name',
 		header: 'Name',
 		cell: ({ getValue }) => {
 			const value = getValue() as string | null;
-			return value ?? '\u2014';
+			return <span className="text-muted">{value ?? '\u2014'}</span>;
 		},
 	},
 	{
@@ -80,6 +82,7 @@ const columns: ColumnDef<Entry, unknown>[] = [
 	{
 		accessorKey: 'position',
 		header: '#',
+		cell: ({ getValue }) => <span className="text-muted">{getValue() as number}</span>,
 	},
 	{
 		accessorKey: 'createdAt',
@@ -87,7 +90,7 @@ const columns: ColumnDef<Entry, unknown>[] = [
 		cell: ({ getValue }) => {
 			const value = getValue() as Date | string;
 			const date = value instanceof Date ? value : new Date(value);
-			return date.toLocaleDateString();
+			return <span className="text-muted">{date.toLocaleDateString()}</span>;
 		},
 	},
 ];
@@ -129,10 +132,7 @@ export function EntriesTable({
 					{table.getHeaderGroups().map((headerGroup) => (
 						<TableRow key={headerGroup.id}>
 							{headerGroup.headers.map((header) => (
-								<TableHead
-									key={header.id}
-									className="text-xs font-medium uppercase tracking-wider text-muted"
-								>
+								<TableHead key={header.id}>
 									{header.isPlaceholder
 										? null
 										: flexRender(header.column.columnDef.header, header.getContext())}
@@ -155,7 +155,7 @@ export function EntriesTable({
 						table.getRowModel().rows.map((row) => (
 							<TableRow
 								key={row.id}
-								className="cursor-pointer hover:bg-accent"
+								className="cursor-pointer"
 								onClick={(e) => {
 									const target = e.target as HTMLElement;
 									if (
@@ -179,32 +179,30 @@ export function EntriesTable({
 			</Table>
 
 			{/* Pagination controls */}
-			<div className="flex items-center justify-between px-3 py-3 text-sm text-muted">
+			<div className="flex items-center justify-between px-2 py-2 text-xs text-muted">
 				<span>
-					Showing {startEntry} to {endEntry} of {total} entries
+					{startEntry}–{endEntry} of {total}
 				</span>
-				<div className="flex items-center gap-2">
-					<Button
-						variant="outline"
-						size="sm"
-						className="h-7"
+				<div className="flex items-center gap-1">
+					<button
+						type="button"
+						className="rounded px-2 py-1 text-xs text-muted hover:bg-accent hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent"
 						disabled={page <= 1}
 						onClick={() => onPageChange(page - 1)}
 					>
 						Previous
-					</Button>
-					<span>
-						Page {page} of {totalPages || 1}
+					</button>
+					<span className="px-1">
+						{page}/{totalPages || 1}
 					</span>
-					<Button
-						variant="outline"
-						size="sm"
-						className="h-7"
+					<button
+						type="button"
+						className="rounded px-2 py-1 text-xs text-muted hover:bg-accent hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent"
 						disabled={page >= totalPages}
 						onClick={() => onPageChange(page + 1)}
 					>
 						Next
-					</Button>
+					</button>
 				</div>
 			</div>
 		</div>

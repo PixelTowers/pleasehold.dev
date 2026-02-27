@@ -1,5 +1,5 @@
 // ABOUTME: Dashboard card component displaying a project summary at a glance.
-// ABOUTME: Shows project name, mode badge, entry count, and last activity with a link to project overview.
+// ABOUTME: Shows project name, mode badge, and last activity in a card grid layout.
 
 import { Link } from '@tanstack/react-router';
 import { Badge } from '@/components/ui/badge';
@@ -36,21 +36,19 @@ function formatRelativeTime(date: Date): string {
 export function ProjectCard({ id, name, mode, createdAt, updatedAt }: ProjectCardProps) {
 	return (
 		<Link to="/projects/$projectId" params={{ projectId: id }} className="block no-underline">
-			<Card className="p-5 transition-shadow hover:shadow-md hover:border-gray-300">
+			<Card className="p-4 transition-colors hover:bg-accent">
 				<div className="mb-3 flex items-start justify-between">
 					<h3 className="text-sm font-semibold text-foreground">{name}</h3>
-					<Badge variant="secondary" className={cn('border-0 font-medium', modeBadgeClasses[mode])}>
-						{mode === 'demo-booking' ? 'Demo Booking' : 'Waitlist'}
+					<Badge
+						variant="secondary"
+						className={cn('border-0 text-[10px] font-medium px-1.5 py-0', modeBadgeClasses[mode])}
+					>
+						{mode === 'demo-booking' ? 'Demo' : 'Waitlist'}
 					</Badge>
 				</div>
-
-				<div className="flex justify-between text-[0.8125rem] text-muted">
-					<span>0 entries</span>
+				<div className="flex justify-between text-xs text-muted">
 					<span>Active {formatRelativeTime(updatedAt)}</span>
-				</div>
-
-				<div className="mt-2 text-xs text-muted-foreground">
-					Created {new Date(createdAt).toLocaleDateString()}
+					<span className="text-muted-foreground">{new Date(createdAt).toLocaleDateString()}</span>
 				</div>
 			</Card>
 		</Link>

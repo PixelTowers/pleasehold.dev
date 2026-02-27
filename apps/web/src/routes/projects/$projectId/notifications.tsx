@@ -8,8 +8,14 @@ import { toast } from 'sonner';
 import { NotificationChannelForm } from '@/components/NotificationChannelForm';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from '@/components/ui/dialog';
 import { useProject } from '@/hooks/useProjects';
 import { trpc } from '@/lib/trpc';
 import { cn } from '@/lib/utils';
@@ -210,6 +216,8 @@ function NotificationSettingsPage() {
 		toggleDoubleOptIn.mutate({ projectId, enabled });
 	};
 
+	const deleteTarget = channels?.find((ch) => ch.id === deleteConfirmId);
+
 	if (projectPending) {
 		return (
 			<div className="py-16 text-center">
@@ -248,16 +256,18 @@ function NotificationSettingsPage() {
 				<span className="font-medium text-foreground">Notifications</span>
 			</div>
 
-			<h1 className="mb-8 text-2xl font-semibold text-foreground">Notification Settings</h1>
+			<h1 className="mb-6 text-xl font-semibold text-foreground">Notification Settings</h1>
 
-			{/* Double Opt-In Toggle */}
-			<Card className="mb-6 p-5">
-				<h3 className="mb-1 text-base font-semibold">Email Verification</h3>
-				<div className="flex items-center justify-between py-3">
+			{/* Email Verification section */}
+			<div className="mb-8">
+				<h2 className="mb-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+					Email Verification
+				</h2>
+				<div className="flex items-center justify-between border-t border-b border-border/50 py-3">
 					<div>
 						<div className="text-sm font-medium">Require email verification</div>
 						<div className="text-xs text-muted-foreground">
-							New submissions will require email confirmation before becoming active entries
+							Submissions require email confirmation before becoming active entries
 						</div>
 					</div>
 					<ToggleSwitch
@@ -266,19 +276,19 @@ function NotificationSettingsPage() {
 						disabled={toggleDoubleOptIn.isPending}
 					/>
 				</div>
-			</Card>
+			</div>
 
-			{/* Notification Channels */}
-			<Card className="mb-6 p-5">
-				<div className="mb-4 flex items-center justify-between">
-					<h3 className="text-base font-semibold">Notification Channels</h3>
+			{/* Notification Channels section */}
+			<div className="mb-8">
+				<div className="mb-2 flex items-center justify-between">
+					<h2 className="text-[11px] uppercase tracking-wider text-muted-foreground">Channels</h2>
 					{!addingType && (
 						<select
 							value=""
 							onChange={(e) => {
 								if (e.target.value) setAddingType(e.target.value as ChannelType);
 							}}
-							className="rounded-md border border-input bg-card px-3 py-1.5 text-sm"
+							className="h-7 rounded-md border border-border/50 bg-transparent px-2 text-xs text-muted hover:text-foreground"
 						>
 							<option value="" disabled>
 								+ Add channel
@@ -292,143 +302,155 @@ function NotificationSettingsPage() {
 					)}
 				</div>
 
-				{/* Add channel form */}
-				{addingType && (
-					<div className="mb-4 rounded-md border bg-accent p-4">
-						<h4 className="mb-4 text-sm font-semibold">
-							Add {channelTypeLabels[addingType]} Channel
-						</h4>
-						<NotificationChannelForm
-							type={addingType}
-							onSubmit={(config) => {
-								createChannel.mutate({ projectId, type: addingType, config });
-							}}
-							onCancel={() => setAddingType(null)}
-							isLoading={createChannel.isPending}
-						/>
-					</div>
-				)}
+				{/* Add channel form — shown in a Dialog */}
+				<Dialog open={!!addingType} onOpenChange={(open) => !open && setAddingType(null)}>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>
+								Add {addingType ? channelTypeLabels[addingType] : ''} Channel
+							</DialogTitle>
+						</DialogHeader>
+						{addingType && (
+							<NotificationChannelForm
+								type={addingType}
+								onSubmit={(config) => {
+									createChannel.mutate({ projectId, type: addingType, config });
+								}}
+								onCancel={() => setAddingType(null)}
+								isLoading={createChannel.isPending}
+							/>
+						)}
+					</DialogContent>
+				</Dialog>
 
-				{channelsPending && <p className="text-sm text-muted">Loading channels...</p>}
+				{/* Edit channel — shown in a Dialog */}
+				<Dialog
+					open={!!editingChannelId}
+					onOpenChange={(open) => !open && setEditingChannelId(null)}
+				>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>Edit Channel</DialogTitle>
+						</DialogHeader>
+						{editingChannelId &&
+							(() => {
+								const editChannel = channels?.find((ch) => ch.id === editingChannelId);
+								if (!editChannel) return null;
+								return (
+									<NotificationChannelForm
+										type={editChannel.type as ChannelType}
+										initialConfig={editChannel.config}
+										onSubmit={(config) => {
+											updateChannel.mutate({ projectId, channelId: editingChannelId, config });
+										}}
+										onCancel={() => setEditingChannelId(null)}
+										isLoading={updateChannel.isPending}
+									/>
+								);
+							})()}
+					</DialogContent>
+				</Dialog>
 
-				{channels && channels.length === 0 && !addingType && (
-					<p className="py-8 text-center text-sm text-muted-foreground">
-						No notification channels configured. Add a channel to get notified about new
-						submissions.
-					</p>
-				)}
+				<div className="border-t border-border/50">
+					{channelsPending && <p className="py-4 text-sm text-muted">Loading channels...</p>}
 
-				{channels && channels.length > 0 && (
-					<div className="flex flex-col gap-2">
-						{channels.map((channel) => (
-							<div key={channel.id} className="flex flex-col rounded-md border bg-card">
-								<div className="flex items-center justify-between px-4 py-3">
-									<div className="min-w-0 flex-1">
-										<div className="flex items-center gap-2">
-											<span
-												className={cn(
-													'text-sm font-medium',
-													!channel.enabled && 'text-muted-foreground',
-												)}
-											>
-												{channelTypeLabels[channel.type as ChannelType] ?? channel.type}
-											</span>
-											{!channel.enabled && (
-												<Badge variant="secondary" className="text-[0.6875rem]">
-													Disabled
-												</Badge>
-											)}
-										</div>
-										<div className="mt-0.5 truncate text-xs text-muted-foreground">
-											{channelConfigSummary(channel.type, channel.config)}
-										</div>
-									</div>
+					{channels && channels.length === 0 && !addingType && (
+						<p className="py-8 text-center text-sm text-muted-foreground">
+							No notification channels configured. Add a channel to get notified about submissions.
+						</p>
+					)}
+
+					{channels &&
+						channels.length > 0 &&
+						channels.map((channel) => (
+							<div
+								key={channel.id}
+								className="flex items-center justify-between border-b border-border/50 py-2.5"
+							>
+								<div className="min-w-0 flex-1">
 									<div className="flex items-center gap-2">
-										{channel.type === 'webhook' && (
-											<Button
-												variant="outline"
-												size="sm"
-												className="h-7 text-xs"
-												disabled={regenerateSecret.isPending}
-												onClick={() =>
-													regenerateSecret.mutate({ projectId, channelId: channel.id })
-												}
-											>
-												Regenerate Secret
-											</Button>
+										<span
+											className={cn(
+												'text-sm font-medium',
+												!channel.enabled && 'text-muted-foreground',
+											)}
+										>
+											{channelTypeLabels[channel.type as ChannelType] ?? channel.type}
+										</span>
+										{!channel.enabled && (
+											<Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+												Off
+											</Badge>
 										)}
-										<Button
-											variant="outline"
-											size="sm"
-											className="h-7 text-xs"
-											onClick={() =>
-												setEditingChannelId(editingChannelId === channel.id ? null : channel.id)
-											}
-										>
-											{editingChannelId === channel.id ? 'Cancel' : 'Edit'}
-										</Button>
-										<ToggleSwitch
-											checked={channel.enabled}
-											onChange={(val) => handleToggleEnabled(channel.id, val)}
-											disabled={updateChannel.isPending}
-										/>
-										<Button
-											variant="outline"
-											size="sm"
-											className="h-7 border-red-200 text-xs text-destructive hover:bg-red-50"
-											onClick={() => setDeleteConfirmId(channel.id)}
-										>
-											Delete
-										</Button>
+									</div>
+									<div className="mt-0.5 truncate text-xs text-muted-foreground">
+										{channelConfigSummary(channel.type, channel.config)}
 									</div>
 								</div>
-
-								{editingChannelId === channel.id && (
-									<div className="border-t bg-accent p-4">
-										<NotificationChannelForm
-											type={channel.type as ChannelType}
-											initialConfig={channel.config}
-											onSubmit={(config) => {
-												updateChannel.mutate({ projectId, channelId: channel.id, config });
-											}}
-											onCancel={() => setEditingChannelId(null)}
-											isLoading={updateChannel.isPending}
-										/>
-									</div>
-								)}
-
-								{deleteConfirmId === channel.id && (
-									<div className="flex items-center justify-between border-t border-red-200 bg-red-50 p-4">
-										<span className="text-sm text-destructive">
-											Delete this {channelTypeLabels[channel.type as ChannelType] ?? channel.type}{' '}
-											channel?
-										</span>
-										<div className="flex gap-2">
-											<Button
-												variant="outline"
-												size="sm"
-												className="h-7"
-												onClick={() => setDeleteConfirmId(null)}
-											>
-												Cancel
-											</Button>
-											<Button
-												variant="destructive"
-												size="sm"
-												className="h-7"
-												disabled={deleteChannel.isPending}
-												onClick={() => deleteChannel.mutate({ projectId, channelId: channel.id })}
-											>
-												{deleteChannel.isPending ? 'Deleting...' : 'Confirm Delete'}
-											</Button>
-										</div>
-									</div>
-								)}
+								<div className="flex items-center gap-2">
+									{channel.type === 'webhook' && (
+										<button
+											type="button"
+											className="rounded px-2 py-0.5 text-xs text-muted hover:bg-accent hover:text-foreground"
+											disabled={regenerateSecret.isPending}
+											onClick={() => regenerateSecret.mutate({ projectId, channelId: channel.id })}
+										>
+											Regenerate
+										</button>
+									)}
+									<button
+										type="button"
+										className="rounded px-2 py-0.5 text-xs text-muted hover:bg-accent hover:text-foreground"
+										onClick={() => setEditingChannelId(channel.id)}
+									>
+										Edit
+									</button>
+									<ToggleSwitch
+										checked={channel.enabled}
+										onChange={(val) => handleToggleEnabled(channel.id, val)}
+										disabled={updateChannel.isPending}
+									/>
+									<button
+										type="button"
+										className="rounded px-2 py-0.5 text-xs text-destructive hover:bg-red-50"
+										onClick={() => setDeleteConfirmId(channel.id)}
+									>
+										Delete
+									</button>
+								</div>
 							</div>
 						))}
-					</div>
-				)}
-			</Card>
+				</div>
+			</div>
+
+			{/* Delete confirmation dialog */}
+			<Dialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+				<DialogContent className="max-w-sm">
+					<DialogHeader>
+						<DialogTitle>Delete Channel</DialogTitle>
+						<DialogDescription>
+							Are you sure you want to delete this{' '}
+							{deleteTarget ? channelTypeLabels[deleteTarget.type as ChannelType] : ''} channel?
+							This action cannot be undone.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button variant="outline" size="sm" onClick={() => setDeleteConfirmId(null)}>
+							Cancel
+						</Button>
+						<Button
+							variant="destructive"
+							size="sm"
+							disabled={deleteChannel.isPending}
+							onClick={() =>
+								deleteConfirmId && deleteChannel.mutate({ projectId, channelId: deleteConfirmId })
+							}
+						>
+							{deleteChannel.isPending ? 'Deleting...' : 'Delete'}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 
 			{revealedSecret && (
 				<SecretRevealDialog secret={revealedSecret} onClose={() => setRevealedSecret(null)} />

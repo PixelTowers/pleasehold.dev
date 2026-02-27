@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 import { FieldConfigForm } from '@/components/FieldConfigForm';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import {
 	Form,
 	FormControl,
@@ -108,61 +107,71 @@ function ProjectSettingsPage() {
 				</Link>
 			</div>
 
-			<h1 className="mb-8 text-2xl font-semibold text-foreground">Project Settings</h1>
+			<h1 className="mb-6 text-xl font-semibold text-foreground">Project Settings</h1>
 
-			{/* Project Name */}
-			<Card className="mb-6 p-5">
-				<h3 className="mb-4 text-base font-semibold">General</h3>
+			{/* General section */}
+			<div className="mb-8">
+				<h2 className="mb-2 text-[11px] uppercase tracking-wider text-muted-foreground">General</h2>
+				<div className="border-t border-border/50">
+					<div className="border-b border-border/50 py-3">
+						<Form {...form}>
+							<form onSubmit={form.handleSubmit(onSubmit)}>
+								<FormField
+									control={form.control}
+									name="name"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel className="text-xs text-muted-foreground">Project name</FormLabel>
+											<div className="flex gap-2">
+												<FormControl>
+													<Input type="text" maxLength={100} className="h-8 flex-1" {...field} />
+												</FormControl>
+												<Button
+													type="submit"
+													size="sm"
+													className="h-8 text-xs"
+													disabled={
+														updateProject.isPending ||
+														!form.watch('name').trim() ||
+														form.watch('name').trim() === project.name
+													}
+												>
+													{updateProject.isPending ? 'Saving...' : 'Save'}
+												</Button>
+											</div>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</form>
+						</Form>
+					</div>
 
-				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)}>
-						<div className="mb-4">
-							<FormField
-								control={form.control}
-								name="name"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Project name</FormLabel>
-										<div className="flex gap-2">
-											<FormControl>
-												<Input type="text" maxLength={100} className="flex-1" {...field} />
-											</FormControl>
-											<Button
-												type="submit"
-												disabled={
-													updateProject.isPending ||
-													!form.watch('name').trim() ||
-													form.watch('name').trim() === project.name
-												}
-											>
-												{updateProject.isPending ? 'Saving...' : 'Save'}
-											</Button>
-										</div>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+					{/* Mode display */}
+					<div className="flex items-center border-b border-border/50 py-3">
+						<div className="flex-1">
+							<Label className="mb-0.5 block text-xs text-muted-foreground">Mode</Label>
+							<div className="flex items-center gap-2">
+								<Badge
+									variant="secondary"
+									className={cn(
+										'border-0 text-[10px] font-medium px-1.5 py-0',
+										modeBadgeClasses[project.mode],
+									)}
+								>
+									{project.mode === 'demo-booking' ? 'Demo Booking' : 'Waitlist'}
+								</Badge>
+								<span className="text-xs text-muted-foreground">
+									Cannot be changed after creation
+								</span>
+							</div>
 						</div>
-					</form>
-				</Form>
-
-				{/* Mode display (read-only) */}
-				<div>
-					<Label className="mb-1.5 block">Mode</Label>
-					<div className="flex items-center gap-2">
-						<Badge
-							variant="secondary"
-							className={cn('border-0 font-medium', modeBadgeClasses[project.mode])}
-						>
-							{project.mode === 'demo-booking' ? 'Demo Booking' : 'Waitlist'}
-						</Badge>
-						<span className="text-xs text-muted-foreground">Cannot be changed after creation</span>
 					</div>
 				</div>
-			</Card>
+			</div>
 
-			{/* Field Configuration */}
-			<Card className="p-5">
+			{/* Field Configuration section */}
+			<div>
 				{project.fieldConfig && (
 					<FieldConfigForm
 						projectId={projectId}
@@ -171,7 +180,7 @@ function ProjectSettingsPage() {
 						collectMessage={project.fieldConfig.collectMessage}
 					/>
 				)}
-			</Card>
+			</div>
 		</div>
 	);
 }

@@ -1,12 +1,10 @@
 // ABOUTME: Entry detail page displaying all fields, metadata, and timestamps for a single entry.
-// ABOUTME: Provides status management via dropdown and breadcrumb navigation back to entries list.
+// ABOUTME: Two-column layout with main content left and properties sidebar right, Linear-style.
 
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { EntryStatusBadge } from '@/components/EntryStatusBadge';
-import { Card } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { trpc } from '@/lib/trpc';
 
 export const Route = createFileRoute('/projects/$projectId/entries/$entryId')({
@@ -42,7 +40,7 @@ function EntryDetailPage() {
 	if (error) {
 		const isNotFound = error.message === 'Entry not found';
 		return (
-			<div className="mx-auto max-w-3xl">
+			<div className="mx-auto max-w-4xl">
 				<div className="mb-4">
 					<Link
 						to="/projects/$projectId/entries"
@@ -74,7 +72,7 @@ function EntryDetailPage() {
 			: [];
 
 	return (
-		<div className="mx-auto max-w-3xl">
+		<div className="mx-auto max-w-4xl">
 			{/* Breadcrumb */}
 			<div className="mb-6">
 				<Link
@@ -87,93 +85,113 @@ function EntryDetailPage() {
 				</Link>
 			</div>
 
-			{/* Header row */}
-			<div className="mb-6 flex items-center gap-3">
-				<h1 className="text-2xl font-semibold text-foreground">{entry.email}</h1>
-				<EntryStatusBadge status={entry.status} />
+			{/* Header */}
+			<div className="mb-6">
+				<h1 className="text-xl font-semibold text-foreground">{entry.email}</h1>
 			</div>
 
-			{/* Status selector */}
-			<div className="mb-6 flex items-center gap-3">
-				<Label htmlFor="status-select">Status:</Label>
-				<select
-					id="status-select"
-					value={entry.status}
-					onChange={(e) =>
-						mutation.mutate({
-							projectId,
-							entryId,
-							status: e.target.value as 'new' | 'contacted' | 'converted' | 'archived',
-						})
-					}
-					disabled={mutation.isPending}
-					className="rounded-md border border-input bg-card px-3 py-1.5 text-sm"
-				>
-					<option value="new">New</option>
-					<option value="contacted">Contacted</option>
-					<option value="converted">Converted</option>
-					<option value="archived">Archived</option>
-				</select>
-			</div>
-
-			{/* Details card */}
-			<Card className="mb-6 p-6">
-				<h2 className="mb-4 text-base font-semibold">Details</h2>
-				<div className="grid grid-cols-[10rem_1fr] gap-x-4 gap-y-3">
-					<span className="text-sm font-medium text-muted">Email</span>
-					<span className="text-sm text-foreground">{entry.email}</span>
-
-					<span className="text-sm font-medium text-muted">Name</span>
-					<span className="text-sm text-foreground">{entry.name ?? '\u2014'}</span>
-
-					<span className="text-sm font-medium text-muted">Company</span>
-					<span className="text-sm text-foreground">{entry.company ?? '\u2014'}</span>
-
-					<span className="text-sm font-medium text-muted">Message</span>
-					<span className="text-sm text-foreground">{entry.message ?? '\u2014'}</span>
-
-					<span className="text-sm font-medium text-muted">Queue Position</span>
-					<span className="text-sm text-foreground">#{entry.position}</span>
-
-					<span className="text-sm font-medium text-muted">Status</span>
-					<span className="text-sm">
-						<EntryStatusBadge status={entry.status} />
-					</span>
-
-					<span className="text-sm font-medium text-muted">Submitted</span>
-					<span className="text-sm text-foreground">
-						{new Date(entry.createdAt).toLocaleString()}
-					</span>
-
-					<span className="text-sm font-medium text-muted">Last Updated</span>
-					<span className="text-sm text-foreground">
-						{new Date(entry.updatedAt).toLocaleString()}
-					</span>
-				</div>
-			</Card>
-
-			{/* Metadata section */}
-			<h2 className="mb-3 text-base font-semibold">Metadata</h2>
-			{metadataEntries.length > 0 ? (
-				<Card className="p-6">
-					<div className="grid grid-cols-[10rem_1fr] gap-x-4 gap-y-3">
-						{metadataEntries.map(([key, value]) => (
-							<>
-								<span key={`${key}-label`} className="text-sm font-medium text-muted">
-									{key}
-								</span>
-								<span key={`${key}-value`} className="text-sm text-foreground">
-									{String(value)}
-								</span>
-							</>
-						))}
+			{/* Two-column layout */}
+			<div className="flex gap-8">
+				{/* Main content — left column */}
+				<div className="min-w-0 flex-1">
+					{/* Details */}
+					<div className="mb-6">
+						<h2 className="mb-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+							Details
+						</h2>
+						<div className="border-t border-border/50">
+							<div className="flex border-b border-border/50 py-2">
+								<span className="w-28 shrink-0 text-xs text-muted-foreground">Email</span>
+								<span className="text-sm text-foreground">{entry.email}</span>
+							</div>
+							<div className="flex border-b border-border/50 py-2">
+								<span className="w-28 shrink-0 text-xs text-muted-foreground">Name</span>
+								<span className="text-sm text-foreground">{entry.name ?? '\u2014'}</span>
+							</div>
+							<div className="flex border-b border-border/50 py-2">
+								<span className="w-28 shrink-0 text-xs text-muted-foreground">Company</span>
+								<span className="text-sm text-foreground">{entry.company ?? '\u2014'}</span>
+							</div>
+							{entry.message && (
+								<div className="flex border-b border-border/50 py-2">
+									<span className="w-28 shrink-0 text-xs text-muted-foreground">Message</span>
+									<span className="text-sm text-foreground">{entry.message}</span>
+								</div>
+							)}
+						</div>
 					</div>
-				</Card>
-			) : (
-				<Card className="bg-accent p-6 text-center">
-					<p className="text-sm text-muted-foreground">No metadata attached</p>
-				</Card>
-			)}
+
+					{/* Metadata */}
+					<div>
+						<h2 className="mb-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+							Metadata
+						</h2>
+						{metadataEntries.length > 0 ? (
+							<div className="border-t border-border/50">
+								{metadataEntries.map(([key, value]) => (
+									<div key={key} className="flex border-b border-border/50 py-2">
+										<span className="w-28 shrink-0 text-xs text-muted-foreground">{key}</span>
+										<span className="text-sm text-foreground">{String(value)}</span>
+									</div>
+								))}
+							</div>
+						) : (
+							<div className="border-t border-border/50 py-6 text-center">
+								<p className="text-sm text-muted-foreground">No metadata attached</p>
+							</div>
+						)}
+					</div>
+				</div>
+
+				{/* Properties sidebar — right column */}
+				<div className="w-56 shrink-0">
+					<h2 className="mb-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+						Properties
+					</h2>
+					<div className="border-t border-border/50">
+						<div className="border-b border-border/50 py-2">
+							<div className="mb-1 text-xs text-muted-foreground">Status</div>
+							<select
+								value={entry.status}
+								onChange={(e) =>
+									mutation.mutate({
+										projectId,
+										entryId,
+										status: e.target.value as 'new' | 'contacted' | 'converted' | 'archived',
+									})
+								}
+								disabled={mutation.isPending}
+								className="w-full rounded border-0 bg-transparent py-0 text-sm font-medium text-foreground focus:ring-0"
+							>
+								<option value="new">New</option>
+								<option value="contacted">Contacted</option>
+								<option value="converted">Converted</option>
+								<option value="archived">Archived</option>
+							</select>
+						</div>
+						<div className="border-b border-border/50 py-2">
+							<div className="mb-0.5 text-xs text-muted-foreground">Display Status</div>
+							<EntryStatusBadge status={entry.status} />
+						</div>
+						<div className="border-b border-border/50 py-2">
+							<div className="mb-0.5 text-xs text-muted-foreground">Position</div>
+							<span className="text-sm text-foreground">#{entry.position}</span>
+						</div>
+						<div className="border-b border-border/50 py-2">
+							<div className="mb-0.5 text-xs text-muted-foreground">Submitted</div>
+							<span className="text-sm text-foreground">
+								{new Date(entry.createdAt).toLocaleString()}
+							</span>
+						</div>
+						<div className="border-b border-border/50 py-2">
+							<div className="mb-0.5 text-xs text-muted-foreground">Updated</div>
+							<span className="text-sm text-foreground">
+								{new Date(entry.updatedAt).toLocaleString()}
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	);
 }

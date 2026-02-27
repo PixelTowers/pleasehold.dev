@@ -2,9 +2,15 @@
 // ABOUTME: Only shows first 8 chars via start field; never displays full key or hash.
 
 import { useCallback, useState } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from '@/components/ui/dialog';
 import {
 	Table,
 	TableBody,
@@ -40,6 +46,8 @@ export function ApiKeyList({ projectId }: ApiKeyListProps) {
 		[revokeKey],
 	);
 
+	const revokeTarget = keys?.find((k) => k.id === revokeConfirmId);
+
 	if (isPending) {
 		return (
 			<div className="py-8 text-center">
@@ -58,47 +66,37 @@ export function ApiKeyList({ projectId }: ApiKeyListProps) {
 
 	if (!keys || keys.length === 0) {
 		return (
-			<Card className="bg-accent p-12 text-center">
-				<p className="text-sm text-muted">
+			<div className="py-12 text-center">
+				<p className="text-sm text-muted-foreground">
 					No API keys yet. Create one to start accepting submissions.
 				</p>
-			</Card>
+			</div>
 		);
 	}
 
 	return (
-		<Card className="overflow-hidden">
+		<>
 			<Table>
 				<TableHeader>
 					<TableRow>
-						<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted">
-							Label
-						</TableHead>
-						<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted">
-							Key
-						</TableHead>
-						<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted">
-							Status
-						</TableHead>
-						<TableHead className="text-xs font-semibold uppercase tracking-wider text-muted">
-							Created
-						</TableHead>
-						<TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted">
-							Actions
-						</TableHead>
+						<TableHead>Label</TableHead>
+						<TableHead>Key</TableHead>
+						<TableHead>Status</TableHead>
+						<TableHead>Created</TableHead>
+						<TableHead className="text-right">Actions</TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
 					{keys.map((key) => (
-						<TableRow key={key.id} className={cn(!key.enabled && 'bg-accent')}>
+						<TableRow key={key.id} className={cn(!key.enabled && 'opacity-50')}>
 							<TableCell className={cn('font-medium', !key.enabled && 'text-muted-foreground')}>
 								{key.name || 'API Key'}
 							</TableCell>
 							<TableCell>
 								<code
 									className={cn(
-										'rounded px-2 py-0.5 font-mono text-[0.8125rem]',
-										key.enabled ? 'bg-gray-100 text-foreground' : 'text-muted-foreground',
+										'rounded bg-accent px-1.5 py-0.5 font-mono text-xs',
+										!key.enabled && 'text-muted-foreground',
 									)}
 								>
 									{key.prefix}
@@ -107,62 +105,61 @@ export function ApiKeyList({ projectId }: ApiKeyListProps) {
 							</TableCell>
 							<TableCell>
 								{key.enabled ? (
-									<Badge
-										variant="secondary"
-										className="border-0 bg-green-100 text-green-800 hover:bg-green-100"
-									>
+									<span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-700">
+										<span className="h-1.5 w-1.5 rounded-full bg-green-500" />
 										Active
-									</Badge>
+									</span>
 								) : (
-									<Badge
-										variant="secondary"
-										className="border-0 bg-red-100 text-red-800 hover:bg-red-100"
-									>
+									<span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted">
+										<span className="h-1.5 w-1.5 rounded-full bg-gray-400" />
 										Revoked
-									</Badge>
+									</span>
 								)}
 							</TableCell>
-							<TableCell className="text-[0.8125rem] text-muted">
+							<TableCell className="text-xs text-muted">
 								{new Date(key.createdAt).toLocaleDateString()}
 							</TableCell>
 							<TableCell className="text-right">
-								{key.enabled && revokeConfirmId !== key.id && (
-									<Button
-										variant="outline"
-										size="sm"
-										className="h-7 border-red-200 text-xs text-destructive hover:bg-red-50"
+								{key.enabled && (
+									<button
+										type="button"
+										className="rounded px-2 py-0.5 text-xs text-destructive hover:bg-red-50"
 										onClick={() => setRevokeConfirmId(key.id)}
 									>
 										Revoke
-									</Button>
-								)}
-								{key.enabled && revokeConfirmId === key.id && (
-									<div className="flex items-center justify-end gap-1.5">
-										<span className="text-xs text-destructive">Are you sure?</span>
-										<Button
-											size="sm"
-											variant="destructive"
-											className="h-7 text-xs"
-											disabled={revokeKey.isPending}
-											onClick={() => handleRevoke(key.id)}
-										>
-											{revokeKey.isPending ? '...' : 'Yes'}
-										</Button>
-										<Button
-											size="sm"
-											variant="outline"
-											className="h-7 text-xs"
-											onClick={() => setRevokeConfirmId(null)}
-										>
-											No
-										</Button>
-									</div>
+									</button>
 								)}
 							</TableCell>
 						</TableRow>
 					))}
 				</TableBody>
 			</Table>
-		</Card>
+
+			{/* Revoke confirmation dialog */}
+			<Dialog open={!!revokeConfirmId} onOpenChange={(open) => !open && setRevokeConfirmId(null)}>
+				<DialogContent className="max-w-sm">
+					<DialogHeader>
+						<DialogTitle>Revoke API Key</DialogTitle>
+						<DialogDescription>
+							Are you sure you want to revoke <strong>{revokeTarget?.name || 'this key'}</strong>?
+							This action cannot be undone. Any integrations using this key will stop working.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button variant="outline" size="sm" onClick={() => setRevokeConfirmId(null)}>
+							Cancel
+						</Button>
+						<Button
+							variant="destructive"
+							size="sm"
+							disabled={revokeKey.isPending}
+							onClick={() => revokeConfirmId && handleRevoke(revokeConfirmId)}
+						>
+							{revokeKey.isPending ? 'Revoking...' : 'Revoke Key'}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+		</>
 	);
 }

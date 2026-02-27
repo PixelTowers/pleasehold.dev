@@ -1,8 +1,6 @@
 // ABOUTME: Action bar for bulk status changes on selected entries, shown above the entries table.
 // ABOUTME: Renders status change buttons when one or more entries are selected; hidden when none selected.
 
-import { Button } from '@/components/ui/button';
-
 interface BulkActionBarProps {
 	selectedCount: number;
 	onStatusChange: (status: string) => void;
@@ -17,21 +15,19 @@ export function BulkActionBar({ selectedCount, onStatusChange, isPending }: Bulk
 	}
 
 	return (
-		<div className="mb-4 flex items-center gap-3 rounded-md border border-blue-200 bg-blue-50 px-4 py-2 text-sm">
-			<span className="font-medium">{selectedCount} selected</span>
-			<span className="text-muted">Set status:</span>
+		<div className="flex items-center gap-3 border-b border-border/50 bg-accent/50 px-2 py-1.5 text-xs">
+			<span className="font-medium text-foreground">{selectedCount} selected</span>
+			<span className="text-muted-foreground">Set status:</span>
 			{statuses.map((status) => (
-				<Button
+				<button
 					key={status}
 					type="button"
-					variant="outline"
-					size="sm"
-					className="h-7 text-xs"
+					className="rounded px-2 py-0.5 text-xs text-muted hover:bg-accent hover:text-foreground disabled:opacity-40"
 					disabled={isPending}
 					onClick={() => onStatusChange(status)}
 				>
 					{status.charAt(0).toUpperCase() + status.slice(1)}
-				</Button>
+				</button>
 			))}
 		</div>
 	);

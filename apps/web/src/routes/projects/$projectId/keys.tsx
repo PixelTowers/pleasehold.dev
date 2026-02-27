@@ -42,7 +42,7 @@ function ApiKeysPage() {
 	}
 
 	return (
-		<div className="mx-auto max-w-3xl">
+		<div className="mx-auto max-w-4xl">
 			{/* Breadcrumb */}
 			<div className="mb-6 flex items-center gap-1.5 text-sm text-muted">
 				<Link to="/" className="text-muted hover:text-foreground">
@@ -61,15 +61,15 @@ function ApiKeysPage() {
 			</div>
 
 			{/* Header with create button */}
-			<div className="mb-6 flex items-center justify-between">
-				<h1 className="text-2xl font-semibold text-foreground">API Keys</h1>
-				<Button size="sm" onClick={() => setDialogOpen(true)}>
-					<Plus className="mr-1.5 h-4 w-4" />
+			<div className="mb-4 flex items-center justify-between">
+				<h1 className="text-xl font-semibold text-foreground">API Keys</h1>
+				<Button size="sm" className="h-7 text-xs" onClick={() => setDialogOpen(true)}>
+					<Plus className="mr-1 h-3.5 w-3.5" />
 					Create Key
 				</Button>
 			</div>
 
-			{/* Key list */}
+			{/* Key list — flat, no Card wrapper */}
 			<ApiKeyList projectId={projectId} />
 
 			{/* Create dialog */}

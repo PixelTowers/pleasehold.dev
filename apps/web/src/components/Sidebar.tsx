@@ -2,9 +2,10 @@
 // ABOUTME: Shows workspace name, nav links with Lucide icons, project list, and user section.
 
 import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router';
-import { ChevronDown, LayoutGrid, LogOut } from 'lucide-react';
+import { LayoutGrid, LogOut, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useProjects } from '@/hooks/useProjects';
 import { authClient } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
@@ -27,11 +28,10 @@ export function Sidebar() {
 	return (
 		<aside className="flex h-screen w-60 flex-col border-r border-sidebar-border bg-sidebar">
 			{/* Workspace header */}
-			<div className="flex items-center gap-2 px-4 py-3">
+			<div className="px-4 py-3">
 				<Link to="/" className="text-sm font-bold text-foreground no-underline">
 					pleasehold
 				</Link>
-				<ChevronDown className="h-3.5 w-3.5 text-muted" />
 			</div>
 
 			<Separator />
@@ -56,8 +56,25 @@ export function Sidebar() {
 				{/* Project list */}
 				{projects && projects.length > 0 && (
 					<div className="mt-4">
-						<div className="mb-1 px-2.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-							Your Projects
+						<div className="mb-1 flex items-center justify-between px-2.5">
+							<span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+								Your Projects
+							</span>
+							<TooltipProvider delayDuration={200}>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Link
+											to="/projects/new"
+											className="flex h-5 w-5 cursor-pointer items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+										>
+											<Plus className="h-3.5 w-3.5" />
+										</Link>
+									</TooltipTrigger>
+									<TooltipContent side="right">
+										<p>New project</p>
+									</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
 						</div>
 						<div className="space-y-0.5">
 							{projects.map((project) => (
@@ -92,20 +109,29 @@ export function Sidebar() {
 			{session?.user && (
 				<div className="px-2 py-2">
 					<div className="flex items-center justify-between rounded-md px-2.5 py-1.5">
-						<div className="flex items-center gap-2.5 min-w-0">
+						<div className="flex cursor-default items-center gap-2.5 min-w-0">
 							<div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
 								{(session.user.name?.[0] ?? session.user.email[0]).toUpperCase()}
 							</div>
 							<span className="truncate text-sm text-muted">{session.user.email}</span>
 						</div>
-						<Button
-							variant="ghost"
-							size="icon"
-							className="h-7 w-7 flex-shrink-0 text-muted hover:text-foreground"
-							onClick={handleLogout}
-						>
-							<LogOut className="h-3.5 w-3.5" />
-						</Button>
+						<TooltipProvider delayDuration={200}>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Button
+										variant="ghost"
+										size="icon"
+										className="h-7 w-7 flex-shrink-0 cursor-pointer text-muted hover:text-foreground"
+										onClick={handleLogout}
+									>
+										<LogOut className="h-3.5 w-3.5" />
+									</Button>
+								</TooltipTrigger>
+								<TooltipContent side="top">
+									<p>Sign out</p>
+								</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
 					</div>
 				</div>
 			)}

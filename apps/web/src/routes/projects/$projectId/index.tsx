@@ -1,5 +1,5 @@
-// ABOUTME: Project overview page showing project details, stats, and quick links.
-// ABOUTME: Fetches project by ID with ownership guard; displays mode badge and field config summary.
+// ABOUTME: Project overview page showing stats graph cards, properties, and navigation links.
+// ABOUTME: Fetches project by ID with ownership guard; displays Linear-style dashboard with SVG charts.
 
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ArrowLeft, ArrowRight, Settings } from 'lucide-react';
@@ -18,6 +18,121 @@ const modeBadgeClasses: Record<string, string> = {
 	waitlist: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
 	'demo-booking': 'bg-violet-100 text-violet-700 hover:bg-violet-100',
 };
+
+const statusColors: Record<string, string> = {
+	new: '#3b82f6',
+	contacted: '#f59e0b',
+	converted: '#22c55e',
+	archived: '#9ca3af',
+};
+
+const statusLabels: Record<string, string> = {
+	new: 'New',
+	contacted: 'Contacted',
+	converted: 'Converted',
+	archived: 'Archived',
+};
+
+function StatusDistributionBar({
+	byStatus,
+	total,
+}: {
+	byStatus: Record<string, number>;
+	total: number;
+}) {
+	if (total === 0) {
+		return (
+			<div className="flex h-2 w-full overflow-hidden rounded-full bg-accent">
+				<div className="h-full w-full bg-border/30" />
+			</div>
+		);
+	}
+
+	const statuses = ['new', 'contacted', 'converted', 'archived'];
+
+	return (
+		<div className="flex h-2 w-full overflow-hidden rounded-full">
+			{statuses.map((status) => {
+				const count = byStatus[status] ?? 0;
+				const pct = (count / total) * 100;
+				if (pct === 0) return null;
+				return (
+					<div
+						key={status}
+						className="h-full transition-all"
+						style={{ width: `${pct}%`, backgroundColor: statusColors[status] }}
+					/>
+				);
+			})}
+		</div>
+	);
+}
+
+function StatusDonutChart({
+	byStatus,
+	total,
+}: {
+	byStatus: Record<string, number>;
+	total: number;
+}) {
+	const size = 80;
+	const strokeWidth = 10;
+	const radius = (size - strokeWidth) / 2;
+	const circumference = 2 * Math.PI * radius;
+	const center = size / 2;
+
+	if (total === 0) {
+		return (
+			<svg width={size} height={size} className="shrink-0" role="img" aria-label="No entries">
+				<circle
+					cx={center}
+					cy={center}
+					r={radius}
+					fill="none"
+					stroke="currentColor"
+					strokeWidth={strokeWidth}
+					className="text-border/30"
+				/>
+			</svg>
+		);
+	}
+
+	const statuses = ['new', 'contacted', 'converted', 'archived'];
+	let offset = 0;
+
+	return (
+		<svg
+			width={size}
+			height={size}
+			className="shrink-0 -rotate-90"
+			role="img"
+			aria-label="Entry status distribution"
+		>
+			{statuses.map((status) => {
+				const count = byStatus[status] ?? 0;
+				const pct = count / total;
+				const dashLength = circumference * pct;
+				const dashOffset = circumference * offset;
+				offset += pct;
+				if (pct === 0) return null;
+				return (
+					<circle
+						key={status}
+						cx={center}
+						cy={center}
+						r={radius}
+						fill="none"
+						stroke={statusColors[status]}
+						strokeWidth={strokeWidth}
+						strokeDasharray={`${dashLength} ${circumference - dashLength}`}
+						strokeDashoffset={-dashOffset}
+						strokeLinecap="butt"
+					/>
+				);
+			})}
+		</svg>
+	);
+}
 
 function ProjectOverviewPage() {
 	const { projectId } = Route.useParams();
@@ -41,7 +156,7 @@ function ProjectOverviewPage() {
 
 	if (error || !project) {
 		return (
-			<div className="mx-auto max-w-3xl">
+			<div className="mx-auto max-w-4xl">
 				<div className="mb-4">
 					<Link
 						to="/"
@@ -60,155 +175,160 @@ function ProjectOverviewPage() {
 		);
 	}
 
-	const collectedFields = ['Email (always)'];
+	const collectedFields = ['Email'];
 	if (project.fieldConfig?.collectName) collectedFields.push('Name');
 	if (project.fieldConfig?.collectCompany) collectedFields.push('Company');
 	if (project.fieldConfig?.collectMessage) collectedFields.push('Message');
 
-	return (
-		<div className="mx-auto max-w-3xl">
-			{/* Breadcrumb */}
-			<div className="mb-6">
-				<Link
-					to="/"
-					className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground"
-				>
-					<ArrowLeft className="h-3.5 w-3.5" />
-					Back to dashboard
-				</Link>
-			</div>
+	const byStatus = stats?.byStatus ?? {};
+	const total = stats?.total ?? 0;
 
-			{/* Header */}
-			<div className="mb-8 flex items-start justify-between">
-				<div>
-					<h1 className="text-2xl font-semibold text-foreground">{project.name}</h1>
-					<div className="mt-2">
-						<Badge
-							variant="secondary"
-							className={cn('border-0 font-medium', modeBadgeClasses[project.mode])}
-						>
-							{project.mode === 'demo-booking' ? 'Demo Booking' : 'Waitlist'}
-						</Badge>
-					</div>
+	return (
+		<div className="mx-auto max-w-4xl">
+			{/* Header — compact, no excessive top margin */}
+			<div className="mb-4 flex items-center justify-between">
+				<div className="flex items-center gap-3">
+					<h1 className="text-xl font-semibold text-foreground">{project.name}</h1>
+					<Badge
+						variant="secondary"
+						className={cn(
+							'border-0 text-[10px] font-medium px-1.5 py-0',
+							modeBadgeClasses[project.mode],
+						)}
+					>
+						{project.mode === 'demo-booking' ? 'Demo Booking' : 'Waitlist'}
+					</Badge>
 				</div>
-				<Button variant="outline" size="sm" asChild>
+				<Button variant="outline" size="sm" className="h-7 text-xs" asChild>
 					<Link to="/projects/$projectId/settings" params={{ projectId }}>
-						<Settings className="mr-1.5 h-4 w-4" />
+						<Settings className="mr-1 h-3.5 w-3.5" />
 						Settings
 					</Link>
 				</Button>
 			</div>
 
-			{/* Stats section */}
-			<div className="mb-8 grid grid-cols-4 gap-4">
+			{/* Graph cards row */}
+			<div className="mb-6 grid grid-cols-3 gap-3">
+				{/* Total entries card with donut */}
 				<Card className="p-4">
-					<div className="mb-1 text-xs text-muted-foreground">Entries</div>
-					<div className="text-2xl font-semibold">{stats?.total ?? 0}</div>
+					<div className="mb-3 text-[11px] uppercase tracking-wider text-muted-foreground">
+						Total Entries
+					</div>
+					<div className="flex items-center gap-4">
+						<StatusDonutChart byStatus={byStatus} total={total} />
+						<div>
+							<div className="text-3xl font-semibold text-foreground">{total}</div>
+							<div className="mt-1 text-xs text-muted-foreground">
+								{total === 1 ? 'entry' : 'entries'}
+							</div>
+						</div>
+					</div>
 				</Card>
+
+				{/* Status breakdown card */}
 				<Card className="p-4">
-					<div className="mb-1 text-xs text-muted-foreground">API Keys</div>
-					<div className="text-2xl font-semibold">{activeKeyCount}</div>
+					<div className="mb-3 text-[11px] uppercase tracking-wider text-muted-foreground">
+						By Status
+					</div>
+					<div className="mb-3">
+						<StatusDistributionBar byStatus={byStatus} total={total} />
+					</div>
+					<div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+						{(['new', 'contacted', 'converted', 'archived'] as const).map((status) => (
+							<div key={status} className="flex items-center justify-between">
+								<div className="flex items-center gap-1.5">
+									<span
+										className="h-2 w-2 rounded-full"
+										style={{ backgroundColor: statusColors[status] }}
+									/>
+									<span className="text-xs text-muted-foreground">{statusLabels[status]}</span>
+								</div>
+								<span className="text-xs font-medium text-foreground">{byStatus[status] ?? 0}</span>
+							</div>
+						))}
+					</div>
 				</Card>
+
+				{/* Quick stats card */}
 				<Card className="p-4">
-					<div className="mb-1 text-xs text-muted-foreground">Fields Collected</div>
-					<div className="text-2xl font-semibold">{collectedFields.length}</div>
-				</Card>
-				<Card className="p-4">
-					<div className="mb-1 text-xs text-muted-foreground">Created</div>
-					<div className="mt-1 text-sm font-medium">
-						{new Date(project.createdAt).toLocaleDateString()}
+					<div className="mb-3 text-[11px] uppercase tracking-wider text-muted-foreground">
+						Configuration
+					</div>
+					<div className="space-y-3">
+						<div className="flex items-center justify-between">
+							<span className="text-xs text-muted-foreground">API Keys</span>
+							<span className="text-sm font-medium text-foreground">{activeKeyCount}</span>
+						</div>
+						<div className="flex items-center justify-between">
+							<span className="text-xs text-muted-foreground">Fields</span>
+							<span className="text-sm font-medium text-foreground">{collectedFields.length}</span>
+						</div>
+						<div className="flex items-center justify-between">
+							<span className="text-xs text-muted-foreground">Notifications</span>
+							<span className="text-sm font-medium text-foreground">{enabledChannelCount}</span>
+						</div>
+						<div className="flex items-center justify-between">
+							<span className="text-xs text-muted-foreground">Created</span>
+							<span className="text-xs text-foreground">
+								{new Date(project.createdAt).toLocaleDateString()}
+							</span>
+						</div>
 					</div>
 				</Card>
 			</div>
 
-			{/* Quick Links */}
-			<div className="mb-8">
-				<h2 className="mb-3 text-base font-semibold">Quick Links</h2>
-				<div className="flex flex-col gap-2">
+			{/* Navigation links */}
+			<div>
+				<h2 className="mb-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+					Navigation
+				</h2>
+				<div className="border-t border-border/50">
 					<Link
-						to="/projects/$projectId/settings"
+						to="/projects/$projectId/entries"
 						params={{ projectId }}
-						className="flex items-center justify-between rounded-md border bg-card px-4 py-3 text-sm text-foreground no-underline transition-colors hover:bg-accent"
+						className="flex items-center justify-between border-b border-border/50 py-2.5 text-sm text-foreground no-underline transition-colors hover:bg-accent"
 					>
-						<span>Field Configuration</span>
-						<ArrowRight className="h-4 w-4 text-muted-foreground" />
+						<span>
+							Entries
+							{total > 0 && <span className="ml-2 text-xs text-muted">{total}</span>}
+						</span>
+						<ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
 					</Link>
 					<Link
 						to="/projects/$projectId/keys"
 						params={{ projectId }}
-						className="flex items-center justify-between rounded-md border bg-card px-4 py-3 text-sm text-foreground no-underline transition-colors hover:bg-accent"
+						className="flex items-center justify-between border-b border-border/50 py-2.5 text-sm text-foreground no-underline transition-colors hover:bg-accent"
 					>
 						<span>
-							API Keys{' '}
+							API Keys
 							{activeKeyCount > 0 && (
-								<span className="font-normal text-muted">({activeKeyCount} active)</span>
+								<span className="ml-2 text-xs text-muted">{activeKeyCount}</span>
 							)}
 						</span>
-						<ArrowRight className="h-4 w-4 text-muted-foreground" />
+						<ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
 					</Link>
 					<Link
-						to="/projects/$projectId/entries"
+						to="/projects/$projectId/settings"
 						params={{ projectId }}
-						className="flex items-center justify-between rounded-md border bg-card px-4 py-3 text-sm text-foreground no-underline transition-colors hover:bg-accent"
+						className="flex items-center justify-between border-b border-border/50 py-2.5 text-sm text-foreground no-underline transition-colors hover:bg-accent"
 					>
-						<span>
-							Entries{' '}
-							{(stats?.total ?? 0) > 0 && (
-								<span className="font-normal text-muted">({stats?.total} total)</span>
-							)}
-						</span>
-						<ArrowRight className="h-4 w-4 text-muted-foreground" />
+						<span>Settings</span>
+						<ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
 					</Link>
 					<Link
 						to="/projects/$projectId/notifications"
 						params={{ projectId }}
-						className="flex items-center justify-between rounded-md border bg-card px-4 py-3 text-sm text-foreground no-underline transition-colors hover:bg-accent"
+						className="flex items-center justify-between border-b border-border/50 py-2.5 text-sm text-foreground no-underline transition-colors hover:bg-accent"
 					>
 						<span>
-							Notifications{' '}
+							Notifications
 							{enabledChannelCount > 0 && (
-								<span className="font-normal text-muted">({enabledChannelCount} active)</span>
+								<span className="ml-2 text-xs text-muted">{enabledChannelCount}</span>
 							)}
 						</span>
-						<ArrowRight className="h-4 w-4 text-muted-foreground" />
+						<ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
 					</Link>
 				</div>
-			</div>
-
-			{/* Field config summary */}
-			<div className="mb-8">
-				<h2 className="mb-3 text-base font-semibold">Fields Collected</h2>
-				<Card className="p-4">
-					<div className="flex flex-wrap gap-2">
-						{collectedFields.map((field) => (
-							<Badge key={field} variant="secondary" className="font-normal">
-								{field}
-							</Badge>
-						))}
-					</div>
-				</Card>
-			</div>
-
-			{/* Recent Activity */}
-			<div>
-				<h2 className="mb-3 text-base font-semibold">Recent Activity</h2>
-				{(stats?.total ?? 0) > 0 ? (
-					<Card className="bg-accent p-8 text-center">
-						<Link
-							to="/projects/$projectId/entries"
-							params={{ projectId }}
-							className="text-sm font-medium text-primary hover:underline"
-						>
-							View all {stats?.total} entries &rarr;
-						</Link>
-					</Card>
-				) : (
-					<Card className="bg-accent p-8 text-center">
-						<p className="text-sm text-muted-foreground">
-							No entries yet. Entries will appear here once you start collecting submissions.
-						</p>
-					</Card>
-				)}
 			</div>
 		</div>
 	);
