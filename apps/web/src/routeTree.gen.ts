@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectsNewRouteImport } from './routes/projects/new'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects/$projectId'
@@ -19,8 +20,8 @@ import { Route as ProjectsProjectIdIndexRouteImport } from './routes/projects/$p
 import { Route as ProjectsProjectIdSettingsRouteImport } from './routes/projects/$projectId/settings'
 import { Route as ProjectsProjectIdNotificationsRouteImport } from './routes/projects/$projectId/notifications'
 import { Route as ProjectsProjectIdKeysRouteImport } from './routes/projects/$projectId/keys'
-import { Route as ProjectsProjectIdEntriesRouteImport } from './routes/projects/$projectId/entries'
 import { Route as ProjectsProjectIdEmailsRouteImport } from './routes/projects/$projectId/emails'
+import { Route as ProjectsProjectIdEntriesIndexRouteImport } from './routes/projects/$projectId/entries/index'
 import { Route as ProjectsProjectIdEntriesEntryIdRouteImport } from './routes/projects/$projectId/entries/$entryId'
 
 const SignupRoute = SignupRouteImport.update({
@@ -36,6 +37,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SplatRoute = SplatRouteImport.update({
+  id: '/$',
+  path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -75,118 +81,125 @@ const ProjectsProjectIdKeysRoute = ProjectsProjectIdKeysRouteImport.update({
   path: '/keys',
   getParentRoute: () => ProjectsProjectIdRoute,
 } as any)
-const ProjectsProjectIdEntriesRoute =
-  ProjectsProjectIdEntriesRouteImport.update({
-    id: '/entries',
-    path: '/entries',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
 const ProjectsProjectIdEmailsRoute = ProjectsProjectIdEmailsRouteImport.update({
   id: '/emails',
   path: '/emails',
   getParentRoute: () => ProjectsProjectIdRoute,
 } as any)
+const ProjectsProjectIdEntriesIndexRoute =
+  ProjectsProjectIdEntriesIndexRouteImport.update({
+    id: '/entries/',
+    path: '/entries/',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
 const ProjectsProjectIdEntriesEntryIdRoute =
   ProjectsProjectIdEntriesEntryIdRouteImport.update({
-    id: '/$entryId',
-    path: '/$entryId',
-    getParentRoute: () => ProjectsProjectIdEntriesRoute,
+    id: '/entries/$entryId',
+    path: '/entries/$entryId',
+    getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
   '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
   '/projects/new': typeof ProjectsNewRoute
   '/projects/$projectId/emails': typeof ProjectsProjectIdEmailsRoute
-  '/projects/$projectId/entries': typeof ProjectsProjectIdEntriesRouteWithChildren
   '/projects/$projectId/keys': typeof ProjectsProjectIdKeysRoute
   '/projects/$projectId/notifications': typeof ProjectsProjectIdNotificationsRoute
   '/projects/$projectId/settings': typeof ProjectsProjectIdSettingsRoute
   '/projects/$projectId/': typeof ProjectsProjectIdIndexRoute
   '/projects/$projectId/entries/$entryId': typeof ProjectsProjectIdEntriesEntryIdRoute
+  '/projects/$projectId/entries/': typeof ProjectsProjectIdEntriesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
   '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/projects/new': typeof ProjectsNewRoute
   '/projects/$projectId/emails': typeof ProjectsProjectIdEmailsRoute
-  '/projects/$projectId/entries': typeof ProjectsProjectIdEntriesRouteWithChildren
   '/projects/$projectId/keys': typeof ProjectsProjectIdKeysRoute
   '/projects/$projectId/notifications': typeof ProjectsProjectIdNotificationsRoute
   '/projects/$projectId/settings': typeof ProjectsProjectIdSettingsRoute
   '/projects/$projectId': typeof ProjectsProjectIdIndexRoute
   '/projects/$projectId/entries/$entryId': typeof ProjectsProjectIdEntriesEntryIdRoute
+  '/projects/$projectId/entries': typeof ProjectsProjectIdEntriesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
   '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
   '/projects/new': typeof ProjectsNewRoute
   '/projects/$projectId/emails': typeof ProjectsProjectIdEmailsRoute
-  '/projects/$projectId/entries': typeof ProjectsProjectIdEntriesRouteWithChildren
   '/projects/$projectId/keys': typeof ProjectsProjectIdKeysRoute
   '/projects/$projectId/notifications': typeof ProjectsProjectIdNotificationsRoute
   '/projects/$projectId/settings': typeof ProjectsProjectIdSettingsRoute
   '/projects/$projectId/': typeof ProjectsProjectIdIndexRoute
   '/projects/$projectId/entries/$entryId': typeof ProjectsProjectIdEntriesEntryIdRoute
+  '/projects/$projectId/entries/': typeof ProjectsProjectIdEntriesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$'
     | '/login'
     | '/settings'
     | '/signup'
     | '/projects/$projectId'
     | '/projects/new'
     | '/projects/$projectId/emails'
-    | '/projects/$projectId/entries'
     | '/projects/$projectId/keys'
     | '/projects/$projectId/notifications'
     | '/projects/$projectId/settings'
     | '/projects/$projectId/'
     | '/projects/$projectId/entries/$entryId'
+    | '/projects/$projectId/entries/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/$'
     | '/login'
     | '/settings'
     | '/signup'
     | '/projects/new'
     | '/projects/$projectId/emails'
-    | '/projects/$projectId/entries'
     | '/projects/$projectId/keys'
     | '/projects/$projectId/notifications'
     | '/projects/$projectId/settings'
     | '/projects/$projectId'
     | '/projects/$projectId/entries/$entryId'
+    | '/projects/$projectId/entries'
   id:
     | '__root__'
     | '/'
+    | '/$'
     | '/login'
     | '/settings'
     | '/signup'
     | '/projects/$projectId'
     | '/projects/new'
     | '/projects/$projectId/emails'
-    | '/projects/$projectId/entries'
     | '/projects/$projectId/keys'
     | '/projects/$projectId/notifications'
     | '/projects/$projectId/settings'
     | '/projects/$projectId/'
     | '/projects/$projectId/entries/$entryId'
+    | '/projects/$projectId/entries/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SplatRoute: typeof SplatRoute
   LoginRoute: typeof LoginRoute
   SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
@@ -215,6 +228,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$': {
+      id: '/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -266,13 +286,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdKeysRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
-    '/projects/$projectId/entries': {
-      id: '/projects/$projectId/entries'
-      path: '/entries'
-      fullPath: '/projects/$projectId/entries'
-      preLoaderRoute: typeof ProjectsProjectIdEntriesRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
     '/projects/$projectId/emails': {
       id: '/projects/$projectId/emails'
       path: '/emails'
@@ -280,46 +293,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdEmailsRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
+    '/projects/$projectId/entries/': {
+      id: '/projects/$projectId/entries/'
+      path: '/entries'
+      fullPath: '/projects/$projectId/entries/'
+      preLoaderRoute: typeof ProjectsProjectIdEntriesIndexRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
     '/projects/$projectId/entries/$entryId': {
       id: '/projects/$projectId/entries/$entryId'
-      path: '/$entryId'
+      path: '/entries/$entryId'
       fullPath: '/projects/$projectId/entries/$entryId'
       preLoaderRoute: typeof ProjectsProjectIdEntriesEntryIdRouteImport
-      parentRoute: typeof ProjectsProjectIdEntriesRoute
+      parentRoute: typeof ProjectsProjectIdRoute
     }
   }
 }
 
-interface ProjectsProjectIdEntriesRouteChildren {
-  ProjectsProjectIdEntriesEntryIdRoute: typeof ProjectsProjectIdEntriesEntryIdRoute
-}
-
-const ProjectsProjectIdEntriesRouteChildren: ProjectsProjectIdEntriesRouteChildren =
-  {
-    ProjectsProjectIdEntriesEntryIdRoute: ProjectsProjectIdEntriesEntryIdRoute,
-  }
-
-const ProjectsProjectIdEntriesRouteWithChildren =
-  ProjectsProjectIdEntriesRoute._addFileChildren(
-    ProjectsProjectIdEntriesRouteChildren,
-  )
-
 interface ProjectsProjectIdRouteChildren {
   ProjectsProjectIdEmailsRoute: typeof ProjectsProjectIdEmailsRoute
-  ProjectsProjectIdEntriesRoute: typeof ProjectsProjectIdEntriesRouteWithChildren
   ProjectsProjectIdKeysRoute: typeof ProjectsProjectIdKeysRoute
   ProjectsProjectIdNotificationsRoute: typeof ProjectsProjectIdNotificationsRoute
   ProjectsProjectIdSettingsRoute: typeof ProjectsProjectIdSettingsRoute
   ProjectsProjectIdIndexRoute: typeof ProjectsProjectIdIndexRoute
+  ProjectsProjectIdEntriesEntryIdRoute: typeof ProjectsProjectIdEntriesEntryIdRoute
+  ProjectsProjectIdEntriesIndexRoute: typeof ProjectsProjectIdEntriesIndexRoute
 }
 
 const ProjectsProjectIdRouteChildren: ProjectsProjectIdRouteChildren = {
   ProjectsProjectIdEmailsRoute: ProjectsProjectIdEmailsRoute,
-  ProjectsProjectIdEntriesRoute: ProjectsProjectIdEntriesRouteWithChildren,
   ProjectsProjectIdKeysRoute: ProjectsProjectIdKeysRoute,
   ProjectsProjectIdNotificationsRoute: ProjectsProjectIdNotificationsRoute,
   ProjectsProjectIdSettingsRoute: ProjectsProjectIdSettingsRoute,
   ProjectsProjectIdIndexRoute: ProjectsProjectIdIndexRoute,
+  ProjectsProjectIdEntriesEntryIdRoute: ProjectsProjectIdEntriesEntryIdRoute,
+  ProjectsProjectIdEntriesIndexRoute: ProjectsProjectIdEntriesIndexRoute,
 }
 
 const ProjectsProjectIdRouteWithChildren =
@@ -327,6 +335,7 @@ const ProjectsProjectIdRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SplatRoute: SplatRoute,
   LoginRoute: LoginRoute,
   SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,

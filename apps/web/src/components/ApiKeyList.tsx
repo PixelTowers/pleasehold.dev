@@ -96,7 +96,6 @@ export function ApiKeyList({ projectId }: ApiKeyListProps) {
 										!key.enabled && 'text-muted-foreground',
 									)}
 								>
-									{key.prefix}
 									{key.start}...
 								</code>
 							</TableCell>

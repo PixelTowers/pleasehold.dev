@@ -114,6 +114,10 @@ function ProjectSettingsPage() {
 	);
 
 	const handleBrandingSave = () => {
+		if (brandColor && !/^#[0-9a-fA-F]{6}$/.test(brandColor)) {
+			toast.error('Brand color must be a valid hex color (e.g. #0d9488)');
+			return;
+		}
 		updateProject.mutate({
 			id: projectId,
 			brandColor,

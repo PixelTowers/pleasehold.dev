@@ -1,7 +1,7 @@
 // ABOUTME: Dashboard index route showing project card grid or guided creation flow.
-// ABOUTME: Protected route; redirects to login if unauthenticated; shows CreateProjectFlow for zero-project users.
+// ABOUTME: Auth is handled by root beforeLoad guard; shows CreateProjectFlow for zero-project users.
 
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { CreateProjectDialog } from '@/components/CreateProjectDialog';
@@ -9,30 +9,14 @@ import { CreateProjectFlow } from '@/components/CreateProjectFlow';
 import { ProjectCard } from '@/components/ProjectCard';
 import { Button } from '@/components/ui/button';
 import { useProjects } from '@/hooks/useProjects';
-import { authClient } from '@/lib/auth-client';
 
 export const Route = createFileRoute('/')({
 	component: DashboardIndex,
 });
 
 function DashboardIndex() {
-	const { data: session, isPending: sessionLoading } = authClient.useSession();
-	const navigate = useNavigate();
 	const { data: projects, isPending: projectsLoading, error } = useProjects();
 	const [createOpen, setCreateOpen] = useState(false);
-
-	if (sessionLoading) {
-		return (
-			<div className="py-16 text-center">
-				<p className="text-muted">Loading...</p>
-			</div>
-		);
-	}
-
-	if (!session?.user) {
-		void navigate({ to: '/login' });
-		return null;
-	}
 
 	if (projectsLoading) {
 		return (

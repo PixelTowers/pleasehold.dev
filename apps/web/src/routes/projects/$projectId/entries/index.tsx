@@ -12,7 +12,7 @@ import { EntriesTable } from '@/components/EntriesTable';
 import { Input } from '@/components/ui/input';
 import { trpc } from '@/lib/trpc';
 
-export const Route = createFileRoute('/projects/$projectId/entries')({
+export const Route = createFileRoute('/projects/$projectId/entries/')({
 	component: EntriesPage,
 });
 

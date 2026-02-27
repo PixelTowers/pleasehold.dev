@@ -22,9 +22,7 @@ function ApiKeysPage() {
 	const [dialogOpen, setDialogOpen] = useState(false);
 
 	const firstActiveKey = keys?.find((k) => k.enabled);
-	const keyPrefix = firstActiveKey
-		? `${firstActiveKey.prefix}${firstActiveKey.start}...`
-		: undefined;
+	const keyPrefix = firstActiveKey ? `${firstActiveKey.start}...` : undefined;
 
 	if (isPending) {
 		return (

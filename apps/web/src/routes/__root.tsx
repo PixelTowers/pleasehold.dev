@@ -1,19 +1,47 @@
-// ABOUTME: Root layout that switches between sidebar layout (authenticated) and centered layout (auth pages).
+// ABOUTME: Root layout with auth guard, 404 handling, and sidebar/centered layout switching.
 // ABOUTME: Auth pages (login/signup) render without sidebar; all other routes get the AppLayout wrapper.
 
-import { createRootRoute, Outlet, useMatchRoute } from '@tanstack/react-router';
+import {
+	createRootRoute,
+	isRedirect,
+	Outlet,
+	redirect,
+	useMatchRoute,
+} from '@tanstack/react-router';
+import { NotFoundContent } from '@/components/NotFoundContent';
 import { Toaster } from '@/components/ui/sonner';
+import { authClient } from '@/lib/auth-client';
 import { AppLayout } from '../components/AppLayout';
 
+const AUTH_PATHS = ['/login', '/signup'];
+
 export const Route = createRootRoute({
+	beforeLoad: async ({ location }) => {
+		if (AUTH_PATHS.some((p) => location.pathname.startsWith(p))) {
+			return;
+		}
+
+		try {
+			const session = await authClient.getSession();
+			if (!session?.data?.user) {
+				throw redirect({ to: '/login' });
+			}
+		} catch (error) {
+			// Re-throw TanStack Router redirects (they use throw for control flow)
+			if (isRedirect(error)) {
+				throw error;
+			}
+			// Network errors, rate limits, etc. — fail closed, send to login
+			throw redirect({ to: '/login' });
+		}
+	},
+	notFoundComponent: NotFoundContent,
 	component: RootLayout,
 });
 
-const AUTH_ROUTES = ['/login', '/signup'] as const;
-
 function RootLayout() {
 	const matchRoute = useMatchRoute();
-	const isAuthPage = AUTH_ROUTES.some((path) => matchRoute({ to: path }));
+	const isAuthPage = AUTH_PATHS.some((path) => matchRoute({ to: path }));
 
 	if (isAuthPage) {
 		return (
