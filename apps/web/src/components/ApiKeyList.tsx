@@ -2,6 +2,7 @@
 // ABOUTME: Only shows first 8 chars via start field; never displays full key or hash.
 
 import { useCallback, useState } from 'react';
+import { EmptyState } from '@/components/EmptyState';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -67,13 +68,7 @@ export function ApiKeyList({ projectId }: ApiKeyListProps) {
 	}
 
 	if (!keys || keys.length === 0) {
-		return (
-			<div className="py-12 text-center">
-				<p className="text-sm text-muted-foreground">
-					No API keys yet. Create one to start accepting submissions.
-				</p>
-			</div>
-		);
+		return <EmptyState message="No API keys yet. Create one to start accepting submissions." />;
 	}
 
 	return (

@@ -7,6 +7,7 @@ import { ArrowLeft, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { BulkActionBar } from '@/components/BulkActionBar';
 import { CsvExportButton } from '@/components/CsvExportButton';
+import { EmptyState } from '@/components/EmptyState';
 import { EntriesTable } from '@/components/EntriesTable';
 import { Input } from '@/components/ui/input';
 import { trpc } from '@/lib/trpc';
@@ -117,12 +118,7 @@ function EntriesPage() {
 				<p className="mb-6 text-sm text-muted-foreground">
 					View, search, and manage all submissions for this project.
 				</p>
-				<div className="py-12 text-center">
-					<p className="text-sm text-muted-foreground">
-						No entries yet. Entries will appear here once you start collecting submissions via the
-						API.
-					</p>
-				</div>
+				<EmptyState message="No entries yet. Entries will appear here once you start collecting submissions via the API." />
 			</div>
 		);
 	}

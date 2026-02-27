@@ -6,6 +6,7 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { PauseLogo } from '@/components/PauseLogo';
 import { Button } from '@/components/ui/button';
 import {
 	Form,
@@ -62,7 +63,8 @@ function SignupPage() {
 
 	return (
 		<div className="w-full max-w-sm px-4">
-			<div className="mb-8 text-center">
+			<div className="mb-8 flex flex-col items-center gap-3">
+				<PauseLogo size={40} className="text-foreground" />
 				<h1 className="text-xl font-bold text-foreground">pleasehold</h1>
 			</div>
 
