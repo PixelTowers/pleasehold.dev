@@ -14,3 +14,15 @@ export interface EmailSenderOptions {
 	fromAddress?: string | null;
 	fromName?: string | null;
 }
+
+export interface BrandingContext {
+	logoUrl?: string | null;
+	brandColor?: string | null;
+	companyName?: string | null;
+}
+
+export interface TemplateContext {
+	subject: string;
+	bodyHtml: string;
+	buttonText?: string | null;
+}

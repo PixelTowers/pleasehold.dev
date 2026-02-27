@@ -3,6 +3,7 @@
 
 import {
 	createDb,
+	emailTemplates,
 	entries,
 	notificationChannels,
 	notificationLogs,
@@ -17,7 +18,7 @@ import { sendSlackNotification } from './senders/slack';
 import { sendTelegramNotification } from './senders/telegram';
 import { sendVerificationEmail } from './senders/verification-email';
 import { sendWebhookNotification } from './senders/webhook';
-import type { EmailSenderOptions, EntryPayload } from './types';
+import type { BrandingContext, EmailSenderOptions, EntryPayload, TemplateContext } from './types';
 
 interface NotificationJobData {
 	entryId: string;
@@ -36,6 +37,33 @@ async function getEmailSenderOptions(userId: string): Promise<EmailSenderOptions
 		resendApiKey: settings.resendApiKey,
 		fromAddress: settings.emailFromAddress,
 		fromName: settings.emailFromName,
+	};
+}
+
+function getBrandingContext(project: {
+	logoUrl: string | null;
+	brandColor: string | null;
+	companyName: string | null;
+}): BrandingContext {
+	return {
+		logoUrl: project.logoUrl,
+		brandColor: project.brandColor,
+		companyName: project.companyName,
+	};
+}
+
+async function getCustomTemplate(
+	projectId: string,
+	type: 'verification' | 'confirmation',
+): Promise<TemplateContext | null> {
+	const template = await db.query.emailTemplates.findFirst({
+		where: and(eq(emailTemplates.projectId, projectId), eq(emailTemplates.type, type)),
+	});
+	if (!template) return null;
+	return {
+		subject: template.subject,
+		bodyHtml: template.bodyHtml,
+		buttonText: template.buttonText,
 	};
 }
 
@@ -86,6 +114,7 @@ async function processEntryCreated(data: NotificationJobData): Promise<void> {
 	}
 
 	const emailOptions = await getEmailSenderOptions(project.userId);
+	const branding = getBrandingContext(project);
 
 	const entryPayload: EntryPayload = {
 		email: entry.email,
@@ -113,7 +142,7 @@ async function processEntryCreated(data: NotificationJobData): Promise<void> {
 		}
 
 		try {
-			await dispatchToChannel(channel, entryPayload, emailOptions);
+			await dispatchToChannel(channel, entryPayload, emailOptions, branding);
 
 			await db.insert(notificationLogs).values({
 				channelId: channel.id,
@@ -149,13 +178,14 @@ async function dispatchToChannel(
 	channel: typeof notificationChannels.$inferSelect,
 	entry: EntryPayload,
 	emailOptions?: EmailSenderOptions,
+	branding?: BrandingContext,
 ): Promise<void> {
 	const config = channel.config as Record<string, unknown>;
 
 	switch (channel.type) {
 		case 'email': {
 			const recipients = config.recipients as string[];
-			await sendEmailNotification(recipients, entry, emailOptions);
+			await sendEmailNotification(recipients, entry, emailOptions, branding);
 			break;
 		}
 		case 'slack': {
@@ -222,6 +252,13 @@ async function processVerificationEmail(data: NotificationJobData): Promise<void
 	}
 
 	const emailOptions = await getEmailSenderOptions(project.userId);
-	await sendVerificationEmail(entry.email, entry.verificationToken, project.name, emailOptions);
+	const branding = getBrandingContext(project);
+	const customTemplate = await getCustomTemplate(data.projectId, 'verification');
+
+	await sendVerificationEmail(entry.email, entry.verificationToken, project.name, {
+		emailOptions,
+		branding,
+		customTemplate,
+	});
 	console.log(`Verification email sent to ${entry.email} for project ${project.name}`);
 }
