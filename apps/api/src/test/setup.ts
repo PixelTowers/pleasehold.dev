@@ -57,6 +57,7 @@ export async function setup() {
 		secret: 'test-secret-at-least-32-characters-long',
 		baseUrl: 'http://localhost:3001',
 		trustedOrigins: ['http://localhost:5173'],
+		disableApiKeyRateLimit: true,
 	});
 
 	const apiKey = await seed(db, auth);

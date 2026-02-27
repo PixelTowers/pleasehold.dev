@@ -1,37 +1,27 @@
-// ABOUTME: Shared Nodemailer transporter singleton for email-based senders (notifications and verification).
-// ABOUTME: Configured from SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASS env vars; logs a warning if SMTP_HOST is unset.
+// ABOUTME: Resend client factory supporting both the platform singleton and per-user BYOK clients.
+// ABOUTME: Configured from RESEND_API_KEY env var; getResendClient() creates BYOK clients on demand.
 
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-const SMTP_HOST = process.env.SMTP_HOST;
-const SMTP_PORT = Number(process.env.SMTP_PORT ?? '587');
-const SMTP_USER = process.env.SMTP_USER;
-const SMTP_PASS = process.env.SMTP_PASS;
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
-if (!SMTP_HOST) {
-	console.warn(`[pleasehold] SMTP is not configured -- the following features will not work:
+if (!RESEND_API_KEY) {
+	console.warn(`[pleasehold] Resend is not configured -- the following features will not work:
   - Email notifications (channel type: email)
   - Double opt-in verification emails
 
   To enable email, set these environment variables:
-    SMTP_HOST=your-smtp-server.com
-    SMTP_PORT=587          (default: 587)
-    SMTP_USER=your-username
-    SMTP_PASS=your-password
-    SMTP_FROM=noreply@yourdomain.com
+    RESEND_API_KEY=re_your_api_key
+    EMAIL_FROM=noreply@yourdomain.com
 
   Set these in your .env file or docker-compose.yml environment block.`);
 }
 
-export const transporter = nodemailer.createTransport({
-	host: SMTP_HOST,
-	port: SMTP_PORT,
-	secure: SMTP_PORT === 465,
-	auth:
-		SMTP_USER && SMTP_PASS
-			? {
-					user: SMTP_USER,
-					pass: SMTP_PASS,
-				}
-			: undefined,
-});
+export const resend = new Resend(RESEND_API_KEY);
+
+export function getResendClient(apiKey?: string | null): Resend {
+	if (apiKey) {
+		return new Resend(apiKey);
+	}
+	return resend;
+}

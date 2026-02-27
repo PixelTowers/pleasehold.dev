@@ -1,13 +1,13 @@
 // ABOUTME: BullMQ queue singleton for enqueuing notification jobs from the API server.
 // ABOUTME: Provides a fire-and-forget enqueueNotification helper with retry/backoff defaults.
 
-import { Queue } from 'bullmq';
 import type { Job } from 'bullmq';
+import { Queue } from 'bullmq';
 
 export interface NotificationJobData {
 	entryId: string;
 	projectId: string;
-	type: 'entry_created' | 'verification_email';
+	type: 'entry_created' | 'verification_email' | 'confirmation_email';
 }
 
 const REDIS_HOST = process.env.REDIS_HOST ?? 'localhost';
@@ -35,6 +35,8 @@ export const notificationQueue = new Queue<NotificationJobData>('notifications',
 	},
 });
 
-export async function enqueueNotification(data: NotificationJobData): Promise<Job<NotificationJobData>> {
+export async function enqueueNotification(
+	data: NotificationJobData,
+): Promise<Job<NotificationJobData>> {
 	return notificationQueue.add(data.type, data);
 }

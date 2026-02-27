@@ -1,17 +1,23 @@
 // ABOUTME: Main API server entry point using Hono with tRPC, Better Auth, and public REST API.
 // ABOUTME: Serves tRPC at /trpc/*, auth at /api/auth/*, entry submission at /api/v1/entries, and health check.
 
-import { createAuth } from '@pleasehold/auth';
-import { createDb } from '@pleasehold/db';
-import { appRouter, createContext } from '@pleasehold/trpc';
 import { serve } from '@hono/node-server';
 import { trpcServer } from '@hono/trpc-server';
 import { OpenAPIHono } from '@hono/zod-openapi';
+import { createAuth } from '@pleasehold/auth';
+import { createDb } from '@pleasehold/db';
+import { appRouter, createContext } from '@pleasehold/trpc';
 import { apiReference } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
 import { apiKeyAuth } from './middleware/api-key-auth';
-import { apiRateLimiter } from './middleware/rate-limit';
+import {
+	apiRateLimiter,
+	authRateLimiter,
+	dashboardRateLimiter,
+	verifyRateLimiter,
+} from './middleware/rate-limit';
 import { entriesRoute } from './routes/v1/entries';
+import { createUploadRoute } from './routes/v1/upload';
 import { createVerifyRoute } from './routes/v1/verify';
 
 const app = new OpenAPIHono();
@@ -33,6 +39,7 @@ const auth = createAuth({
 
 // Public verification endpoint: no API key required, permissive CORS for email link clicks
 app.use('/verify/*', cors({ origin: '*' }));
+app.use('/verify/*', verifyRateLimiter);
 app.route('/verify', createVerifyRoute(db));
 
 // Public REST API: permissive CORS for external developer origins
@@ -55,6 +62,7 @@ app.use(
 		credentials: true,
 	}),
 );
+app.use('/trpc/*', dashboardRateLimiter);
 app.use(
 	'/api/auth/*',
 	cors({
@@ -62,6 +70,22 @@ app.use(
 		credentials: true,
 	}),
 );
+// Strict rate limit on auth mutation endpoints (brute-force protection)
+app.use('/api/auth/sign-in/*', authRateLimiter);
+app.use('/api/auth/sign-up/*', authRateLimiter);
+// Session checks (get-session, etc.) use the more generous dashboard limit
+app.use('/api/auth/*', dashboardRateLimiter);
+app.use(
+	'/api/upload/*',
+	cors({
+		origin: [webUrl],
+		credentials: true,
+	}),
+);
+app.use('/api/upload/*', dashboardRateLimiter);
+
+// Mount file upload route (dashboard-only, session-authenticated)
+app.route('/api/upload', createUploadRoute(auth));
 
 app.use(
 	'/trpc/*',

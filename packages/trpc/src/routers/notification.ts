@@ -2,10 +2,10 @@
 // ABOUTME: Provides CRUD for notification channels with per-type config validation and webhook HMAC secret management.
 
 import crypto from 'node:crypto';
+import { type Database, notificationChannels, projects } from '@pleasehold/db';
 import { TRPCError } from '@trpc/server';
 import { and, asc, eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { type Database, notificationChannels, projects } from '@pleasehold/db';
 import { protectedProcedure, router } from '../trpc';
 
 async function verifyProjectOwnership(db: Database, projectId: string, userId: string) {
@@ -42,7 +42,10 @@ const webhookConfigSchema = z.object({
 
 type ChannelType = 'email' | 'slack' | 'discord' | 'telegram' | 'webhook';
 
-function validateConfigForType(type: ChannelType, config: Record<string, unknown>): Record<string, unknown> {
+function validateConfigForType(
+	type: ChannelType,
+	config: Record<string, unknown>,
+): Record<string, unknown> {
 	switch (type) {
 		case 'email':
 			return emailConfigSchema.parse(config);
@@ -281,6 +284,39 @@ const getDoubleOptIn = protectedProcedure
 		return { doubleOptIn: project.doubleOptIn };
 	});
 
+const toggleSendConfirmationEmail = protectedProcedure
+	.input(
+		z.object({
+			projectId: z.string().uuid(),
+			enabled: z.boolean(),
+		}),
+	)
+	.mutation(async ({ ctx, input }) => {
+		await verifyProjectOwnership(ctx.db, input.projectId, ctx.user.id);
+
+		await ctx.db
+			.update(projects)
+			.set({ sendConfirmationEmail: input.enabled, updatedAt: new Date() })
+			.where(eq(projects.id, input.projectId));
+
+		return { sendConfirmationEmail: input.enabled };
+	});
+
+const getSendConfirmationEmail = protectedProcedure
+	.input(z.object({ projectId: z.string().uuid() }))
+	.query(async ({ ctx, input }) => {
+		const project = await ctx.db.query.projects.findFirst({
+			where: and(eq(projects.id, input.projectId), eq(projects.userId, ctx.user.id)),
+			columns: { sendConfirmationEmail: true },
+		});
+
+		if (!project) {
+			throw new TRPCError({ code: 'NOT_FOUND', message: 'Project not found' });
+		}
+
+		return { sendConfirmationEmail: project.sendConfirmationEmail };
+	});
+
 export const notificationRouter = router({
 	list,
 	create,
@@ -289,4 +325,6 @@ export const notificationRouter = router({
 	regenerateSecret,
 	toggleDoubleOptIn,
 	getDoubleOptIn,
+	toggleSendConfirmationEmail,
+	getSendConfirmationEmail,
 });

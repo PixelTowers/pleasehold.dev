@@ -1,7 +1,27 @@
 // ABOUTME: Form component for configuring notification channels per type.
-// ABOUTME: Renders type-specific fields (email recipients, webhook URLs, bot tokens) with validation.
+// ABOUTME: Renders type-specific fields (email recipients, webhook URLs, bot tokens) with Zod validation.
 
-import { type FormEvent, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Plus, Trash2 } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import type { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import {
+	discordChannelSchema,
+	emailChannelSchema,
+	slackChannelSchema,
+	telegramChannelSchema,
+	webhookChannelSchema,
+} from '@/lib/schemas';
 
 type ChannelType = 'email' | 'slack' | 'discord' | 'telegram' | 'webhook';
 
@@ -13,301 +33,209 @@ interface NotificationChannelFormProps {
 	isLoading: boolean;
 }
 
+const schemaMap = {
+	email: emailChannelSchema,
+	slack: slackChannelSchema,
+	discord: discordChannelSchema,
+	telegram: telegramChannelSchema,
+	webhook: webhookChannelSchema,
+} as const;
+
+function defaultValuesForType(type: ChannelType, initialConfig?: Record<string, unknown>) {
+	switch (type) {
+		case 'email':
+			return { recipients: (initialConfig?.recipients as string[]) ?? [''] };
+		case 'slack':
+			return { webhookUrl: (initialConfig?.webhookUrl as string) ?? '' };
+		case 'discord':
+			return { webhookUrl: (initialConfig?.webhookUrl as string) ?? '' };
+		case 'telegram':
+			return {
+				botToken: (initialConfig?.botToken as string) ?? '',
+				chatId: (initialConfig?.chatId as string) ?? '',
+			};
+		case 'webhook':
+			return { url: (initialConfig?.url as string) ?? '' };
+	}
+}
+
 function EmailFields({
-	recipients,
-	onChange,
-}: { recipients: string[]; onChange: (recipients: string[]) => void }) {
+	form,
+}: {
+	form: ReturnType<typeof useForm<z.infer<typeof emailChannelSchema>>>;
+}) {
+	const recipients = form.watch('recipients');
+
 	const addRecipient = () => {
 		if (recipients.length < 10) {
-			onChange([...recipients, '']);
+			form.setValue('recipients', [...recipients, '']);
 		}
 	};
 
 	const removeRecipient = (index: number) => {
-		onChange(recipients.filter((_, i) => i !== index));
-	};
-
-	const updateRecipient = (index: number, value: string) => {
-		const updated = [...recipients];
-		updated[index] = value;
-		onChange(updated);
+		const updated = recipients.filter((_: string, i: number) => i !== index);
+		form.setValue('recipients', updated);
 	};
 
 	return (
 		<div>
-			<label
-				style={{
-					display: 'block',
-					fontSize: '0.875rem',
-					fontWeight: 500,
-					marginBottom: '0.5rem',
-				}}
-			>
-				Recipients
-			</label>
-			<div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-				{recipients.map((email, index) => (
-					<div key={index} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-						<input
-							type="email"
-							value={email}
-							onChange={(e) => updateRecipient(index, e.target.value)}
-							placeholder="name@example.com"
-							required
-							style={{
-								flex: 1,
-								padding: '0.5rem 0.75rem',
-								border: '1px solid #d1d5db',
-								borderRadius: '0.375rem',
-								fontSize: '0.875rem',
-								boxSizing: 'border-box',
-							}}
+			<FormLabel className="mb-2 block">Recipients</FormLabel>
+			<div className="flex flex-col gap-2">
+				{recipients.map((_: string, index: number) => (
+					<div key={`recipient-${index.toString()}`} className="flex items-center gap-2">
+						<FormField
+							control={form.control}
+							name={`recipients.${index}`}
+							render={({ field }) => (
+								<FormItem className="flex-1">
+									<FormControl>
+										<Input type="email" placeholder="name@example.com" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
 						/>
 						{recipients.length > 1 && (
-							<button
+							<Button
 								type="button"
+								variant="outline"
+								size="sm"
+								className="text-destructive"
 								onClick={() => removeRecipient(index)}
-								style={{
-									padding: '0.5rem 0.75rem',
-									border: '1px solid #d1d5db',
-									borderRadius: '0.375rem',
-									backgroundColor: '#fff',
-									color: '#dc2626',
-									fontSize: '0.875rem',
-									cursor: 'pointer',
-								}}
 							>
-								Remove
-							</button>
+								<Trash2 className="h-3.5 w-3.5" />
+							</Button>
 						)}
 					</div>
 				))}
 			</div>
 			{recipients.length < 10 && (
-				<button
-					type="button"
-					onClick={addRecipient}
-					style={{
-						marginTop: '0.5rem',
-						padding: '0.375rem 0.75rem',
-						border: '1px solid #d1d5db',
-						borderRadius: '0.375rem',
-						backgroundColor: '#fff',
-						fontSize: '0.8125rem',
-						color: '#374151',
-						cursor: 'pointer',
-					}}
-				>
-					+ Add recipient
-				</button>
+				<Button type="button" variant="outline" size="sm" className="mt-2" onClick={addRecipient}>
+					<Plus className="mr-1 h-3.5 w-3.5" />
+					Add recipient
+				</Button>
 			)}
-			<p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.25rem' }}>
-				Up to 10 email recipients per channel.
-			</p>
+			<p className="mt-1 text-xs text-muted-foreground">Up to 10 email recipients per channel.</p>
 		</div>
 	);
 }
 
-function SlackFields({ webhookUrl, onChange }: { webhookUrl: string; onChange: (url: string) => void }) {
+function SlackFields({
+	form,
+}: {
+	form: ReturnType<typeof useForm<z.infer<typeof slackChannelSchema>>>;
+}) {
 	return (
-		<div>
-			<label
-				htmlFor="slack-webhook"
-				style={{
-					display: 'block',
-					fontSize: '0.875rem',
-					fontWeight: 500,
-					marginBottom: '0.25rem',
-				}}
-			>
-				Webhook URL
-			</label>
-			<input
-				id="slack-webhook"
-				type="url"
-				value={webhookUrl}
-				onChange={(e) => onChange(e.target.value)}
-				placeholder="https://hooks.slack.com/services/..."
-				required
-				style={{
-					width: '100%',
-					padding: '0.5rem 0.75rem',
-					border: '1px solid #d1d5db',
-					borderRadius: '0.375rem',
-					fontSize: '0.875rem',
-					boxSizing: 'border-box',
-				}}
-			/>
-			<p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.25rem' }}>
-				Create an Incoming Webhook in your Slack workspace settings.
-			</p>
-		</div>
+		<FormField
+			control={form.control}
+			name="webhookUrl"
+			render={({ field }) => (
+				<FormItem>
+					<FormLabel>Webhook URL</FormLabel>
+					<FormControl>
+						<Input type="url" placeholder="https://hooks.slack.com/services/..." {...field} />
+					</FormControl>
+					<FormMessage />
+					<p className="text-xs text-muted-foreground">
+						Create an Incoming Webhook in your Slack workspace settings.
+					</p>
+				</FormItem>
+			)}
+		/>
 	);
 }
 
-function DiscordFields({ webhookUrl, onChange }: { webhookUrl: string; onChange: (url: string) => void }) {
+function DiscordFields({
+	form,
+}: {
+	form: ReturnType<typeof useForm<z.infer<typeof discordChannelSchema>>>;
+}) {
 	return (
-		<div>
-			<label
-				htmlFor="discord-webhook"
-				style={{
-					display: 'block',
-					fontSize: '0.875rem',
-					fontWeight: 500,
-					marginBottom: '0.25rem',
-				}}
-			>
-				Webhook URL
-			</label>
-			<input
-				id="discord-webhook"
-				type="url"
-				value={webhookUrl}
-				onChange={(e) => onChange(e.target.value)}
-				placeholder="https://discord.com/api/webhooks/..."
-				required
-				style={{
-					width: '100%',
-					padding: '0.5rem 0.75rem',
-					border: '1px solid #d1d5db',
-					borderRadius: '0.375rem',
-					fontSize: '0.875rem',
-					boxSizing: 'border-box',
-				}}
-			/>
-			<p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.25rem' }}>
-				Create a webhook in your Discord channel settings under Integrations.
-			</p>
-		</div>
+		<FormField
+			control={form.control}
+			name="webhookUrl"
+			render={({ field }) => (
+				<FormItem>
+					<FormLabel>Webhook URL</FormLabel>
+					<FormControl>
+						<Input type="url" placeholder="https://discord.com/api/webhooks/..." {...field} />
+					</FormControl>
+					<FormMessage />
+					<p className="text-xs text-muted-foreground">
+						Create a webhook in your Discord channel settings under Integrations.
+					</p>
+				</FormItem>
+			)}
+		/>
 	);
 }
 
 function TelegramFields({
-	botToken,
-	chatId,
-	onBotTokenChange,
-	onChatIdChange,
+	form,
 }: {
-	botToken: string;
-	chatId: string;
-	onBotTokenChange: (val: string) => void;
-	onChatIdChange: (val: string) => void;
+	form: ReturnType<typeof useForm<z.infer<typeof telegramChannelSchema>>>;
 }) {
 	return (
-		<div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-			<div>
-				<label
-					htmlFor="telegram-bot-token"
-					style={{
-						display: 'block',
-						fontSize: '0.875rem',
-						fontWeight: 500,
-						marginBottom: '0.25rem',
-					}}
-				>
-					Bot Token
-				</label>
-				<input
-					id="telegram-bot-token"
-					type="text"
-					value={botToken}
-					onChange={(e) => onBotTokenChange(e.target.value)}
-					placeholder="123456789:ABCDefGhIjKlMnOpQrStUvWxYz"
-					required
-					style={{
-						width: '100%',
-						padding: '0.5rem 0.75rem',
-						border: '1px solid #d1d5db',
-						borderRadius: '0.375rem',
-						fontSize: '0.875rem',
-						boxSizing: 'border-box',
-					}}
-				/>
-				<p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.25rem' }}>
-					Get a bot token from @BotFather on Telegram.
-				</p>
-			</div>
-			<div>
-				<label
-					htmlFor="telegram-chat-id"
-					style={{
-						display: 'block',
-						fontSize: '0.875rem',
-						fontWeight: 500,
-						marginBottom: '0.25rem',
-					}}
-				>
-					Chat ID
-				</label>
-				<input
-					id="telegram-chat-id"
-					type="text"
-					value={chatId}
-					onChange={(e) => onChatIdChange(e.target.value)}
-					placeholder="-1001234567890"
-					required
-					style={{
-						width: '100%',
-						padding: '0.5rem 0.75rem',
-						border: '1px solid #d1d5db',
-						borderRadius: '0.375rem',
-						fontSize: '0.875rem',
-						boxSizing: 'border-box',
-					}}
-				/>
-				<p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.25rem' }}>
-					Add the bot to a group and use @userinfobot or the Telegram API to find the chat ID.
-				</p>
-			</div>
+		<div className="flex flex-col gap-4">
+			<FormField
+				control={form.control}
+				name="botToken"
+				render={({ field }) => (
+					<FormItem>
+						<FormLabel>Bot Token</FormLabel>
+						<FormControl>
+							<Input type="text" placeholder="123456789:ABCDefGhIjKlMnOpQrStUvWxYz" {...field} />
+						</FormControl>
+						<FormMessage />
+						<p className="text-xs text-muted-foreground">
+							Get a bot token from @BotFather on Telegram.
+						</p>
+					</FormItem>
+				)}
+			/>
+			<FormField
+				control={form.control}
+				name="chatId"
+				render={({ field }) => (
+					<FormItem>
+						<FormLabel>Chat ID</FormLabel>
+						<FormControl>
+							<Input type="text" placeholder="-1001234567890" {...field} />
+						</FormControl>
+						<FormMessage />
+						<p className="text-xs text-muted-foreground">
+							Add the bot to a group and use @userinfobot or the Telegram API to find the chat ID.
+						</p>
+					</FormItem>
+				)}
+			/>
 		</div>
 	);
 }
 
-function WebhookFields({ url, onChange }: { url: string; onChange: (url: string) => void }) {
+function WebhookFields({
+	form,
+}: {
+	form: ReturnType<typeof useForm<z.infer<typeof webhookChannelSchema>>>;
+}) {
 	return (
-		<div>
-			<label
-				htmlFor="webhook-url"
-				style={{
-					display: 'block',
-					fontSize: '0.875rem',
-					fontWeight: 500,
-					marginBottom: '0.25rem',
-				}}
-			>
-				Endpoint URL
-			</label>
-			<input
-				id="webhook-url"
-				type="url"
-				value={url}
-				onChange={(e) => onChange(e.target.value)}
-				placeholder="https://your-server.com/webhook"
-				required
-				style={{
-					width: '100%',
-					padding: '0.5rem 0.75rem',
-					border: '1px solid #d1d5db',
-					borderRadius: '0.375rem',
-					fontSize: '0.875rem',
-					boxSizing: 'border-box',
-				}}
-			/>
-			<p
-				style={{
-					fontSize: '0.75rem',
-					color: '#6b7280',
-					marginTop: '0.5rem',
-					padding: '0.5rem 0.75rem',
-					backgroundColor: '#f9fafb',
-					borderRadius: '0.25rem',
-					border: '1px solid #e5e7eb',
-				}}
-			>
-				An HMAC signing secret will be auto-generated and displayed once after creation. Use it to
-				verify incoming webhook payloads.
-			</p>
-		</div>
+		<FormField
+			control={form.control}
+			name="url"
+			render={({ field }) => (
+				<FormItem>
+					<FormLabel>Endpoint URL</FormLabel>
+					<FormControl>
+						<Input type="url" placeholder="https://your-server.com/webhook" {...field} />
+					</FormControl>
+					<FormMessage />
+					<p className="mt-2 rounded border bg-accent px-3 py-2 text-xs text-muted">
+						An HMAC signing secret will be auto-generated and displayed once after creation. Use it
+						to verify incoming webhook payloads.
+					</p>
+				</FormItem>
+			)}
+		/>
 	);
 }
 
@@ -318,94 +246,41 @@ export function NotificationChannelForm({
 	onCancel,
 	isLoading,
 }: NotificationChannelFormProps) {
-	const [recipients, setRecipients] = useState<string[]>(
-		(initialConfig?.recipients as string[]) ?? [''],
-	);
-	const [webhookUrl, setWebhookUrl] = useState<string>(
-		(initialConfig?.webhookUrl as string) ?? '',
-	);
-	const [url, setUrl] = useState<string>((initialConfig?.url as string) ?? '');
-	const [botToken, setBotToken] = useState<string>(
-		(initialConfig?.botToken as string) ?? '',
-	);
-	const [chatId, setChatId] = useState<string>((initialConfig?.chatId as string) ?? '');
+	// biome-ignore lint/suspicious/noExplicitAny: channel type varies at runtime
+	const form = useForm<any>({
+		resolver: zodResolver(schemaMap[type]),
+		defaultValues: defaultValuesForType(type, initialConfig),
+	});
 
-	const handleSubmit = (e: FormEvent) => {
-		e.preventDefault();
-
-		let config: Record<string, unknown>;
-		switch (type) {
-			case 'email':
-				config = { recipients: recipients.filter((r) => r.trim() !== '') };
-				break;
-			case 'slack':
-				config = { webhookUrl };
-				break;
-			case 'discord':
-				config = { webhookUrl };
-				break;
-			case 'telegram':
-				config = { botToken, chatId };
-				break;
-			case 'webhook':
-				config = { url };
-				break;
+	const handleSubmit = (values: Record<string, unknown>) => {
+		if (type === 'email') {
+			// Filter out empty recipient strings before submitting
+			const recipients = (values.recipients as string[]).filter((r) => r.trim() !== '');
+			onSubmit({ recipients });
+		} else {
+			onSubmit(values);
 		}
-
-		onSubmit(config);
 	};
 
 	return (
-		<form onSubmit={handleSubmit}>
-			<div style={{ marginBottom: '1.5rem' }}>
-				{type === 'email' && <EmailFields recipients={recipients} onChange={setRecipients} />}
-				{type === 'slack' && <SlackFields webhookUrl={webhookUrl} onChange={setWebhookUrl} />}
-				{type === 'discord' && <DiscordFields webhookUrl={webhookUrl} onChange={setWebhookUrl} />}
-				{type === 'telegram' && (
-					<TelegramFields
-						botToken={botToken}
-						chatId={chatId}
-						onBotTokenChange={setBotToken}
-						onChatIdChange={setChatId}
-					/>
-				)}
-				{type === 'webhook' && <WebhookFields url={url} onChange={setUrl} />}
-			</div>
-
-			<div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-				<button
-					type="button"
-					onClick={onCancel}
-					disabled={isLoading}
-					style={{
-						padding: '0.5rem 1rem',
-						border: '1px solid #d1d5db',
-						borderRadius: '0.375rem',
-						backgroundColor: '#fff',
-						fontSize: '0.875rem',
-						cursor: isLoading ? 'not-allowed' : 'pointer',
-						color: '#374151',
-					}}
-				>
-					Cancel
-				</button>
-				<button
-					type="submit"
-					disabled={isLoading}
-					style={{
-						padding: '0.5rem 1rem',
-						backgroundColor: isLoading ? '#d1d5db' : '#111',
-						color: '#fff',
-						border: 'none',
-						borderRadius: '0.375rem',
-						fontSize: '0.875rem',
-						fontWeight: 500,
-						cursor: isLoading ? 'not-allowed' : 'pointer',
-					}}
-				>
-					{isLoading ? 'Saving...' : 'Save'}
-				</button>
-			</div>
-		</form>
+		<Form {...form}>
+			<form onSubmit={form.handleSubmit(handleSubmit)}>
+				<div className="mb-6">
+					{type === 'email' && <EmailFields form={form} />}
+					{type === 'slack' && <SlackFields form={form} />}
+					{type === 'discord' && <DiscordFields form={form} />}
+					{type === 'telegram' && <TelegramFields form={form} />}
+					{type === 'webhook' && <WebhookFields form={form} />}
+				</div>
+				<div className="flex justify-end gap-2">
+					<Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+						Cancel
+					</Button>
+					<Button type="submit" disabled={isLoading}>
+						{isLoading ? 'Saving...' : 'Save'}
+					</Button>
+				</div>
+			</form>
+		</Form>
 	);
 }

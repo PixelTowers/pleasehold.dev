@@ -1,7 +1,7 @@
 // ABOUTME: tRPC initialization with superjson transformer and procedure builders.
 // ABOUTME: Defines publicProcedure and protectedProcedure with auth middleware.
 
-import { TRPCError, initTRPC } from '@trpc/server';
+import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
 import type { Context } from './context';
 

@@ -1,55 +1,35 @@
 // ABOUTME: Dashboard index route showing project card grid or guided creation flow.
-// ABOUTME: Protected route; redirects to login if unauthenticated; shows CreateProjectFlow for zero-project users.
+// ABOUTME: Auth is handled by root beforeLoad guard; shows CreateProjectFlow for zero-project users.
 
-import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
-import { authClient } from '../lib/auth-client';
-import { CreateProjectFlow } from '../components/CreateProjectFlow';
-import { ProjectCard } from '../components/ProjectCard';
-import { useProjects } from '../hooks/useProjects';
+import { createFileRoute } from '@tanstack/react-router';
+import { Plus } from 'lucide-react';
+import { useState } from 'react';
+import { CreateProjectDialog } from '@/components/CreateProjectDialog';
+import { CreateProjectFlow } from '@/components/CreateProjectFlow';
+import { ProjectCard } from '@/components/ProjectCard';
+import { Button } from '@/components/ui/button';
+import { useProjects } from '@/hooks/useProjects';
 
 export const Route = createFileRoute('/')({
 	component: DashboardIndex,
 });
 
 function DashboardIndex() {
-	const { data: session, isPending: sessionLoading } = authClient.useSession();
-	const navigate = useNavigate();
 	const { data: projects, isPending: projectsLoading, error } = useProjects();
-
-	if (sessionLoading) {
-		return (
-			<div style={{ textAlign: 'center', padding: '4rem' }}>
-				<p style={{ color: '#6b7280' }}>Loading...</p>
-			</div>
-		);
-	}
-
-	if (!session?.user) {
-		void navigate({ to: '/login' });
-		return null;
-	}
+	const [createOpen, setCreateOpen] = useState(false);
 
 	if (projectsLoading) {
 		return (
-			<div style={{ textAlign: 'center', padding: '4rem' }}>
-				<p style={{ color: '#6b7280' }}>Loading projects...</p>
+			<div className="py-16 text-center">
+				<p className="text-muted">Loading projects...</p>
 			</div>
 		);
 	}
 
 	if (error) {
 		return (
-			<div style={{ maxWidth: '48rem', margin: '0 auto' }}>
-				<div
-					style={{
-						padding: '1rem',
-						backgroundColor: '#fef2f2',
-						border: '1px solid #fecaca',
-						borderRadius: '0.375rem',
-						color: '#dc2626',
-						fontSize: '0.875rem',
-					}}
-				>
+			<div className="mx-auto max-w-5xl">
+				<div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-destructive">
 					Failed to load projects. Please try refreshing the page.
 				</div>
 			</div>
@@ -59,7 +39,7 @@ function DashboardIndex() {
 	// First-time user with zero projects: show guided creation flow
 	if (!projects || projects.length === 0) {
 		return (
-			<div style={{ padding: '2rem 0' }}>
+			<div className="py-8">
 				<CreateProjectFlow />
 			</div>
 		);
@@ -67,37 +47,19 @@ function DashboardIndex() {
 
 	// Returning user: show project card grid
 	return (
-		<div style={{ maxWidth: '64rem', margin: '0 auto' }}>
-			<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-				<div>
-					<h1 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0 }}>Projects</h1>
-					<p style={{ color: '#6b7280', fontSize: '0.875rem', marginTop: '0.25rem' }}>
-						{projects.length} project{projects.length === 1 ? '' : 's'}
-					</p>
+		<div className="mx-auto max-w-5xl">
+			<div className="mb-4 flex items-center justify-between">
+				<div className="flex items-baseline gap-2">
+					<h1 className="text-xl font-semibold text-foreground">Projects</h1>
+					<span className="text-sm text-muted">{projects.length}</span>
 				</div>
-				<Link
-					to="/projects/new"
-					style={{
-						padding: '0.5rem 1rem',
-						backgroundColor: '#111',
-						color: '#fff',
-						borderRadius: '0.375rem',
-						fontSize: '0.875rem',
-						fontWeight: 500,
-						textDecoration: 'none',
-					}}
-				>
+				<Button size="sm" className="h-7 text-xs" onClick={() => setCreateOpen(true)}>
+					<Plus className="mr-1 h-3.5 w-3.5" />
 					New Project
-				</Link>
+				</Button>
 			</div>
 
-			<div
-				style={{
-					display: 'grid',
-					gridTemplateColumns: 'repeat(auto-fill, minmax(18rem, 1fr))',
-					gap: '1rem',
-				}}
-			>
+			<div className="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-3">
 				{projects.map((project) => (
 					<ProjectCard
 						key={project.id}
@@ -109,6 +71,8 @@ function DashboardIndex() {
 					/>
 				))}
 			</div>
+
+			<CreateProjectDialog open={createOpen} onClose={() => setCreateOpen(false)} />
 		</div>
 	);
 }

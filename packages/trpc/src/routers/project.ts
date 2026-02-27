@@ -1,11 +1,25 @@
 // ABOUTME: tRPC router for project CRUD and field configuration management.
 // ABOUTME: All queries enforce userId ownership checks; mode is immutable after creation.
 
+import { emailTemplates, projectFieldConfigs, projects } from '@pleasehold/db';
 import { TRPCError } from '@trpc/server';
 import { and, desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { projectFieldConfigs, projects } from '@pleasehold/db';
 import { protectedProcedure, router } from '../trpc';
+
+const DEFAULT_VERIFICATION_TEMPLATE = {
+	subject: 'Confirm your email for {{project_name}}',
+	bodyHtml:
+		"<h2>Confirm your email</h2><p>Thanks for signing up for <strong>{{project_name}}</strong>. To complete your submission, please verify your email address by clicking the button below.</p><p>This link will expire in 48 hours. If you didn't request this, you can safely ignore this email.</p>",
+	buttonText: 'Verify Email Address',
+};
+
+const DEFAULT_CONFIRMATION_TEMPLATE = {
+	subject: "You're on the {{project_name}} waitlist!",
+	bodyHtml:
+		"<h2>You're on the list!</h2><p>Hey {{name}}, thanks for joining <strong>{{project_name}}</strong>!</p><p>You're <strong>#{{position}}</strong> on the waitlist. We'll keep you updated as things progress.</p><p>Welcome aboard — we're excited to have you.</p>",
+	buttonText: null,
+};
 
 export const projectRouter = router({
 	create: protectedProcedure
@@ -13,6 +27,11 @@ export const projectRouter = router({
 			z.object({
 				name: z.string().min(1).max(100),
 				mode: z.enum(['waitlist', 'demo-booking']),
+				companyName: z.string().max(100).nullish(),
+				brandColor: z
+					.string()
+					.regex(/^#[0-9a-fA-F]{6}$/)
+					.optional(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -23,6 +42,8 @@ export const projectRouter = router({
 						userId: ctx.user.id,
 						name: input.name,
 						mode: input.mode,
+						companyName: input.companyName ?? null,
+						brandColor: input.brandColor,
 					})
 					.returning();
 
@@ -39,6 +60,24 @@ export const projectRouter = router({
 						collectMessage: isDemoBooking,
 					})
 					.returning();
+
+				// Seed email templates so projects start with polished defaults
+				await tx.insert(emailTemplates).values([
+					{
+						projectId: project.id,
+						type: 'verification' as const,
+						subject: DEFAULT_VERIFICATION_TEMPLATE.subject,
+						bodyHtml: DEFAULT_VERIFICATION_TEMPLATE.bodyHtml,
+						buttonText: DEFAULT_VERIFICATION_TEMPLATE.buttonText,
+					},
+					{
+						projectId: project.id,
+						type: 'confirmation' as const,
+						subject: DEFAULT_CONFIRMATION_TEMPLATE.subject,
+						bodyHtml: DEFAULT_CONFIRMATION_TEMPLATE.bodyHtml,
+						buttonText: DEFAULT_CONFIRMATION_TEMPLATE.buttonText,
+					},
+				]);
 
 				return { ...project, fieldConfig };
 			});
@@ -72,7 +111,13 @@ export const projectRouter = router({
 			z.object({
 				id: z.string().uuid(),
 				// Mode is deliberately excluded -- immutable after creation (Pitfall 2).
-				name: z.string().min(1).max(100),
+				name: z.string().min(1).max(100).optional(),
+				logoUrl: z.string().url().optional().nullable(),
+				brandColor: z
+					.string()
+					.regex(/^#[0-9a-fA-F]{6}$/, 'Must be a valid hex color')
+					.optional(),
+				companyName: z.string().max(100).optional().nullable(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -85,9 +130,15 @@ export const projectRouter = router({
 				throw new TRPCError({ code: 'NOT_FOUND', message: 'Project not found' });
 			}
 
+			const updates: Record<string, unknown> = { updatedAt: new Date() };
+			if (input.name !== undefined) updates.name = input.name;
+			if (input.logoUrl !== undefined) updates.logoUrl = input.logoUrl;
+			if (input.brandColor !== undefined) updates.brandColor = input.brandColor;
+			if (input.companyName !== undefined) updates.companyName = input.companyName;
+
 			const [updated] = await ctx.db
 				.update(projects)
-				.set({ name: input.name, updatedAt: new Date() })
+				.set(updates)
 				.where(eq(projects.id, input.id))
 				.returning();
 
@@ -128,10 +179,7 @@ export const projectRouter = router({
 				.returning();
 
 			// Also update parent project's updatedAt timestamp
-			await ctx.db
-				.update(projects)
-				.set({ updatedAt: now })
-				.where(eq(projects.id, input.projectId));
+			await ctx.db.update(projects).set({ updatedAt: now }).where(eq(projects.id, input.projectId));
 
 			return updatedConfig;
 		}),

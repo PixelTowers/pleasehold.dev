@@ -1,30 +1,72 @@
 // ABOUTME: BullMQ job processor that routes notification jobs to channel-specific sender functions.
 // ABOUTME: Handles entry_created (multi-channel fan-out) and verification_email job types with delivery logging.
 
-import type { Job } from 'bullmq';
 import {
 	createDb,
+	emailTemplates,
 	entries,
 	notificationChannels,
 	notificationLogs,
 	projects,
+	userSettings,
 } from '@pleasehold/db';
+import type { Job } from 'bullmq';
 import { and, eq } from 'drizzle-orm';
+import { sendConfirmationEmail } from './senders/confirmation-email';
+import { sendDiscordNotification } from './senders/discord';
 import { sendEmailNotification } from './senders/email';
 import { sendSlackNotification } from './senders/slack';
-import { sendDiscordNotification } from './senders/discord';
 import { sendTelegramNotification } from './senders/telegram';
-import { sendWebhookNotification } from './senders/webhook';
 import { sendVerificationEmail } from './senders/verification-email';
-import type { EntryPayload } from './types';
+import { sendWebhookNotification } from './senders/webhook';
+import type { BrandingContext, EmailSenderOptions, EntryPayload, TemplateContext } from './types';
 
 interface NotificationJobData {
 	entryId: string;
 	projectId: string;
-	type: 'entry_created' | 'verification_email';
+	type: 'entry_created' | 'verification_email' | 'confirmation_email';
 }
 
 const db = createDb(process.env.DATABASE_URL!);
+
+async function getEmailSenderOptions(userId: string): Promise<EmailSenderOptions> {
+	const settings = await db.query.userSettings.findFirst({
+		where: eq(userSettings.userId, userId),
+	});
+	if (!settings) return {};
+	return {
+		resendApiKey: settings.resendApiKey,
+		fromAddress: settings.emailFromAddress,
+		fromName: settings.emailFromName,
+	};
+}
+
+function getBrandingContext(project: {
+	logoUrl: string | null;
+	brandColor: string | null;
+	companyName: string | null;
+}): BrandingContext {
+	return {
+		logoUrl: project.logoUrl,
+		brandColor: project.brandColor,
+		companyName: project.companyName,
+	};
+}
+
+async function getCustomTemplate(
+	projectId: string,
+	type: 'verification' | 'confirmation',
+): Promise<TemplateContext | null> {
+	const template = await db.query.emailTemplates.findFirst({
+		where: and(eq(emailTemplates.projectId, projectId), eq(emailTemplates.type, type)),
+	});
+	if (!template) return null;
+	return {
+		subject: template.subject,
+		bodyHtml: template.bodyHtml,
+		buttonText: template.buttonText,
+	};
+}
 
 export async function processNotification(job: Job<NotificationJobData>): Promise<void> {
 	const { data } = job;
@@ -33,6 +75,8 @@ export async function processNotification(job: Job<NotificationJobData>): Promis
 		await processEntryCreated(data);
 	} else if (data.type === 'verification_email') {
 		await processVerificationEmail(data);
+	} else if (data.type === 'confirmation_email') {
+		await processConfirmationEmail(data);
 	} else {
 		console.warn(`Unknown job type: ${(data as unknown as Record<string, unknown>).type}`);
 	}
@@ -72,6 +116,9 @@ async function processEntryCreated(data: NotificationJobData): Promise<void> {
 		return;
 	}
 
+	const emailOptions = await getEmailSenderOptions(project.userId);
+	const branding = getBrandingContext(project);
+
 	const entryPayload: EntryPayload = {
 		email: entry.email,
 		name: entry.name,
@@ -93,14 +140,12 @@ async function processEntryCreated(data: NotificationJobData): Promise<void> {
 		});
 
 		if (existingLog) {
-			console.log(
-				`Channel ${channel.id} already sent for entry ${data.entryId}. Skipping.`,
-			);
+			console.log(`Channel ${channel.id} already sent for entry ${data.entryId}. Skipping.`);
 			continue;
 		}
 
 		try {
-			await dispatchToChannel(channel, entryPayload);
+			await dispatchToChannel(channel, entryPayload, emailOptions, branding);
 
 			await db.insert(notificationLogs).values({
 				channelId: channel.id,
@@ -111,9 +156,7 @@ async function processEntryCreated(data: NotificationJobData): Promise<void> {
 			});
 		} catch (err) {
 			const errorMessage = err instanceof Error ? err.message : String(err);
-			console.error(
-				`Failed to send to channel ${channel.id} (${channel.type}): ${errorMessage}`,
-			);
+			console.error(`Failed to send to channel ${channel.id} (${channel.type}): ${errorMessage}`);
 
 			await db.insert(notificationLogs).values({
 				channelId: channel.id,
@@ -137,13 +180,15 @@ async function processEntryCreated(data: NotificationJobData): Promise<void> {
 async function dispatchToChannel(
 	channel: typeof notificationChannels.$inferSelect,
 	entry: EntryPayload,
+	emailOptions?: EmailSenderOptions,
+	branding?: BrandingContext,
 ): Promise<void> {
 	const config = channel.config as Record<string, unknown>;
 
 	switch (channel.type) {
 		case 'email': {
 			const recipients = config.recipients as string[];
-			await sendEmailNotification(recipients, entry);
+			await sendEmailNotification(recipients, entry, emailOptions, branding);
 			break;
 		}
 		case 'slack': {
@@ -191,16 +236,12 @@ async function processVerificationEmail(data: NotificationJobData): Promise<void
 	});
 
 	if (!entry) {
-		console.warn(
-			`Entry ${data.entryId} not found for verification email. Skipping.`,
-		);
+		console.warn(`Entry ${data.entryId} not found for verification email. Skipping.`);
 		return;
 	}
 
 	if (!entry.verificationToken) {
-		console.warn(
-			`Entry ${data.entryId} has no verification token. Skipping.`,
-		);
+		console.warn(`Entry ${data.entryId} has no verification token. Skipping.`);
 		return;
 	}
 
@@ -213,6 +254,54 @@ async function processVerificationEmail(data: NotificationJobData): Promise<void
 		return;
 	}
 
-	await sendVerificationEmail(entry.email, entry.verificationToken, project.name);
+	const emailOptions = await getEmailSenderOptions(project.userId);
+	const branding = getBrandingContext(project);
+	const customTemplate = await getCustomTemplate(data.projectId, 'verification');
+
+	await sendVerificationEmail(entry.email, entry.verificationToken, project.name, {
+		emailOptions,
+		branding,
+		customTemplate,
+	});
 	console.log(`Verification email sent to ${entry.email} for project ${project.name}`);
+}
+
+async function processConfirmationEmail(data: NotificationJobData): Promise<void> {
+	const entry = await db.query.entries.findFirst({
+		where: eq(entries.id, data.entryId),
+	});
+
+	if (!entry) {
+		console.warn(`Entry ${data.entryId} not found for confirmation email. Skipping.`);
+		return;
+	}
+
+	const project = await db.query.projects.findFirst({
+		where: eq(projects.id, data.projectId),
+	});
+
+	if (!project) {
+		console.warn(`Project ${data.projectId} not found. Skipping.`);
+		return;
+	}
+
+	const emailOptions = await getEmailSenderOptions(project.userId);
+	const branding = getBrandingContext(project);
+	const customTemplate = await getCustomTemplate(data.projectId, 'confirmation');
+
+	await sendConfirmationEmail(
+		{
+			email: entry.email,
+			name: entry.name,
+			position: entry.position,
+			projectName: project.name,
+			companyName: project.companyName,
+		},
+		{
+			emailOptions,
+			branding,
+			customTemplate,
+		},
+	);
+	console.log(`Confirmation email sent to ${entry.email} for project ${project.name}`);
 }

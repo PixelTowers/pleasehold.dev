@@ -1,33 +1,22 @@
-// ABOUTME: Color-coded pill badge that displays entry status values (new, contacted, converted, archived).
-// ABOUTME: Uses inline styles matching the existing mode badge pattern from the project overview page.
+// ABOUTME: Color-coded status indicator using a small dot and text label for entry statuses.
+// ABOUTME: Uses subtle dot+text pattern instead of pill badges for Linear-style aesthetic.
 
-import type React from 'react';
+import { cn } from '@/lib/utils';
 
-const statusStyles: Record<string, React.CSSProperties> = {
-	new: {
-		backgroundColor: '#dbeafe',
-		color: '#1d4ed8',
-	},
-	contacted: {
-		backgroundColor: '#fef3c7',
-		color: '#92400e',
-	},
-	converted: {
-		backgroundColor: '#dcfce7',
-		color: '#166534',
-	},
-	archived: {
-		backgroundColor: '#f3f4f6',
-		color: '#6b7280',
-	},
+const statusColors: Record<string, string> = {
+	new: 'bg-blue-500',
+	contacted: 'bg-amber-500',
+	converted: 'bg-green-500',
+	archived: 'bg-gray-400',
+	pending_verification: 'bg-orange-400',
 };
 
-const baseStyle: React.CSSProperties = {
-	display: 'inline-block',
-	borderRadius: '9999px',
-	padding: '0.125rem 0.5rem',
-	fontSize: '0.75rem',
-	fontWeight: 500,
+const statusTextColors: Record<string, string> = {
+	new: 'text-blue-700',
+	contacted: 'text-amber-700',
+	converted: 'text-green-700',
+	archived: 'text-muted',
+	pending_verification: 'text-orange-600',
 };
 
 interface EntryStatusBadgeProps {
@@ -35,8 +24,17 @@ interface EntryStatusBadgeProps {
 }
 
 export function EntryStatusBadge({ status }: EntryStatusBadgeProps) {
-	const colorStyle = statusStyles[status] ?? statusStyles.archived;
-	const label = status.charAt(0).toUpperCase() + status.slice(1);
+	const dotColor = statusColors[status] ?? statusColors.archived;
+	const textColor = statusTextColors[status] ?? statusTextColors.archived;
+	const label =
+		status === 'pending_verification'
+			? 'Pending'
+			: status.charAt(0).toUpperCase() + status.slice(1);
 
-	return <span style={{ ...baseStyle, ...colorStyle }}>{label}</span>;
+	return (
+		<span className={cn('inline-flex items-center gap-1.5 text-xs font-medium', textColor)}>
+			<span className={cn('h-1.5 w-1.5 rounded-full', dotColor)} />
+			{label}
+		</span>
+	);
 }

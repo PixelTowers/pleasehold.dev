@@ -1,13 +1,8 @@
 // ABOUTME: Seed function that inserts a user, project, field config, and API key into the test database.
 // ABOUTME: Uses Better Auth's server-side API to create a properly hashed API key for integration tests.
 
-import {
-	authUsers,
-	projectFieldConfigs,
-	projects,
-	type Database,
-} from '@pleasehold/db';
 import type { createAuth } from '@pleasehold/auth';
+import { authUsers, type Database, projectFieldConfigs, projects } from '@pleasehold/db';
 
 export const TEST_USER_ID = 'test-user-1';
 export const TEST_PROJECT_ID = '00000000-0000-4000-8000-000000000001';

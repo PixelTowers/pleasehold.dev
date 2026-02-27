@@ -1,46 +1,144 @@
-// ABOUTME: Project overview page showing project details, stats, and quick links.
-// ABOUTME: Fetches project by ID with ownership guard; displays mode badge and field config summary.
+// ABOUTME: Project overview page showing stats graph cards, properties, and navigation links.
+// ABOUTME: Fetches project by ID with ownership guard; displays Linear-style dashboard with SVG charts.
 
-import { Link, createFileRoute } from '@tanstack/react-router';
-import { useProject } from '../../../hooks/useProjects';
-import { trpc } from '../../../lib/trpc';
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { ArrowLeft, ArrowRight, Settings } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { useProject } from '@/hooks/useProjects';
+import { trpc } from '@/lib/trpc';
+import { cn } from '@/lib/utils';
 
 export const Route = createFileRoute('/projects/$projectId/')({
 	component: ProjectOverviewPage,
 });
 
-const modeBadgeStyles: Record<string, React.CSSProperties> = {
-	waitlist: {
-		display: 'inline-block',
-		padding: '0.25rem 0.75rem',
-		fontSize: '0.8125rem',
-		fontWeight: 500,
-		borderRadius: '9999px',
-		backgroundColor: '#dbeafe',
-		color: '#1d4ed8',
-	},
-	'demo-booking': {
-		display: 'inline-block',
-		padding: '0.25rem 0.75rem',
-		fontSize: '0.8125rem',
-		fontWeight: 500,
-		borderRadius: '9999px',
-		backgroundColor: '#ede9fe',
-		color: '#6d28d9',
-	},
+const modeBadgeClasses: Record<string, string> = {
+	waitlist: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
+	'demo-booking': 'bg-violet-100 text-violet-700 hover:bg-violet-100',
 };
+
+const statusColors: Record<string, string> = {
+	new: '#3b82f6',
+	contacted: '#f59e0b',
+	converted: '#22c55e',
+	archived: '#9ca3af',
+};
+
+const statusLabels: Record<string, string> = {
+	new: 'New',
+	contacted: 'Contacted',
+	converted: 'Converted',
+	archived: 'Archived',
+};
+
+function StatusDistributionBar({
+	byStatus,
+	total,
+}: {
+	byStatus: Record<string, number>;
+	total: number;
+}) {
+	if (total === 0) {
+		return (
+			<div className="flex h-2 w-full overflow-hidden rounded-full bg-accent">
+				<div className="h-full w-full bg-border/30" />
+			</div>
+		);
+	}
+
+	const statuses = ['new', 'contacted', 'converted', 'archived'];
+
+	return (
+		<div className="flex h-2 w-full overflow-hidden rounded-full">
+			{statuses.map((status) => {
+				const count = byStatus[status] ?? 0;
+				const pct = (count / total) * 100;
+				if (pct === 0) return null;
+				return (
+					<div
+						key={status}
+						className="h-full transition-all"
+						style={{ width: `${pct}%`, backgroundColor: statusColors[status] }}
+					/>
+				);
+			})}
+		</div>
+	);
+}
+
+function StatusDonutChart({
+	byStatus,
+	total,
+}: {
+	byStatus: Record<string, number>;
+	total: number;
+}) {
+	const size = 80;
+	const strokeWidth = 10;
+	const radius = (size - strokeWidth) / 2;
+	const circumference = 2 * Math.PI * radius;
+	const center = size / 2;
+
+	if (total === 0) {
+		return (
+			<svg width={size} height={size} className="shrink-0" role="img" aria-label="No entries">
+				<circle
+					cx={center}
+					cy={center}
+					r={radius}
+					fill="none"
+					stroke="currentColor"
+					strokeWidth={strokeWidth}
+					className="text-border/30"
+				/>
+			</svg>
+		);
+	}
+
+	const statuses = ['new', 'contacted', 'converted', 'archived'];
+	let offset = 0;
+
+	return (
+		<svg
+			width={size}
+			height={size}
+			className="shrink-0 -rotate-90"
+			role="img"
+			aria-label="Entry status distribution"
+		>
+			{statuses.map((status) => {
+				const count = byStatus[status] ?? 0;
+				const pct = count / total;
+				const dashLength = circumference * pct;
+				const dashOffset = circumference * offset;
+				offset += pct;
+				if (pct === 0) return null;
+				return (
+					<circle
+						key={status}
+						cx={center}
+						cy={center}
+						r={radius}
+						fill="none"
+						stroke={statusColors[status]}
+						strokeWidth={strokeWidth}
+						strokeDasharray={`${dashLength} ${circumference - dashLength}`}
+						strokeDashoffset={-dashOffset}
+						strokeLinecap="butt"
+					/>
+				);
+			})}
+		</svg>
+	);
+}
 
 function ProjectOverviewPage() {
 	const { projectId } = Route.useParams();
 	const { data: project, isPending, error } = useProject(projectId);
-	const { data: apiKeys } = trpc.apiKey.list.useQuery(
-		{ projectId },
-		{ enabled: !!project },
-	);
-	const { data: stats } = trpc.entry.stats.useQuery(
-		{ projectId },
-		{ enabled: !!project },
-	);
+	const { data: apiKeys } = trpc.apiKey.list.useQuery({ projectId }, { enabled: !!project });
+	const { data: stats } = trpc.entry.stats.useQuery({ projectId }, { enabled: !!project });
 	const { data: notificationChannels } = trpc.notification.list.useQuery(
 		{ projectId },
 		{ enabled: !!project },
@@ -50,30 +148,25 @@ function ProjectOverviewPage() {
 
 	if (isPending) {
 		return (
-			<div style={{ textAlign: 'center', padding: '4rem' }}>
-				<p style={{ color: '#6b7280' }}>Loading project...</p>
+			<div className="py-16 text-center">
+				<p className="text-muted">Loading project...</p>
 			</div>
 		);
 	}
 
 	if (error || !project) {
 		return (
-			<div style={{ maxWidth: '48rem', margin: '0 auto' }}>
-				<div style={{ marginBottom: '1rem' }}>
-					<Link to="/" style={{ fontSize: '0.875rem', color: '#6b7280', textDecoration: 'none' }}>
-						&larr; Back to dashboard
+			<div className="mx-auto max-w-4xl">
+				<div className="mb-4">
+					<Link
+						to="/"
+						className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground"
+					>
+						<ArrowLeft className="h-3.5 w-3.5" />
+						Back to dashboard
 					</Link>
 				</div>
-				<div
-					style={{
-						padding: '1rem',
-						backgroundColor: '#fef2f2',
-						border: '1px solid #fecaca',
-						borderRadius: '0.375rem',
-						color: '#dc2626',
-						fontSize: '0.875rem',
-					}}
-				>
+				<div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-destructive">
 					{error?.message === 'Project not found'
 						? 'Project not found. It may have been deleted or you may not have access.'
 						: 'Failed to load project. Please try again.'}
@@ -82,253 +175,171 @@ function ProjectOverviewPage() {
 		);
 	}
 
-	const collectedFields = ['Email (always)'];
+	const collectedFields = ['Email'];
 	if (project.fieldConfig?.collectName) collectedFields.push('Name');
 	if (project.fieldConfig?.collectCompany) collectedFields.push('Company');
 	if (project.fieldConfig?.collectMessage) collectedFields.push('Message');
 
+	const byStatus = stats?.byStatus ?? {};
+	const total = stats?.total ?? 0;
+
 	return (
-		<div style={{ maxWidth: '48rem', margin: '0 auto' }}>
-			{/* Breadcrumb */}
-			<div style={{ marginBottom: '1.5rem' }}>
-				<Link to="/" style={{ fontSize: '0.875rem', color: '#6b7280', textDecoration: 'none' }}>
-					&larr; Back to dashboard
-				</Link>
-			</div>
-
-			{/* Header */}
-			<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
-				<div>
-					<h1 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0 }}>{project.name}</h1>
-					<div style={{ marginTop: '0.5rem' }}>
-						<span style={modeBadgeStyles[project.mode]}>
-							{project.mode === 'demo-booking' ? 'Demo Booking' : 'Waitlist'}
-						</span>
-					</div>
-				</div>
-				<Link
-					to="/projects/$projectId/settings"
-					params={{ projectId }}
-					style={{
-						padding: '0.5rem 1rem',
-						border: '1px solid #d1d5db',
-						borderRadius: '0.375rem',
-						backgroundColor: '#fff',
-						fontSize: '0.875rem',
-						textDecoration: 'none',
-						color: '#374151',
-					}}
-				>
-					Settings
-				</Link>
-			</div>
-
-			{/* Stats section */}
-			<div
-				style={{
-					display: 'grid',
-					gridTemplateColumns: 'repeat(4, 1fr)',
-					gap: '1rem',
-					marginBottom: '2rem',
-				}}
-			>
-				<div
-					style={{
-						padding: '1rem',
-						border: '1px solid #e5e7eb',
-						borderRadius: '0.5rem',
-						backgroundColor: '#fff',
-					}}
-				>
-					<div style={{ fontSize: '0.75rem', color: '#9ca3af', marginBottom: '0.25rem' }}>Entries</div>
-					<div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{stats?.total ?? 0}</div>
-				</div>
-				<div
-					style={{
-						padding: '1rem',
-						border: '1px solid #e5e7eb',
-						borderRadius: '0.5rem',
-						backgroundColor: '#fff',
-					}}
-				>
-					<div style={{ fontSize: '0.75rem', color: '#9ca3af', marginBottom: '0.25rem' }}>API Keys</div>
-					<div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{activeKeyCount}</div>
-				</div>
-				<div
-					style={{
-						padding: '1rem',
-						border: '1px solid #e5e7eb',
-						borderRadius: '0.5rem',
-						backgroundColor: '#fff',
-					}}
-				>
-					<div style={{ fontSize: '0.75rem', color: '#9ca3af', marginBottom: '0.25rem' }}>Fields Collected</div>
-					<div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{collectedFields.length}</div>
-				</div>
-				<div
-					style={{
-						padding: '1rem',
-						border: '1px solid #e5e7eb',
-						borderRadius: '0.5rem',
-						backgroundColor: '#fff',
-					}}
-				>
-					<div style={{ fontSize: '0.75rem', color: '#9ca3af', marginBottom: '0.25rem' }}>Created</div>
-					<div style={{ fontSize: '0.875rem', fontWeight: 500, marginTop: '0.375rem' }}>
-						{new Date(project.createdAt).toLocaleDateString()}
-					</div>
-				</div>
-			</div>
-
-			{/* Quick Links */}
-			<div style={{ marginBottom: '2rem' }}>
-				<h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem' }}>Quick Links</h2>
-				<div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-					<Link
-						to="/projects/$projectId/settings"
-						params={{ projectId }}
-						style={{
-							display: 'flex',
-							justifyContent: 'space-between',
-							alignItems: 'center',
-							padding: '0.75rem 1rem',
-							border: '1px solid #e5e7eb',
-							borderRadius: '0.375rem',
-							backgroundColor: '#fff',
-							textDecoration: 'none',
-							color: 'inherit',
-							fontSize: '0.875rem',
-						}}
+		<div className="mx-auto max-w-4xl">
+			{/* Header — compact, no excessive top margin */}
+			<div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+				<div className="flex flex-wrap items-center gap-3">
+					<h1 className="text-xl font-semibold text-foreground">{project.name}</h1>
+					<Badge
+						variant="secondary"
+						className={cn(
+							'border-0 text-[10px] font-medium px-1.5 py-0',
+							modeBadgeClasses[project.mode],
+						)}
 					>
-						<span>Field Configuration</span>
-						<span style={{ color: '#9ca3af' }}>&rarr;</span>
+						{project.mode === 'demo-booking' ? 'Demo Booking' : 'Waitlist'}
+					</Badge>
+				</div>
+				<Button variant="outline" size="sm" className="h-7 text-xs" asChild>
+					<Link to="/projects/$projectId/settings" params={{ projectId }}>
+						<Settings className="mr-1 h-3.5 w-3.5" />
+						Settings
+					</Link>
+				</Button>
+			</div>
+			<p className="mb-4 text-sm text-muted-foreground">
+				At a glance stats and quick links for your project.
+			</p>
+
+			{/* Graph cards row */}
+			<div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-3">
+				{/* Total entries card with donut */}
+				<Card className="p-4">
+					<div className="mb-3 text-[11px] uppercase tracking-wider text-muted-foreground">
+						Total Entries
+					</div>
+					<div className="flex items-center gap-4">
+						<StatusDonutChart byStatus={byStatus} total={total} />
+						<div>
+							<div className="text-3xl font-semibold text-foreground">{total}</div>
+							<div className="mt-1 text-xs text-muted-foreground">
+								{total === 1 ? 'entry' : 'entries'}
+							</div>
+						</div>
+					</div>
+				</Card>
+
+				{/* Status breakdown card */}
+				<Card className="p-4">
+					<div className="mb-3 text-[11px] uppercase tracking-wider text-muted-foreground">
+						By Status
+					</div>
+					<div className="mb-3">
+						<StatusDistributionBar byStatus={byStatus} total={total} />
+					</div>
+					<div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+						{(['new', 'contacted', 'converted', 'archived'] as const).map((status) => (
+							<div key={status} className="flex items-center justify-between">
+								<div className="flex items-center gap-1.5">
+									<span
+										className="h-2 w-2 rounded-full"
+										style={{ backgroundColor: statusColors[status] }}
+									/>
+									<span className="text-xs text-muted-foreground">{statusLabels[status]}</span>
+								</div>
+								<span className="text-xs font-medium text-foreground">{byStatus[status] ?? 0}</span>
+							</div>
+						))}
+					</div>
+				</Card>
+
+				{/* Quick stats card */}
+				<Card className="p-4">
+					<div className="mb-3 text-[11px] uppercase tracking-wider text-muted-foreground">
+						Configuration
+					</div>
+					<div className="space-y-3">
+						<div className="flex items-center justify-between">
+							<span className="text-xs text-muted-foreground">API Keys</span>
+							<span className="text-sm font-medium text-foreground">{activeKeyCount}</span>
+						</div>
+						<div className="flex items-center justify-between">
+							<span className="text-xs text-muted-foreground">Fields</span>
+							<span className="text-sm font-medium text-foreground">{collectedFields.length}</span>
+						</div>
+						<div className="flex items-center justify-between">
+							<span className="text-xs text-muted-foreground">Notifications</span>
+							<span className="text-sm font-medium text-foreground">{enabledChannelCount}</span>
+						</div>
+						<div className="flex items-center justify-between">
+							<span className="text-xs text-muted-foreground">Created</span>
+							<span className="text-xs text-foreground">
+								{new Date(project.createdAt).toLocaleDateString()}
+							</span>
+						</div>
+					</div>
+				</Card>
+			</div>
+
+			{/* Navigation links */}
+			<div>
+				<h2 className="mb-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+					Navigation
+				</h2>
+				<div className="border-t border-border/50">
+					<Link
+						to="/projects/$projectId/entries"
+						params={{ projectId }}
+						className="flex items-center justify-between border-b border-border/50 py-2.5 text-sm text-foreground no-underline transition-colors hover:bg-accent"
+					>
+						<span>
+							Entries
+							{total > 0 && <span className="ml-2 text-xs text-muted">{total}</span>}
+						</span>
+						<ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+					</Link>
+					<Link
+						to="/projects/$projectId/emails"
+						params={{ projectId }}
+						className="flex items-center justify-between border-b border-border/50 py-2.5 text-sm text-foreground no-underline transition-colors hover:bg-accent"
+					>
+						<span>Email Templates</span>
+						<ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
 					</Link>
 					<Link
 						to="/projects/$projectId/keys"
 						params={{ projectId }}
-						style={{
-							display: 'flex',
-							justifyContent: 'space-between',
-							alignItems: 'center',
-							padding: '0.75rem 1rem',
-							border: '1px solid #e5e7eb',
-							borderRadius: '0.375rem',
-							backgroundColor: '#fff',
-							textDecoration: 'none',
-							color: 'inherit',
-							fontSize: '0.875rem',
-						}}
+						className="flex items-center justify-between border-b border-border/50 py-2.5 text-sm text-foreground no-underline transition-colors hover:bg-accent"
 					>
-						<span>API Keys {activeKeyCount > 0 && <span style={{ color: '#6b7280', fontWeight: 400 }}>({activeKeyCount} active)</span>}</span>
-						<span style={{ color: '#9ca3af' }}>&rarr;</span>
+						<span>
+							API Keys
+							{activeKeyCount > 0 && (
+								<span className="ml-2 text-xs text-muted">{activeKeyCount}</span>
+							)}
+						</span>
+						<ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
 					</Link>
 					<Link
-						to="/projects/$projectId/entries"
+						to="/projects/$projectId/settings"
 						params={{ projectId }}
-						style={{
-							display: 'flex',
-							justifyContent: 'space-between',
-							alignItems: 'center',
-							padding: '0.75rem 1rem',
-							border: '1px solid #e5e7eb',
-							borderRadius: '0.375rem',
-							backgroundColor: '#fff',
-							textDecoration: 'none',
-							color: 'inherit',
-							fontSize: '0.875rem',
-						}}
+						className="flex items-center justify-between border-b border-border/50 py-2.5 text-sm text-foreground no-underline transition-colors hover:bg-accent"
 					>
-						<span>Entries {(stats?.total ?? 0) > 0 && <span style={{ color: '#6b7280', fontWeight: 400 }}>({stats?.total} total)</span>}</span>
-						<span style={{ color: '#9ca3af' }}>&rarr;</span>
+						<span>Settings</span>
+						<ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
 					</Link>
 					<Link
 						to="/projects/$projectId/notifications"
 						params={{ projectId }}
-						style={{
-							display: 'flex',
-							justifyContent: 'space-between',
-							alignItems: 'center',
-							padding: '0.75rem 1rem',
-							border: '1px solid #e5e7eb',
-							borderRadius: '0.375rem',
-							backgroundColor: '#fff',
-							textDecoration: 'none',
-							color: 'inherit',
-							fontSize: '0.875rem',
-						}}
+						className="flex items-center justify-between border-b border-border/50 py-2.5 text-sm text-foreground no-underline transition-colors hover:bg-accent"
 					>
-						<span>Notifications {enabledChannelCount > 0 && <span style={{ color: '#6b7280', fontWeight: 400 }}>({enabledChannelCount} active)</span>}</span>
-						<span style={{ color: '#9ca3af' }}>&rarr;</span>
+						<span>
+							Notifications
+							{enabledChannelCount > 0 && (
+								<span className="ml-2 text-xs text-muted">{enabledChannelCount}</span>
+							)}
+						</span>
+						<ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
 					</Link>
 				</div>
-			</div>
-
-			{/* Field config summary */}
-			<div style={{ marginBottom: '2rem' }}>
-				<h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem' }}>Fields Collected</h2>
-				<div
-					style={{
-						padding: '1rem',
-						border: '1px solid #e5e7eb',
-						borderRadius: '0.5rem',
-						backgroundColor: '#fff',
-					}}
-				>
-					<div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-						{collectedFields.map((field) => (
-							<span
-								key={field}
-								style={{
-									padding: '0.25rem 0.75rem',
-									backgroundColor: '#f3f4f6',
-									borderRadius: '9999px',
-									fontSize: '0.8125rem',
-									color: '#374151',
-								}}
-							>
-								{field}
-							</span>
-						))}
-					</div>
-				</div>
-			</div>
-
-			{/* Recent Activity */}
-			<div>
-				<h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem' }}>Recent Activity</h2>
-				{(stats?.total ?? 0) > 0 ? (
-					<div
-						style={{
-							padding: '2rem',
-							border: '1px solid #e5e7eb',
-							borderRadius: '0.5rem',
-							backgroundColor: '#f9fafb',
-							textAlign: 'center',
-						}}
-					>
-						<Link
-							to="/projects/$projectId/entries"
-							params={{ projectId }}
-							style={{ color: '#2563eb', fontSize: '0.875rem', textDecoration: 'none' }}
-						>
-							View all {stats?.total} entries &rarr;
-						</Link>
-					</div>
-				) : (
-					<div
-						style={{
-							padding: '2rem',
-							border: '1px solid #e5e7eb',
-							borderRadius: '0.5rem',
-							backgroundColor: '#f9fafb',
-							textAlign: 'center',
-						}}
-					>
-						<p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>
-							No entries yet. Entries will appear here once you start collecting submissions.
-						</p>
-					</div>
-				)}
 			</div>
 		</div>
 	);

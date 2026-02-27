@@ -16,7 +16,7 @@
 	],
 	"scripts": {
 		"build": "tsup",
-		"dev": "tsup --watch",
+		"dev": "tsup --watch --no-dts",
 		"lint": "biome check src/",
 		"format": "biome format --write src/",
 		"typecheck": "tsc --noEmit",

@@ -1,8 +1,10 @@
 // ABOUTME: Button that fetches all project entries via tRPC export procedure and triggers a CSV download.
 // ABOUTME: Generates RFC 4180-compliant CSV with UTF-8 BOM and field-config-aware column headers.
 
+import { Download } from 'lucide-react';
 import { useState } from 'react';
-import { trpc } from '../lib/trpc';
+import { Button } from '@/components/ui/button';
+import { trpc } from '@/lib/trpc';
 
 interface CsvExportButtonProps {
 	projectId: string;
@@ -64,7 +66,9 @@ function generateCsv(exportEntries: ExportEntry[], fieldConfig: FieldConfig): st
 		row.push(
 			escapeField(entry.status),
 			escapeField(entry.position),
-			escapeField(entry.createdAt instanceof Date ? entry.createdAt.toISOString() : String(entry.createdAt)),
+			escapeField(
+				entry.createdAt instanceof Date ? entry.createdAt.toISOString() : String(entry.createdAt),
+			),
 		);
 		if (fieldConfig.collectMessage) {
 			row.push(escapeField(entry.message));
@@ -73,7 +77,7 @@ function generateCsv(exportEntries: ExportEntry[], fieldConfig: FieldConfig): st
 		return row.join(',');
 	});
 
-	return BOM + headers.join(',') + '\r\n' + rows.join('\r\n');
+	return `${BOM}${headers.join(',')}\r\n${rows.join('\r\n')}`;
 }
 
 function downloadCsv(csvString: string, filename: string) {
@@ -88,21 +92,6 @@ function downloadCsv(csvString: string, filename: string) {
 	document.body.removeChild(anchor);
 	URL.revokeObjectURL(url);
 }
-
-const buttonStyle: React.CSSProperties = {
-	padding: '0.5rem 1rem',
-	border: '1px solid #d1d5db',
-	borderRadius: '0.375rem',
-	backgroundColor: '#fff',
-	fontSize: '0.875rem',
-	cursor: 'pointer',
-};
-
-const disabledStyle: React.CSSProperties = {
-	...buttonStyle,
-	cursor: 'not-allowed',
-	opacity: 0.6,
-};
 
 export function CsvExportButton({ projectId, projectName }: CsvExportButtonProps) {
 	const [isExporting, setIsExporting] = useState(false);
@@ -122,13 +111,9 @@ export function CsvExportButton({ projectId, projectName }: CsvExportButtonProps
 	}
 
 	return (
-		<button
-			type="button"
-			style={isExporting ? disabledStyle : buttonStyle}
-			disabled={isExporting}
-			onClick={handleExport}
-		>
+		<Button variant="outline" size="sm" disabled={isExporting} onClick={handleExport}>
+			<Download className="mr-1.5 h-4 w-4" />
 			{isExporting ? 'Exporting...' : 'Export CSV'}
-		</button>
+		</Button>
 	);
 }

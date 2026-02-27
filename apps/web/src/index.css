@@ -1,0 +1,42 @@
+/* ABOUTME: Global stylesheet with Tailwind CSS v4 directives and pleasehold theme. */
+/* ABOUTME: Defines custom color palette, Inter font family, and base reset styles. */
+
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  --color-background: #fafafa;
+  --color-foreground: #1a1a2e;
+  --color-muted: #6b7280;
+  --color-muted-foreground: #9ca3af;
+  --color-border: #e5e7eb;
+  --color-input: #e0e0e0;
+  --color-primary: #0d9488;
+  --color-primary-foreground: #ffffff;
+  --color-destructive: #dc2626;
+  --color-accent: #f3f4f6;
+  --color-card: #ffffff;
+  --color-sidebar: #f8f8f8;
+  --color-sidebar-border: #ebebeb;
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+}
+
+@layer base {
+	*,
+	*::before,
+	*::after {
+		border-color: var(--color-border);
+	}
+
+	body {
+		background-color: var(--color-background);
+		color: var(--color-foreground);
+		font-family: var(--font-sans);
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+}

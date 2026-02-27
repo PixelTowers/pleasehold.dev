@@ -2,7 +2,27 @@
 // ABOUTME: Only shows first 8 chars via start field; never displays full key or hash.
 
 import { useCallback, useState } from 'react';
-import { trpc } from '../lib/trpc';
+import { EmptyState } from '@/components/EmptyState';
+import { Button } from '@/components/ui/button';
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from '@/components/ui/dialog';
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from '@/components/ui/table';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { trpc } from '@/lib/trpc';
+import { cn } from '@/lib/utils';
 
 interface ApiKeyListProps {
 	projectId: string;
@@ -11,6 +31,7 @@ interface ApiKeyListProps {
 export function ApiKeyList({ projectId }: ApiKeyListProps) {
 	const { data: keys, isPending, error } = trpc.apiKey.list.useQuery({ projectId });
 	const [revokeConfirmId, setRevokeConfirmId] = useState<string | null>(null);
+	const isMobile = useIsMobile();
 
 	const utils = trpc.useUtils();
 
@@ -28,274 +49,115 @@ export function ApiKeyList({ projectId }: ApiKeyListProps) {
 		[revokeKey],
 	);
 
+	const revokeTarget = keys?.find((k) => k.id === revokeConfirmId);
+
 	if (isPending) {
 		return (
-			<div style={{ textAlign: 'center', padding: '2rem' }}>
-				<p style={{ color: '#6b7280', fontSize: '0.875rem' }}>Loading keys...</p>
+			<div className="py-8 text-center">
+				<p className="text-sm text-muted">Loading keys...</p>
 			</div>
 		);
 	}
 
 	if (error) {
 		return (
-			<div
-				style={{
-					padding: '0.75rem 1rem',
-					backgroundColor: '#fef2f2',
-					border: '1px solid #fecaca',
-					borderRadius: '0.375rem',
-					color: '#dc2626',
-					fontSize: '0.875rem',
-				}}
-			>
+			<div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-destructive">
 				Failed to load API keys. Please try again.
 			</div>
 		);
 	}
 
 	if (!keys || keys.length === 0) {
-		return (
-			<div
-				style={{
-					padding: '3rem 2rem',
-					border: '1px solid #e5e7eb',
-					borderRadius: '0.5rem',
-					backgroundColor: '#f9fafb',
-					textAlign: 'center',
-				}}
-			>
-				<p style={{ color: '#6b7280', fontSize: '0.875rem', margin: 0 }}>
-					No API keys yet. Create one to start accepting submissions.
-				</p>
-			</div>
-		);
+		return <EmptyState message="No API keys yet. Create one to start accepting submissions." />;
 	}
 
 	return (
-		<div
-			style={{
-				border: '1px solid #e5e7eb',
-				borderRadius: '0.5rem',
-				overflow: 'hidden',
-			}}
-		>
-			<table style={{ width: '100%', borderCollapse: 'collapse' }}>
-				<thead>
-					<tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-						<th
-							style={{
-								textAlign: 'left',
-								padding: '0.625rem 1rem',
-								fontSize: '0.75rem',
-								fontWeight: 600,
-								color: '#6b7280',
-								textTransform: 'uppercase',
-								letterSpacing: '0.025em',
-							}}
-						>
-							Label
-						</th>
-						<th
-							style={{
-								textAlign: 'left',
-								padding: '0.625rem 1rem',
-								fontSize: '0.75rem',
-								fontWeight: 600,
-								color: '#6b7280',
-								textTransform: 'uppercase',
-								letterSpacing: '0.025em',
-							}}
-						>
-							Key
-						</th>
-						<th
-							style={{
-								textAlign: 'left',
-								padding: '0.625rem 1rem',
-								fontSize: '0.75rem',
-								fontWeight: 600,
-								color: '#6b7280',
-								textTransform: 'uppercase',
-								letterSpacing: '0.025em',
-							}}
-						>
-							Status
-						</th>
-						<th
-							style={{
-								textAlign: 'left',
-								padding: '0.625rem 1rem',
-								fontSize: '0.75rem',
-								fontWeight: 600,
-								color: '#6b7280',
-								textTransform: 'uppercase',
-								letterSpacing: '0.025em',
-							}}
-						>
-							Created
-						</th>
-						<th
-							style={{
-								textAlign: 'right',
-								padding: '0.625rem 1rem',
-								fontSize: '0.75rem',
-								fontWeight: 600,
-								color: '#6b7280',
-								textTransform: 'uppercase',
-								letterSpacing: '0.025em',
-							}}
-						>
-							Actions
-						</th>
-					</tr>
-				</thead>
-				<tbody>
+		<>
+			<Table>
+				<TableHeader>
+					<TableRow>
+						<TableHead>Label</TableHead>
+						<TableHead>Key</TableHead>
+						<TableHead>Status</TableHead>
+						{!isMobile && <TableHead>Created</TableHead>}
+						<TableHead className="text-right">Actions</TableHead>
+					</TableRow>
+				</TableHeader>
+				<TableBody>
 					{keys.map((key) => (
-						<tr
-							key={key.id}
-							style={{
-								borderBottom: '1px solid #e5e7eb',
-								backgroundColor: key.enabled ? '#fff' : '#f9fafb',
-							}}
-						>
-							{/* Label */}
-							<td
-								style={{
-									padding: '0.75rem 1rem',
-									fontSize: '0.875rem',
-									fontWeight: 500,
-									color: key.enabled ? '#111827' : '#9ca3af',
-								}}
-							>
+						<TableRow key={key.id} className={cn(!key.enabled && 'opacity-50')}>
+							<TableCell className={cn('font-medium', !key.enabled && 'text-muted-foreground')}>
 								{key.name || 'API Key'}
-							</td>
-
-							{/* Key preview */}
-							<td style={{ padding: '0.75rem 1rem' }}>
+							</TableCell>
+							<TableCell>
 								<code
-									style={{
-										fontFamily:
-											'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
-										fontSize: '0.8125rem',
-										color: key.enabled ? '#374151' : '#9ca3af',
-										backgroundColor: key.enabled ? '#f3f4f6' : 'transparent',
-										padding: '0.125rem 0.5rem',
-										borderRadius: '0.25rem',
-									}}
+									className={cn(
+										'rounded bg-accent px-1.5 py-0.5 font-mono text-xs',
+										!key.enabled && 'text-muted-foreground',
+									)}
 								>
-									{key.prefix}
 									{key.start}...
 								</code>
-							</td>
-
-							{/* Status badge */}
-							<td style={{ padding: '0.75rem 1rem' }}>
+							</TableCell>
+							<TableCell>
 								{key.enabled ? (
-									<span
-										style={{
-											display: 'inline-block',
-											padding: '0.125rem 0.5rem',
-											fontSize: '0.75rem',
-											fontWeight: 500,
-											borderRadius: '9999px',
-											backgroundColor: '#dcfce7',
-											color: '#166534',
-										}}
-									>
+									<span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-700">
+										<span className="h-1.5 w-1.5 rounded-full bg-green-500" />
 										Active
 									</span>
 								) : (
-									<span
-										style={{
-											display: 'inline-block',
-											padding: '0.125rem 0.5rem',
-											fontSize: '0.75rem',
-											fontWeight: 500,
-											borderRadius: '9999px',
-											backgroundColor: '#fee2e2',
-											color: '#991b1b',
-										}}
-									>
+									<span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted">
+										<span className="h-1.5 w-1.5 rounded-full bg-gray-400" />
 										Revoked
 									</span>
 								)}
-							</td>
-
-							{/* Created date */}
-							<td
-								style={{
-									padding: '0.75rem 1rem',
-									fontSize: '0.8125rem',
-									color: '#6b7280',
-								}}
-							>
-								{new Date(key.createdAt).toLocaleDateString()}
-							</td>
-
-							{/* Actions */}
-							<td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
-								{key.enabled && revokeConfirmId !== key.id && (
+							</TableCell>
+							{!isMobile && (
+								<TableCell className="text-xs text-muted">
+									{new Date(key.createdAt).toLocaleDateString()}
+								</TableCell>
+							)}
+							<TableCell className="text-right">
+								{key.enabled && (
 									<button
 										type="button"
+										className="rounded px-2 py-1 text-xs text-destructive hover:bg-red-50"
 										onClick={() => setRevokeConfirmId(key.id)}
-										style={{
-											padding: '0.25rem 0.625rem',
-											border: '1px solid #fecaca',
-											borderRadius: '0.25rem',
-											backgroundColor: '#fff',
-											color: '#dc2626',
-											fontSize: '0.75rem',
-											fontWeight: 500,
-											cursor: 'pointer',
-										}}
 									>
 										Revoke
 									</button>
 								)}
-								{key.enabled && revokeConfirmId === key.id && (
-									<div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', justifyContent: 'flex-end' }}>
-										<span style={{ fontSize: '0.75rem', color: '#dc2626' }}>
-											Are you sure?
-										</span>
-										<button
-											type="button"
-											onClick={() => handleRevoke(key.id)}
-											disabled={revokeKey.isPending}
-											style={{
-												padding: '0.25rem 0.5rem',
-												border: 'none',
-												borderRadius: '0.25rem',
-												backgroundColor: '#dc2626',
-												color: '#fff',
-												fontSize: '0.75rem',
-												fontWeight: 500,
-												cursor: revokeKey.isPending ? 'not-allowed' : 'pointer',
-											}}
-										>
-											{revokeKey.isPending ? '...' : 'Yes'}
-										</button>
-										<button
-											type="button"
-											onClick={() => setRevokeConfirmId(null)}
-											style={{
-												padding: '0.25rem 0.5rem',
-												border: '1px solid #d1d5db',
-												borderRadius: '0.25rem',
-												backgroundColor: '#fff',
-												color: '#374151',
-												fontSize: '0.75rem',
-												cursor: 'pointer',
-											}}
-										>
-											No
-										</button>
-									</div>
-								)}
-							</td>
-						</tr>
+							</TableCell>
+						</TableRow>
 					))}
-				</tbody>
-			</table>
-		</div>
+				</TableBody>
+			</Table>
+
+			{/* Revoke confirmation dialog */}
+			<Dialog open={!!revokeConfirmId} onOpenChange={(open) => !open && setRevokeConfirmId(null)}>
+				<DialogContent className="max-w-sm">
+					<DialogHeader>
+						<DialogTitle>Revoke API Key</DialogTitle>
+						<DialogDescription>
+							Are you sure you want to revoke <strong>{revokeTarget?.name || 'this key'}</strong>?
+							This action cannot be undone. Any integrations using this key will stop working.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button variant="outline" size="sm" onClick={() => setRevokeConfirmId(null)}>
+							Cancel
+						</Button>
+						<Button
+							variant="destructive"
+							size="sm"
+							disabled={revokeKey.isPending}
+							onClick={() => revokeConfirmId && handleRevoke(revokeConfirmId)}
+						>
+							{revokeKey.isPending ? 'Revoking...' : 'Revoke Key'}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+		</>
 	);
 }

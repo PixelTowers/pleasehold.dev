@@ -1,100 +1,61 @@
-// ABOUTME: Root layout for all dashboard routes with navigation bar.
-// ABOUTME: Shows auth-aware navigation (login/signup when logged out, logout when logged in).
+// ABOUTME: Root layout with auth guard, 404 handling, and sidebar/centered layout switching.
+// ABOUTME: Auth pages (login/signup) render without sidebar; all other routes get the AppLayout wrapper.
 
-import { Link, Outlet, createRootRoute, useNavigate } from '@tanstack/react-router';
-import { authClient } from '../lib/auth-client';
+import {
+	createRootRoute,
+	isRedirect,
+	Outlet,
+	redirect,
+	useMatchRoute,
+} from '@tanstack/react-router';
+import { NotFoundContent } from '@/components/NotFoundContent';
+import { Toaster } from '@/components/ui/sonner';
+import { authClient } from '@/lib/auth-client';
+import { AppLayout } from '../components/AppLayout';
+
+const AUTH_PATHS = ['/login', '/signup'];
 
 export const Route = createRootRoute({
+	beforeLoad: async ({ location }) => {
+		if (AUTH_PATHS.some((p) => location.pathname.startsWith(p))) {
+			return;
+		}
+
+		try {
+			const session = await authClient.getSession();
+			if (!session?.data?.user) {
+				throw redirect({ to: '/login' });
+			}
+		} catch (error) {
+			// Re-throw TanStack Router redirects (they use throw for control flow)
+			if (isRedirect(error)) {
+				throw error;
+			}
+			// Network errors, rate limits, etc. — fail closed, send to login
+			throw redirect({ to: '/login' });
+		}
+	},
+	notFoundComponent: NotFoundContent,
 	component: RootLayout,
 });
 
 function RootLayout() {
-	const { data: session, isPending } = authClient.useSession();
-	const navigate = useNavigate();
+	const matchRoute = useMatchRoute();
+	const isAuthPage = AUTH_PATHS.some((path) => matchRoute({ to: path }));
 
-	const handleLogout = async () => {
-		await authClient.signOut();
-		navigate({ to: '/login' });
-	};
+	if (isAuthPage) {
+		return (
+			<div className="flex min-h-screen items-center justify-center bg-background">
+				<Outlet />
+				<Toaster />
+			</div>
+		);
+	}
 
 	return (
-		<div style={{ fontFamily: 'system-ui, sans-serif', minHeight: '100vh' }}>
-			<nav
-				style={{
-					display: 'flex',
-					justifyContent: 'space-between',
-					alignItems: 'center',
-					padding: '1rem 2rem',
-					borderBottom: '1px solid #e5e7eb',
-					backgroundColor: '#fff',
-				}}
-			>
-				<Link
-					to="/"
-					style={{
-						fontWeight: 700,
-						fontSize: '1.25rem',
-						textDecoration: 'none',
-						color: '#111',
-					}}
-				>
-					pleasehold
-				</Link>
-
-				<div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-					{isPending ? null : session?.user ? (
-						<>
-							<span style={{ color: '#6b7280', fontSize: '0.875rem' }}>
-								{session.user.email}
-							</span>
-							<button
-								type="button"
-								onClick={handleLogout}
-								style={{
-									padding: '0.5rem 1rem',
-									border: '1px solid #d1d5db',
-									borderRadius: '0.375rem',
-									backgroundColor: '#fff',
-									cursor: 'pointer',
-									fontSize: '0.875rem',
-								}}
-							>
-								Log out
-							</button>
-						</>
-					) : (
-						<>
-							<Link
-								to="/login"
-								style={{
-									textDecoration: 'none',
-									color: '#374151',
-									fontSize: '0.875rem',
-								}}
-							>
-								Log in
-							</Link>
-							<Link
-								to="/signup"
-								style={{
-									textDecoration: 'none',
-									padding: '0.5rem 1rem',
-									backgroundColor: '#111',
-									color: '#fff',
-									borderRadius: '0.375rem',
-									fontSize: '0.875rem',
-								}}
-							>
-								Sign up
-							</Link>
-						</>
-					)}
-				</div>
-			</nav>
-
-			<main style={{ padding: '2rem' }}>
-				<Outlet />
-			</main>
-		</div>
+		<AppLayout>
+			<Outlet />
+			<Toaster />
+		</AppLayout>
 	);
 }

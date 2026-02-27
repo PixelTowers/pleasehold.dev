@@ -3,17 +3,20 @@
 
 import { relations } from 'drizzle-orm';
 import { accounts, apikeys, authUsers, sessions, verifications } from './auth';
+import { emailTemplates } from './email-templates';
 import { entries } from './entries';
 import { projectFieldConfigs } from './field-configs';
 import { notificationChannels } from './notification-channels';
 import { notificationLogs } from './notification-logs';
 import { projects } from './projects';
+import { userSettings } from './user-settings';
 
-export const authUsersRelations = relations(authUsers, ({ many }) => ({
+export const authUsersRelations = relations(authUsers, ({ one, many }) => ({
 	sessions: many(sessions),
 	accounts: many(accounts),
 	apikeys: many(apikeys),
 	projects: many(projects),
+	settings: one(userSettings),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -47,6 +50,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
 	fieldConfig: one(projectFieldConfigs),
 	entries: many(entries),
 	notificationChannels: many(notificationChannels),
+	emailTemplates: many(emailTemplates),
 }));
 
 export const entriesRelations = relations(entries, ({ one }) => ({
@@ -79,5 +83,19 @@ export const notificationLogsRelations = relations(notificationLogs, ({ one }) =
 	entry: one(entries, {
 		fields: [notificationLogs.entryId],
 		references: [entries.id],
+	}),
+}));
+
+export const emailTemplatesRelations = relations(emailTemplates, ({ one }) => ({
+	project: one(projects, {
+		fields: [emailTemplates.projectId],
+		references: [projects.id],
+	}),
+}));
+
+export const userSettingsRelations = relations(userSettings, ({ one }) => ({
+	user: one(authUsers, {
+		fields: [userSettings.userId],
+		references: [authUsers.id],
 	}),
 }));

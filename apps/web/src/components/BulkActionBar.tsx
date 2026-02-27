@@ -1,35 +1,6 @@
 // ABOUTME: Action bar for bulk status changes on selected entries, shown above the entries table.
 // ABOUTME: Renders status change buttons when one or more entries are selected; hidden when none selected.
 
-import type React from 'react';
-
-const barStyle: React.CSSProperties = {
-	display: 'flex',
-	alignItems: 'center',
-	gap: '0.75rem',
-	padding: '0.5rem 1rem',
-	backgroundColor: '#eff6ff',
-	border: '1px solid #bfdbfe',
-	borderRadius: '0.375rem',
-	marginBottom: '1rem',
-	fontSize: '0.875rem',
-};
-
-const buttonStyle: React.CSSProperties = {
-	padding: '0.25rem 0.625rem',
-	border: '1px solid #d1d5db',
-	borderRadius: '0.25rem',
-	backgroundColor: '#fff',
-	fontSize: '0.75rem',
-	cursor: 'pointer',
-};
-
-const disabledButtonStyle: React.CSSProperties = {
-	...buttonStyle,
-	cursor: 'not-allowed',
-	opacity: 0.5,
-};
-
 interface BulkActionBarProps {
 	selectedCount: number;
 	onStatusChange: (status: string) => void;
@@ -44,16 +15,14 @@ export function BulkActionBar({ selectedCount, onStatusChange, isPending }: Bulk
 	}
 
 	return (
-		<div style={barStyle}>
-			<span style={{ fontWeight: 500 }}>
-				{selectedCount} selected
-			</span>
-			<span style={{ color: '#6b7280' }}>Set status:</span>
+		<div className="flex flex-wrap items-center gap-3 border-b border-border/50 bg-accent/50 px-2 py-1.5 text-xs">
+			<span className="font-medium text-foreground">{selectedCount} selected</span>
+			<span className="text-muted-foreground">Set status:</span>
 			{statuses.map((status) => (
 				<button
 					key={status}
 					type="button"
-					style={isPending ? disabledButtonStyle : buttonStyle}
+					className="rounded px-2 py-0.5 text-xs text-muted hover:bg-accent hover:text-foreground disabled:opacity-40"
 					disabled={isPending}
 					onClick={() => onStatusChange(status)}
 				>

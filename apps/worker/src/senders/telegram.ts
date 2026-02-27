@@ -38,5 +38,5 @@ export async function sendTelegramNotification(
 }
 
 function escapeMd(str: string): string {
-	return str.replace(/([_*\[\]()~`>#+\-=|{}.!])/g, '\\$1');
+	return str.replace(/([_*[\]()~`>#+\-=|{}.!])/g, '\\$1');
 }

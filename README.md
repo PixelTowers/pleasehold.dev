@@ -178,11 +178,8 @@ Copy `.env.example` to `.env` and configure:
 | `GITHUB_CLIENT_SECRET` | No | GitHub OAuth app secret |
 | `GOOGLE_CLIENT_ID` | No | Google OAuth client ID |
 | `GOOGLE_CLIENT_SECRET` | No | Google OAuth secret |
-| `SMTP_HOST` | No | SMTP server for email notifications + double opt-in |
-| `SMTP_PORT` | No | SMTP port (default: 587) |
-| `SMTP_USER` | No | SMTP username |
-| `SMTP_PASS` | No | SMTP password |
-| `SMTP_FROM` | No | Sender email address |
+| `RESEND_API_KEY` | No | [Resend](https://resend.com) API key for email notifications + double opt-in |
+| `EMAIL_FROM` | No | Sender email address (must be verified in Resend) |
 
 ## Tech Stack
 

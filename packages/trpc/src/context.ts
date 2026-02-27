@@ -1,8 +1,7 @@
 // ABOUTME: tRPC context factory for use with Hono API server.
 // ABOUTME: Provides database access, auth session, auth instance, and request headers to all procedures.
 
-import type { createAuth } from '@pleasehold/auth';
-import type { AuthSession, AuthUser } from '@pleasehold/auth';
+import type { AuthSession, AuthUser, createAuth } from '@pleasehold/auth';
 import type { Database } from '@pleasehold/db';
 
 export interface Context {

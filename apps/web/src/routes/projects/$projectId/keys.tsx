@@ -1,11 +1,15 @@
 // ABOUTME: API key management page within the project context.
 // ABOUTME: Combines create dialog, key list, and breadcrumb navigation for key lifecycle management.
 
-import { Link, createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { useState } from 'react';
-import { ApiKeyCreateDialog } from '../../../components/ApiKeyCreateDialog';
-import { ApiKeyList } from '../../../components/ApiKeyList';
-import { useProject } from '../../../hooks/useProjects';
+import { ApiKeyCreateDialog } from '@/components/ApiKeyCreateDialog';
+import { ApiKeyDocs } from '@/components/ApiKeyDocs';
+import { ApiKeyList } from '@/components/ApiKeyList';
+import { Button } from '@/components/ui/button';
+import { useProject } from '@/hooks/useProjects';
+import { trpc } from '@/lib/trpc';
 
 export const Route = createFileRoute('/projects/$projectId/keys')({
 	component: ApiKeysPage,
@@ -14,34 +18,29 @@ export const Route = createFileRoute('/projects/$projectId/keys')({
 function ApiKeysPage() {
 	const { projectId } = Route.useParams();
 	const { data: project, isPending, error } = useProject(projectId);
+	const { data: keys } = trpc.apiKey.list.useQuery({ projectId });
 	const [dialogOpen, setDialogOpen] = useState(false);
+
+	const firstActiveKey = keys?.find((k) => k.enabled);
+	const keyPrefix = firstActiveKey ? `${firstActiveKey.start}...` : undefined;
 
 	if (isPending) {
 		return (
-			<div style={{ textAlign: 'center', padding: '4rem' }}>
-				<p style={{ color: '#6b7280' }}>Loading...</p>
+			<div className="py-16 text-center">
+				<p className="text-muted">Loading...</p>
 			</div>
 		);
 	}
 
 	if (error || !project) {
 		return (
-			<div style={{ maxWidth: '48rem', margin: '0 auto' }}>
-				<div style={{ marginBottom: '1rem' }}>
-					<Link to="/" style={{ fontSize: '0.875rem', color: '#6b7280', textDecoration: 'none' }}>
+			<div className="mx-auto max-w-4xl">
+				<div className="mb-4">
+					<Link to="/" className="text-sm text-muted hover:text-foreground">
 						&larr; Back to dashboard
 					</Link>
 				</div>
-				<div
-					style={{
-						padding: '1rem',
-						backgroundColor: '#fef2f2',
-						border: '1px solid #fecaca',
-						borderRadius: '0.375rem',
-						color: '#dc2626',
-						fontSize: '0.875rem',
-					}}
-				>
+				<div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-destructive">
 					Failed to load project. Please try again.
 				</div>
 			</div>
@@ -49,63 +48,41 @@ function ApiKeysPage() {
 	}
 
 	return (
-		<div style={{ maxWidth: '48rem', margin: '0 auto' }}>
-			{/* Breadcrumb */}
-			<div
-				style={{
-					display: 'flex',
-					alignItems: 'center',
-					gap: '0.375rem',
-					marginBottom: '1.5rem',
-					fontSize: '0.875rem',
-					color: '#6b7280',
-				}}
-			>
-				<Link to="/" style={{ color: '#6b7280', textDecoration: 'none' }}>
-					Dashboard
-				</Link>
-				<span>/</span>
+		<div className="mx-auto max-w-4xl">
+			{/* Back link */}
+			<div className="mb-6">
 				<Link
 					to="/projects/$projectId"
 					params={{ projectId }}
-					style={{ color: '#6b7280', textDecoration: 'none' }}
+					className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground"
 				>
-					{project.name}
+					<ArrowLeft className="h-3.5 w-3.5" />
+					Back to project
 				</Link>
-				<span>/</span>
-				<span style={{ color: '#111827', fontWeight: 500 }}>API Keys</span>
 			</div>
 
 			{/* Header with create button */}
-			<div
-				style={{
-					display: 'flex',
-					justifyContent: 'space-between',
-					alignItems: 'center',
-					marginBottom: '1.5rem',
-				}}
-			>
-				<h1 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0 }}>API Keys</h1>
-				<button
-					type="button"
-					onClick={() => setDialogOpen(true)}
-					style={{
-						padding: '0.5rem 1rem',
-						backgroundColor: '#111',
-						color: '#fff',
-						border: 'none',
-						borderRadius: '0.375rem',
-						fontSize: '0.875rem',
-						fontWeight: 500,
-						cursor: 'pointer',
-					}}
-				>
+			<div className="mb-1 flex items-center justify-between">
+				<h1 className="text-xl font-semibold text-foreground">API Keys</h1>
+				<Button size="sm" className="h-7 text-xs" onClick={() => setDialogOpen(true)}>
+					<Plus className="mr-1 h-3.5 w-3.5" />
 					Create Key
-				</button>
+				</Button>
 			</div>
+			<p className="mb-4 text-sm text-muted-foreground">
+				Create and manage API keys used to accept submissions.
+			</p>
 
-			{/* Key list */}
+			{/* Key list — flat, no Card wrapper */}
 			<ApiKeyList projectId={projectId} />
+
+			{/* Integration docs */}
+			<div className="mt-10">
+				<h2 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-muted">
+					Integration Guide
+				</h2>
+				<ApiKeyDocs apiKeyPrefix={keyPrefix} apiBaseUrl={window.location.origin} />
+			</div>
 
 			{/* Create dialog */}
 			<ApiKeyCreateDialog

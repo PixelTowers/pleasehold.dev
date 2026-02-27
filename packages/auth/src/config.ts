@@ -30,6 +30,8 @@ export interface AuthOptions {
 	githubClientSecret?: string;
 	/** Hook called after a new user is created in auth_users. */
 	onUserCreated?: (user: { id: string; email: string; name: string }) => Promise<void>;
+	/** Disable API key rate limiting (useful for integration tests). */
+	disableApiKeyRateLimit?: boolean;
 }
 
 export function createAuth(options: AuthOptions) {
@@ -73,6 +75,7 @@ export function createAuth(options: AuthOptions) {
 			apiKey({
 				defaultPrefix: 'ph_live_',
 				enableMetadata: true,
+				...(options.disableApiKeyRateLimit ? { rateLimit: { enabled: false } } : {}),
 			}),
 		],
 		databaseHooks: {

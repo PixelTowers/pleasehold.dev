@@ -1,5 +1,5 @@
 // ABOUTME: Shared type definitions for the notification worker, consumed by all sender functions.
-// ABOUTME: Defines the EntryPayload interface representing the data senders need to format notifications.
+// ABOUTME: Defines EntryPayload and EmailSenderOptions for BYOK email provider support.
 
 export interface EntryPayload {
 	email: string;
@@ -7,4 +7,22 @@ export interface EntryPayload {
 	company?: string | null;
 	position: number;
 	projectName: string;
+}
+
+export interface EmailSenderOptions {
+	resendApiKey?: string | null;
+	fromAddress?: string | null;
+	fromName?: string | null;
+}
+
+export interface BrandingContext {
+	logoUrl?: string | null;
+	brandColor?: string | null;
+	companyName?: string | null;
+}
+
+export interface TemplateContext {
+	subject: string;
+	bodyHtml: string;
+	buttonText?: string | null;
 }

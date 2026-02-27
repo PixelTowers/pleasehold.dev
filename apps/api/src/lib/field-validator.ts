@@ -14,10 +14,9 @@ const MAX_METADATA_BYTES = 4096;
 const metadataSchema = z
 	.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
 	.optional()
-	.refine(
-		(val) => !val || JSON.stringify(val).length <= MAX_METADATA_BYTES,
-		{ message: `Metadata must be ${MAX_METADATA_BYTES} bytes or less when serialized` },
-	);
+	.refine((val) => !val || JSON.stringify(val).length <= MAX_METADATA_BYTES, {
+		message: `Metadata must be ${MAX_METADATA_BYTES} bytes or less when serialized`,
+	});
 
 export function buildEntrySchema(fieldConfig: FieldConfig) {
 	const shape: Record<string, z.ZodTypeAny> = {

@@ -12,16 +12,32 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
+		"@hookform/resolvers": "^5.2.2",
 		"@pleasehold/trpc": "workspace:*",
+		"@tailwindcss/vite": "^4.2.1",
 		"@tanstack/react-query": "^5.62.0",
 		"@tanstack/react-router": "^1.92.0",
 		"@tanstack/react-table": "^8.21.3",
+		"@tiptap/extension-link": "^3.20.0",
+		"@tiptap/extension-placeholder": "^3.20.0",
+		"@tiptap/pm": "^3.20.0",
+		"@tiptap/react": "^3.20.0",
+		"@tiptap/starter-kit": "^3.20.0",
 		"@trpc/client": "^11.10.0",
 		"@trpc/react-query": "^11.10.0",
 		"better-auth": "^1.4.18",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"lucide-react": "^0.575.0",
+		"radix-ui": "^1.4.3",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
-		"superjson": "^2.2.2"
+		"react-hook-form": "^7.71.2",
+		"sonner": "^2.0.7",
+		"superjson": "^2.2.2",
+		"tailwind-merge": "^3.5.0",
+		"tailwindcss": "^4.2.1",
+		"zod": "^4.3.6"
 	},
 	"devDependencies": {
 		"@tanstack/router-plugin": "^1.92.0",

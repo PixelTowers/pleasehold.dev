@@ -1,7 +1,10 @@
 // ABOUTME: One-time API key display with copy button and security warning.
 // ABOUTME: The key is shown exactly once after creation; never stored in persistent client storage.
 
+import { AlertTriangle, Check, Copy } from 'lucide-react';
 import { useCallback, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface ApiKeyRevealOnceProps {
 	apiKey: string;
@@ -32,90 +35,44 @@ export function ApiKeyRevealOnce({ apiKey, onDismiss }: ApiKeyRevealOnceProps) {
 	}, [apiKey]);
 
 	return (
-		<div style={{ padding: '1.5rem' }}>
+		<div className="p-6">
 			{/* Security warning */}
-			<div
-				style={{
-					display: 'flex',
-					alignItems: 'flex-start',
-					gap: '0.75rem',
-					padding: '0.75rem 1rem',
-					backgroundColor: '#fffbeb',
-					border: '1px solid #fde68a',
-					borderRadius: '0.375rem',
-					marginBottom: '1.25rem',
-				}}
-			>
-				<span style={{ fontSize: '1.125rem', flexShrink: 0, marginTop: '0.125rem' }}>!</span>
-				<p style={{ margin: 0, fontSize: '0.8125rem', color: '#92400e', lineHeight: '1.5' }}>
-					This key will only be shown once. Copy it now and store it securely.
-					You will not be able to see it again.
+			<div className="mb-5 flex items-start gap-3 rounded-md border border-amber-200 bg-amber-50 px-4 py-3">
+				<AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+				<p className="text-[0.8125rem] leading-relaxed text-amber-800">
+					This key will only be shown once. Copy it now and store it securely. You will not be able
+					to see it again.
 				</p>
 			</div>
 
 			{/* Key display */}
-			<div
-				style={{
-					display: 'flex',
-					alignItems: 'center',
-					gap: '0.5rem',
-					padding: '0.75rem 1rem',
-					backgroundColor: '#111827',
-					borderRadius: '0.5rem',
-					marginBottom: '1.25rem',
-				}}
-			>
-				<code
-					style={{
-						flex: 1,
-						fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
-						fontSize: '0.8125rem',
-						color: '#f3f4f6',
-						wordBreak: 'break-all',
-						lineHeight: '1.5',
-					}}
-				>
+			<div className="mb-4 rounded-lg bg-gray-900 px-4 py-3">
+				<code className="break-all font-mono text-[0.8125rem] leading-relaxed text-gray-100">
 					{apiKey}
 				</code>
-				<button
-					type="button"
-					onClick={handleCopy}
-					style={{
-						flexShrink: 0,
-						padding: '0.375rem 0.75rem',
-						backgroundColor: copied ? '#059669' : '#374151',
-						color: '#fff',
-						border: 'none',
-						borderRadius: '0.25rem',
-						fontSize: '0.75rem',
-						fontWeight: 500,
-						cursor: 'pointer',
-						transition: 'background-color 150ms ease',
-						minWidth: '4.5rem',
-					}}
-				>
-					{copied ? 'Copied!' : 'Copy'}
-				</button>
 			</div>
 
-			{/* Dismiss button */}
-			<div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-				<button
-					type="button"
-					onClick={onDismiss}
-					style={{
-						padding: '0.5rem 1rem',
-						backgroundColor: '#111',
-						color: '#fff',
-						border: 'none',
-						borderRadius: '0.375rem',
-						fontSize: '0.875rem',
-						fontWeight: 500,
-						cursor: 'pointer',
-					}}
+			{/* Action buttons */}
+			<div className="flex gap-2">
+				<Button
+					className={cn('flex-1', copied && 'bg-green-600 text-white hover:bg-green-600')}
+					onClick={handleCopy}
 				>
+					{copied ? (
+						<>
+							<Check className="mr-2 h-4 w-4" />
+							Copied to clipboard!
+						</>
+					) : (
+						<>
+							<Copy className="mr-2 h-4 w-4" />
+							Copy API Key
+						</>
+					)}
+				</Button>
+				<Button variant="outline" onClick={onDismiss}>
 					Done
-				</button>
+				</Button>
 			</div>
 		</div>
 	);
