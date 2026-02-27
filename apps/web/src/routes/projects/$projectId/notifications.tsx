@@ -145,6 +145,10 @@ function NotificationSettingsPage() {
 		{ projectId },
 		{ enabled: !!project },
 	);
+	const { data: confirmationEmailData } = trpc.notification.getSendConfirmationEmail.useQuery(
+		{ projectId },
+		{ enabled: !!project },
+	);
 
 	const [addingType, setAddingType] = useState<ChannelType | null>(null);
 	const [editingChannelId, setEditingChannelId] = useState<string | null>(null);
@@ -209,11 +213,24 @@ function NotificationSettingsPage() {
 		},
 	});
 
+	const toggleConfirmationEmail = trpc.notification.toggleSendConfirmationEmail.useMutation({
+		onSuccess: () => {
+			toast.success('Confirmation email setting saved');
+			utils.notification.getSendConfirmationEmail.invalidate({ projectId });
+		},
+		onError: () => {
+			toast.error('Failed to save confirmation email setting');
+		},
+	});
+
 	const handleToggleEnabled = (channelId: string, enabled: boolean) => {
 		updateChannel.mutate({ projectId, channelId, enabled });
 	};
 	const handleDoubleOptInToggle = (enabled: boolean) => {
 		toggleDoubleOptIn.mutate({ projectId, enabled });
+	};
+	const handleConfirmationEmailToggle = (enabled: boolean) => {
+		toggleConfirmationEmail.mutate({ projectId, enabled });
 	};
 
 	const deleteTarget = channels?.find((ch) => ch.id === deleteConfirmId);
@@ -276,6 +293,26 @@ function NotificationSettingsPage() {
 						checked={doubleOptInData?.doubleOptIn ?? false}
 						onChange={handleDoubleOptInToggle}
 						disabled={toggleDoubleOptIn.isPending}
+					/>
+				</div>
+			</div>
+
+			{/* Confirmation Email section */}
+			<div className="mb-8">
+				<h2 className="mb-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+					Confirmation Email
+				</h2>
+				<div className="flex items-center justify-between border-t border-b border-border/50 py-3">
+					<div>
+						<div className="text-sm font-medium">Send confirmation email</div>
+						<div className="text-xs text-muted-foreground">
+							Automatically send a welcome email when someone joins your waitlist
+						</div>
+					</div>
+					<ToggleSwitch
+						checked={confirmationEmailData?.sendConfirmationEmail ?? false}
+						onChange={handleConfirmationEmailToggle}
+						disabled={toggleConfirmationEmail.isPending}
 					/>
 				</div>
 			</div>

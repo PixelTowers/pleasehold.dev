@@ -7,5 +7,8 @@ export default defineConfig({
 	test: {
 		globalSetup: './src/test/setup.ts',
 		testTimeout: 15_000,
+		// Run test files sequentially to avoid Better Auth API key rate limiting
+		// across files that share the same seeded API key.
+		fileParallelism: false,
 	},
 });

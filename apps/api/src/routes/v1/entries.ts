@@ -131,6 +131,14 @@ app.openapi(submitEntryRoute, async (c) => {
 				projectId: project.id,
 				type: 'entry_created',
 			}).catch((err) => console.error('Failed to enqueue notification:', err));
+
+			if (project.sendConfirmationEmail) {
+				enqueueNotification({
+					entryId: entry.id,
+					projectId: project.id,
+					type: 'confirmation_email',
+				}).catch((err) => console.error('Failed to enqueue confirmation email:', err));
+			}
 		}
 
 		return c.json(

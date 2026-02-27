@@ -18,6 +18,7 @@ export const projects = pgTable(
 		brandColor: text('brand_color').default('#5e6ad2'),
 		companyName: text('company_name'),
 		doubleOptIn: boolean('double_opt_in').notNull().default(false),
+		sendConfirmationEmail: boolean('send_confirmation_email').notNull().default(false),
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 		updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 	},

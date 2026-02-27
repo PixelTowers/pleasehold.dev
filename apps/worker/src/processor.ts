@@ -12,6 +12,7 @@ import {
 } from '@pleasehold/db';
 import type { Job } from 'bullmq';
 import { and, eq } from 'drizzle-orm';
+import { sendConfirmationEmail } from './senders/confirmation-email';
 import { sendDiscordNotification } from './senders/discord';
 import { sendEmailNotification } from './senders/email';
 import { sendSlackNotification } from './senders/slack';
@@ -23,7 +24,7 @@ import type { BrandingContext, EmailSenderOptions, EntryPayload, TemplateContext
 interface NotificationJobData {
 	entryId: string;
 	projectId: string;
-	type: 'entry_created' | 'verification_email';
+	type: 'entry_created' | 'verification_email' | 'confirmation_email';
 }
 
 const db = createDb(process.env.DATABASE_URL!);
@@ -74,6 +75,8 @@ export async function processNotification(job: Job<NotificationJobData>): Promis
 		await processEntryCreated(data);
 	} else if (data.type === 'verification_email') {
 		await processVerificationEmail(data);
+	} else if (data.type === 'confirmation_email') {
+		await processConfirmationEmail(data);
 	} else {
 		console.warn(`Unknown job type: ${(data as unknown as Record<string, unknown>).type}`);
 	}
@@ -261,4 +264,44 @@ async function processVerificationEmail(data: NotificationJobData): Promise<void
 		customTemplate,
 	});
 	console.log(`Verification email sent to ${entry.email} for project ${project.name}`);
+}
+
+async function processConfirmationEmail(data: NotificationJobData): Promise<void> {
+	const entry = await db.query.entries.findFirst({
+		where: eq(entries.id, data.entryId),
+	});
+
+	if (!entry) {
+		console.warn(`Entry ${data.entryId} not found for confirmation email. Skipping.`);
+		return;
+	}
+
+	const project = await db.query.projects.findFirst({
+		where: eq(projects.id, data.projectId),
+	});
+
+	if (!project) {
+		console.warn(`Project ${data.projectId} not found. Skipping.`);
+		return;
+	}
+
+	const emailOptions = await getEmailSenderOptions(project.userId);
+	const branding = getBrandingContext(project);
+	const customTemplate = await getCustomTemplate(data.projectId, 'confirmation');
+
+	await sendConfirmationEmail(
+		{
+			email: entry.email,
+			name: entry.name,
+			position: entry.position,
+			projectName: project.name,
+			companyName: project.companyName,
+		},
+		{
+			emailOptions,
+			branding,
+			customTemplate,
+		},
+	);
+	console.log(`Confirmation email sent to ${entry.email} for project ${project.name}`);
 }

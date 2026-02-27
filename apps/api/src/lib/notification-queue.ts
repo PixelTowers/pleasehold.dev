@@ -7,7 +7,7 @@ import { Queue } from 'bullmq';
 export interface NotificationJobData {
 	entryId: string;
 	projectId: string;
-	type: 'entry_created' | 'verification_email';
+	type: 'entry_created' | 'verification_email' | 'confirmation_email';
 }
 
 const REDIS_HOST = process.env.REDIS_HOST ?? 'localhost';

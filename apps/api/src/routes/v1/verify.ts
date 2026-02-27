@@ -2,7 +2,7 @@
 // ABOUTME: Public route (no API key required) mounted at /verify/:token, enqueues owner notifications after verification.
 
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
-import { type Database, entries } from '@pleasehold/db';
+import { type Database, entries, projects } from '@pleasehold/db';
 import { eq } from 'drizzle-orm';
 import { enqueueNotification } from '../../lib/notification-queue';
 import { ErrorResponseSchema, VerifyResponseSchema } from '../../openapi';
@@ -76,6 +76,19 @@ export function createVerifyRoute(db: Database) {
 			projectId: entry.projectId,
 			type: 'entry_created',
 		}).catch((err) => console.error('Failed to enqueue post-verification notification:', err));
+
+		// Conditionally send a confirmation/welcome email to the submitter
+		const project = await db.query.projects.findFirst({
+			where: eq(projects.id, entry.projectId),
+			columns: { sendConfirmationEmail: true },
+		});
+		if (project?.sendConfirmationEmail) {
+			enqueueNotification({
+				entryId: entry.id,
+				projectId: entry.projectId,
+				type: 'confirmation_email',
+			}).catch((err) => console.error('Failed to enqueue confirmation email:', err));
+		}
 
 		return c.json(
 			{

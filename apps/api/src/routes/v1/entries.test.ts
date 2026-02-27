@@ -28,6 +28,7 @@ beforeAll(() => {
 		secret: process.env.BETTER_AUTH_SECRET ?? 'test-secret-at-least-32-characters-long',
 		baseUrl: 'http://localhost:3001',
 		trustedOrigins: ['http://localhost:5173'],
+		disableApiKeyRateLimit: true,
 	});
 
 	app = new OpenAPIHono<{ Variables: ApiKeyVariables }>();
@@ -160,6 +161,6 @@ describe('POST /api/v1/entries', () => {
 			where: eq(entries.email, 'meta-test@example.com'),
 		});
 		expect(entry).toBeDefined();
-		expect((entry!.metadata as Record<string, unknown>).source).toBe('landing');
+		expect((entry?.metadata as Record<string, unknown>).source).toBe('landing');
 	});
 });
