@@ -1,5 +1,5 @@
-// ABOUTME: PostHog-style tabbed integration docs showing how to use an API key across languages.
-// ABOUTME: Displays copy-able code snippets for cURL, JavaScript, Python, Ruby, and Go.
+// ABOUTME: PostHog-style tabbed integration docs showing how to integrate the waitlist API on web platforms.
+// ABOUTME: Displays copy-able code snippets for Next.js, Astro, React, HTML, and cURL.
 
 import { Check, Copy } from 'lucide-react';
 import { useCallback, useState } from 'react';
@@ -9,109 +9,179 @@ interface ApiKeyDocsProps {
 	apiKeyPrefix?: string;
 }
 
-const tabs = ['cURL', 'JavaScript', 'Python', 'Ruby', 'Go'] as const;
+const tabs = ['Next.js', 'Astro', 'React', 'HTML', 'cURL'] as const;
 type Tab = (typeof tabs)[number];
 
 function buildSnippet(tab: Tab, key: string): string {
-	const endpoint = '/api/v1/entries';
-	const body = JSON.stringify({ email: 'user@example.com', name: 'Jane' }, null, 2);
+	const endpoint = 'https://your-domain.com/api/v1/entries';
 
 	switch (tab) {
-		case 'cURL':
-			return `curl -X POST https://your-domain.com${endpoint} \\
-  -H "Authorization: Bearer ${key}" \\
-  -H "Content-Type: application/json" \\
-  -d '${body}'`;
+		case 'Next.js':
+			return `// app/waitlist/action.ts
+"use server";
 
-		case 'JavaScript':
-			return `const response = await fetch("https://your-domain.com${endpoint}", {
-  method: "POST",
-  headers: {
-    "Authorization": "Bearer ${key}",
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    email: "user@example.com",
-    name: "Jane",
-  }),
-});
+export async function joinWaitlist(formData: FormData) {
+  const res = await fetch("${endpoint}", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer ${key}",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: formData.get("email"),
+      name: formData.get("name"),
+    }),
+  });
 
-const data = await response.json();
-console.log(data);`;
+  if (!res.ok) throw new Error("Failed to join waitlist");
+  return res.json();
+}
 
-		case 'Python':
-			return `import requests
+// app/waitlist/page.tsx
+import { joinWaitlist } from "./action";
 
-response = requests.post(
-    "https://your-domain.com${endpoint}",
-    headers={
+export default function WaitlistPage() {
+  return (
+    <form action={joinWaitlist}>
+      <input name="name" placeholder="Name" required />
+      <input name="email" type="email" placeholder="Email" required />
+      <button type="submit">Join Waitlist</button>
+    </form>
+  );
+}`;
+
+		case 'Astro':
+			return `---
+// src/pages/api/waitlist.ts
+import type { APIRoute } from "astro";
+
+export const POST: APIRoute = async ({ request }) => {
+  const body = await request.json();
+
+  const res = await fetch("${endpoint}", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer ${key}",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: body.email,
+      name: body.name,
+    }),
+  });
+
+  return new Response(JSON.stringify(await res.json()), {
+    status: res.status,
+  });
+};
+---
+
+<!-- src/pages/index.astro -->
+<form id="waitlist-form">
+  <input name="name" placeholder="Name" required />
+  <input name="email" type="email" placeholder="Email" required />
+  <button type="submit">Join Waitlist</button>
+</form>
+
+<script>
+  document.getElementById("waitlist-form")
+    ?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target as HTMLFormElement);
+      await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: form.get("email"),
+          name: form.get("name"),
+        }),
+      });
+    });
+</script>`;
+
+		case 'React':
+			return `import { useState } from "react";
+
+export function WaitlistForm() {
+  const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setStatus("loading");
+
+    const form = new FormData(e.currentTarget);
+    const res = await fetch("${endpoint}", {
+      method: "POST",
+      headers: {
         "Authorization": "Bearer ${key}",
         "Content-Type": "application/json",
-    },
-    json={
-        "email": "user@example.com",
-        "name": "Jane",
-    },
-)
+      },
+      body: JSON.stringify({
+        email: form.get("email"),
+        name: form.get("name"),
+      }),
+    });
 
-print(response.json())`;
+    if (res.ok) setStatus("done");
+  }
 
-		case 'Ruby':
-			return `require "net/http"
-require "json"
-require "uri"
+  if (status === "done") return <p>You're on the list!</p>;
 
-uri = URI("https://your-domain.com${endpoint}")
-http = Net::HTTP.new(uri.host, uri.port)
-http.use_ssl = true
-
-request = Net::HTTP::Post.new(uri)
-request["Authorization"] = "Bearer ${key}"
-request["Content-Type"] = "application/json"
-request.body = {
-  email: "user@example.com",
-  name: "Jane"
-}.to_json
-
-response = http.request(request)
-puts response.body`;
-
-		case 'Go':
-			return `package main
-
-import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"net/http"
-)
-
-func main() {
-	body, _ := json.Marshal(map[string]string{
-		"email": "user@example.com",
-		"name":  "Jane",
-	})
-
-	req, _ := http.NewRequest("POST",
-		"https://your-domain.com${endpoint}",
-		bytes.NewBuffer(body))
-
-	req.Header.Set("Authorization", "Bearer ${key}")
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-
-	fmt.Println("Status:", resp.Status)
+  return (
+    <form onSubmit={handleSubmit}>
+      <input name="name" placeholder="Name" required />
+      <input name="email" type="email" placeholder="Email" required />
+      <button type="submit" disabled={status === "loading"}>
+        {status === "loading" ? "Joining..." : "Join Waitlist"}
+      </button>
+    </form>
+  );
 }`;
+
+		case 'HTML':
+			return `<form id="waitlist-form">
+  <input name="name" placeholder="Name" required />
+  <input name="email" type="email" placeholder="Email" required />
+  <button type="submit">Join Waitlist</button>
+</form>
+
+<script>
+  document.getElementById("waitlist-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+
+      const res = await fetch("${endpoint}", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer ${key}",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: form.get("email"),
+          name: form.get("name"),
+        }),
+      });
+
+      if (res.ok) {
+        e.target.innerHTML = "<p>You're on the list!</p>";
+      }
+    });
+</script>`;
+
+		case 'cURL':
+			return `curl -X POST ${endpoint} \\
+  -H "Authorization: Bearer ${key}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "email": "user@example.com",
+    "name": "Jane"
+  }'`;
 	}
 }
 
 export function ApiKeyDocs({ apiKeyPrefix }: ApiKeyDocsProps) {
-	const [activeTab, setActiveTab] = useState<Tab>('cURL');
+	const [activeTab, setActiveTab] = useState<Tab>('Next.js');
 	const [copied, setCopied] = useState(false);
 
 	const displayKey = apiKeyPrefix ?? 'YOUR_API_KEY';
