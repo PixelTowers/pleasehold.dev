@@ -79,7 +79,7 @@ export function EmailTemplateEditor({
 				<Input
 					value={subject}
 					onChange={(e) => onSubjectChange(e.target.value)}
-					placeholder="Confirm your submission to {{project_name}}"
+					placeholder="Confirm your email for {{project_name}}"
 					className="h-8"
 				/>
 			</div>
@@ -90,7 +90,7 @@ export function EmailTemplateEditor({
 				<Input
 					value={buttonText}
 					onChange={(e) => onButtonTextChange(e.target.value)}
-					placeholder="Confirm Submission"
+					placeholder="Verify Email Address"
 					className="h-8 max-w-xs"
 				/>
 			</div>
