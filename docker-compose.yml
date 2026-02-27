@@ -22,13 +22,13 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    command: redis-server --maxmemory-policy noeviction
+    command: redis-server --maxmemory-policy noeviction --requirepass ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
     volumes:
       - redis-data:/data
     networks:
       - pleasehold
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -37,14 +37,11 @@ services:
     image: minio/minio:latest
     restart: unless-stopped
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Set MINIO_ROOT_USER in .env}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
     command: server /data --console-address ":9001"
     volumes:
       - minio-data:/data
-    ports:
-      - "${MINIO_API_PORT:-9000}:9000"
-      - "${MINIO_CONSOLE_PORT:-9001}:9001"
     networks:
       - pleasehold
     healthcheck:
@@ -77,6 +74,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-pleasehold}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-pleasehold}
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
       PORT: 3001
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET in .env}
       API_URL: ${API_URL:-http://localhost:3001}
@@ -113,6 +111,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-pleasehold}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-pleasehold}
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
       API_URL: ${API_URL:-http://localhost:3001}
       WEB_URL: ${WEB_URL:-http://localhost:8080}
       RESEND_API_KEY: ${RESEND_API_KEY:-}

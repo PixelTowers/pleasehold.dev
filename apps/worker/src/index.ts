@@ -7,15 +7,17 @@ import { processNotification } from './processor';
 
 const REDIS_HOST = process.env.REDIS_HOST ?? 'localhost';
 const REDIS_PORT = Number(process.env.REDIS_PORT ?? '6380');
+const REDIS_PASSWORD = process.env.REDIS_PASSWORD || undefined;
 
 const connection = {
 	host: REDIS_HOST,
 	port: REDIS_PORT,
+	password: REDIS_PASSWORD,
 	maxRetriesPerRequest: null,
 };
 
 async function validateRedisPolicy(): Promise<void> {
-	const redis = new Redis({ host: REDIS_HOST, port: REDIS_PORT });
+	const redis = new Redis({ host: REDIS_HOST, port: REDIS_PORT, password: REDIS_PASSWORD });
 	try {
 		const result = await redis.config('GET', 'maxmemory-policy');
 		const policy = Array.isArray(result) ? result[1] : undefined;

@@ -32,12 +32,17 @@ const discordConfigSchema = z.object({
 });
 
 const telegramConfigSchema = z.object({
-	botToken: z.string().min(1),
-	chatId: z.string().min(1),
+	botToken: z.string().regex(/^\d+:[A-Za-z0-9_-]+$/, 'Invalid Telegram bot token format'),
+	chatId: z.string().regex(/^-?\d+$|^@\w+$/, 'Invalid Telegram chat ID format'),
 });
 
 const webhookConfigSchema = z.object({
-	url: z.string().url(),
+	url: z
+		.string()
+		.url()
+		.refine((url) => url.startsWith('https://'), {
+			message: 'Webhook URL must use HTTPS',
+		}),
 });
 
 type ChannelType = 'email' | 'slack' | 'discord' | 'telegram' | 'webhook';
@@ -122,6 +127,9 @@ const create = protectedProcedure
 			})
 			.returning();
 
+		if (channel.type === 'webhook') {
+			return { ...channel, config: maskWebhookSecret(channel.config) };
+		}
 		return channel;
 	});
 

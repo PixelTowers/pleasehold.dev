@@ -53,6 +53,11 @@ export function createVerifyRoute(db: Database) {
 		}
 
 		if (entry.verificationExpiresAt && entry.verificationExpiresAt < new Date()) {
+			// Null out expired token to prevent further enumeration attempts
+			await db
+				.update(entries)
+				.set({ verificationToken: null, updatedAt: new Date() })
+				.where(eq(entries.id, entry.id));
 			return c.json(genericError, 400);
 		}
 

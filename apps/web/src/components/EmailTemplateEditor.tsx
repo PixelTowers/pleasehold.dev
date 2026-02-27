@@ -5,6 +5,7 @@ import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import DOMPurify from 'dompurify';
 import { Bold, Code, Heading2, Italic, Link as LinkIcon, List, ListOrdered } from 'lucide-react';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
@@ -212,8 +213,8 @@ export function EmailTemplateEditor({
 						</p>
 						<div
 							className="prose prose-sm max-w-none text-sm"
-							// biome-ignore lint/security/noDangerouslySetInnerHtml: renders user-authored email template HTML for preview
-							dangerouslySetInnerHTML={{ __html: replaceVariables(bodyHtml) }}
+							// biome-ignore lint/security/noDangerouslySetInnerHtml: sanitized via DOMPurify before rendering
+							dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(replaceVariables(bodyHtml)) }}
 						/>
 						{buttonText && (
 							<div className="mt-4 text-center">

@@ -60,9 +60,24 @@ const list = protectedProcedure
 
 		const whereClause = and(...conditions);
 
+		// Explicit column selection excludes sensitive verification fields (token, expiry, verifiedAt)
+		const safeColumns = {
+			id: entries.id,
+			projectId: entries.projectId,
+			email: entries.email,
+			name: entries.name,
+			company: entries.company,
+			message: entries.message,
+			metadata: entries.metadata,
+			position: entries.position,
+			status: entries.status,
+			createdAt: entries.createdAt,
+			updatedAt: entries.updatedAt,
+		};
+
 		const [rows, [{ total }]] = await Promise.all([
 			ctx.db
-				.select()
+				.select(safeColumns)
 				.from(entries)
 				.where(whereClause)
 				.orderBy(desc(entries.createdAt))
@@ -95,6 +110,19 @@ const getById = protectedProcedure
 
 		const entry = await ctx.db.query.entries.findFirst({
 			where: and(eq(entries.id, input.entryId), eq(entries.projectId, input.projectId)),
+			columns: {
+				id: true,
+				projectId: true,
+				email: true,
+				name: true,
+				company: true,
+				message: true,
+				metadata: true,
+				position: true,
+				status: true,
+				createdAt: true,
+				updatedAt: true,
+			},
 		});
 
 		if (!entry) {
@@ -200,7 +228,19 @@ const exportProcedure = protectedProcedure
 		}
 
 		const rows = await ctx.db
-			.select()
+			.select({
+				id: entries.id,
+				projectId: entries.projectId,
+				email: entries.email,
+				name: entries.name,
+				company: entries.company,
+				message: entries.message,
+				metadata: entries.metadata,
+				position: entries.position,
+				status: entries.status,
+				createdAt: entries.createdAt,
+				updatedAt: entries.updatedAt,
+			})
 			.from(entries)
 			.where(eq(entries.projectId, input.projectId))
 			.orderBy(desc(entries.createdAt))

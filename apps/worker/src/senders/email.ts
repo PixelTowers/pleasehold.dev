@@ -7,14 +7,20 @@ import { getResendClient } from './mailer';
 
 const DEFAULT_EMAIL_FROM = process.env.EMAIL_FROM ?? 'notifications@pleasehold.dev';
 
+/** Defense-in-depth: strip CR/LF and control characters to prevent email header injection. */
+function stripControlChars(value: string): string {
+	// biome-ignore lint/suspicious/noControlCharactersInRegex: intentionally matching control chars for security sanitization
+	return value.replace(/[\r\n\x00-\x1f]/g, '');
+}
+
 export async function sendEmailNotification(
 	recipients: string[],
 	entry: EntryPayload,
 	options?: EmailSenderOptions,
 	branding?: BrandingContext,
 ): Promise<void> {
-	const fromAddress = options?.fromAddress ?? DEFAULT_EMAIL_FROM;
-	const fromName = options?.fromName;
+	const fromAddress = stripControlChars(options?.fromAddress ?? DEFAULT_EMAIL_FROM);
+	const fromName = options?.fromName ? stripControlChars(options.fromName) : undefined;
 	const from = fromName ? `${fromName} <${fromAddress}>` : fromAddress;
 	const client = getResendClient(options?.resendApiKey);
 

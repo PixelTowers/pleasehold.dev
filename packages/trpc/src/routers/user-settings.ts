@@ -31,8 +31,20 @@ export const userSettingsRouter = router({
 		.input(
 			z.object({
 				resendApiKey: z.string().min(1).optional().nullable(),
-				emailFromAddress: z.string().email().optional().nullable(),
-				emailFromName: z.string().max(100).optional().nullable(),
+				emailFromAddress: z
+					.string()
+					.email()
+					// biome-ignore lint/suspicious/noControlCharactersInRegex: intentionally matching control chars for header injection prevention
+					.regex(/^[^\r\n\x00-\x1f]+$/, 'Must not contain control characters')
+					.optional()
+					.nullable(),
+				emailFromName: z
+					.string()
+					.max(100)
+					// biome-ignore lint/suspicious/noControlCharactersInRegex: intentionally matching control chars for header injection prevention
+					.regex(/^[^\r\n\x00-\x1f]+$/, 'Must not contain control characters')
+					.optional()
+					.nullable(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {

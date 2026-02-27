@@ -73,11 +73,23 @@ app.use(
 // Strict rate limit on auth mutation endpoints (brute-force protection)
 app.use('/api/auth/sign-in/*', authRateLimiter);
 app.use('/api/auth/sign-up/*', authRateLimiter);
+app.use('/api/auth/forget-password', authRateLimiter);
+app.use('/api/auth/reset-password', authRateLimiter);
+app.use('/api/auth/change-password', authRateLimiter);
+app.use('/api/auth/change-email', authRateLimiter);
 // Session checks (get-session, etc.) use the more generous dashboard limit.
 // Skip paths already covered by authRateLimiter to avoid double-counting.
 app.use('/api/auth/*', async (c, next) => {
 	const path = c.req.path;
-	if (path.startsWith('/api/auth/sign-in/') || path.startsWith('/api/auth/sign-up/')) {
+	const strictPaths = [
+		'/api/auth/sign-in/',
+		'/api/auth/sign-up/',
+		'/api/auth/forget-password',
+		'/api/auth/reset-password',
+		'/api/auth/change-password',
+		'/api/auth/change-email',
+	];
+	if (strictPaths.some((p) => path.startsWith(p))) {
 		return next();
 	}
 	return dashboardRateLimiter(c, next);

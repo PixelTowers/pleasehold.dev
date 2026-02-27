@@ -65,6 +65,8 @@ export function createAuth(options: AuthOptions) {
 		baseURL: options.baseUrl,
 		emailAndPassword: {
 			enabled: true,
+			minPasswordLength: 10,
+			maxPasswordLength: 128,
 		},
 		session: {
 			expiresIn: 60 * 60 * 24 * 7, // 7 days

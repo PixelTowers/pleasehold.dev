@@ -7,6 +7,7 @@ import { createPresignedUploadUrl, isStorageConfigured } from '../../lib/storage
 
 const ALLOWED_MIME_PREFIXES = ['image/'];
 const BLOCKED_MIME_TYPES = ['image/svg+xml'];
+const ALLOWED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
 const MAX_FILE_SIZE = 512 * 1024;
 
 export function createUploadRoute(auth: ReturnType<typeof createAuth>) {
@@ -33,7 +34,15 @@ export function createUploadRoute(auth: ReturnType<typeof createAuth>) {
 			return c.json({ error: 'Only raster image files (PNG, JPEG, WebP, GIF) are allowed' }, 400);
 		}
 
-		const ext = fileName?.split('.').pop() ?? contentType.split('/')[1] ?? 'png';
+		const ext = (fileName?.split('.').pop() ?? contentType.split('/')[1] ?? 'png').toLowerCase();
+		if (!ALLOWED_EXTENSIONS.includes(ext)) {
+			return c.json(
+				{
+					error: `File extension ".${ext}" is not allowed. Accepted: ${ALLOWED_EXTENSIONS.join(', ')}`,
+				},
+				400,
+			);
+		}
 		const key = `logos/${session.user.id}/${Date.now()}.${ext}`;
 
 		const { uploadUrl, publicUrl } = await createPresignedUploadUrl(

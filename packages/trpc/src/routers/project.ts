@@ -112,7 +112,14 @@ export const projectRouter = router({
 				id: z.string().uuid(),
 				// Mode is deliberately excluded -- immutable after creation (Pitfall 2).
 				name: z.string().min(1).max(100).optional(),
-				logoUrl: z.string().url().optional().nullable(),
+				logoUrl: z
+					.string()
+					.url()
+					.refine((u) => u.startsWith('https://') || u.startsWith('http://'), {
+						message: 'Logo URL must use HTTP or HTTPS',
+					})
+					.optional()
+					.nullable(),
 				brandColor: z
 					.string()
 					.regex(/^#[0-9a-fA-F]{6}$/, 'Must be a valid hex color')
