@@ -149,7 +149,7 @@ function EmailTemplatesPage() {
 
 	if (error || !project) {
 		return (
-			<div className="mx-auto max-w-3xl">
+			<div className="mx-auto max-w-4xl">
 				<div className="mb-4">
 					<Link
 						to="/projects/$projectId"
@@ -168,7 +168,7 @@ function EmailTemplatesPage() {
 	}
 
 	return (
-		<div className="mx-auto max-w-3xl">
+		<div className="mx-auto max-w-4xl">
 			<div className="mb-6">
 				<Link
 					to="/projects/$projectId"

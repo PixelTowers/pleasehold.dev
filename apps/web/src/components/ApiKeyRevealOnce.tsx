@@ -46,36 +46,33 @@ export function ApiKeyRevealOnce({ apiKey, onDismiss }: ApiKeyRevealOnceProps) {
 			</div>
 
 			{/* Key display */}
-			<div className="mb-5 flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-3">
-				<code className="flex-1 break-all font-mono text-[0.8125rem] leading-relaxed text-gray-100">
+			<div className="mb-4 rounded-lg bg-gray-900 px-4 py-3">
+				<code className="break-all font-mono text-[0.8125rem] leading-relaxed text-gray-100">
 					{apiKey}
 				</code>
+			</div>
+
+			{/* Action buttons */}
+			<div className="flex gap-2">
 				<Button
-					variant="secondary"
-					size="sm"
-					className={cn(
-						'h-7 shrink-0 text-xs',
-						copied && 'bg-green-600 text-white hover:bg-green-600',
-					)}
+					className={cn('flex-1', copied && 'bg-green-600 text-white hover:bg-green-600')}
 					onClick={handleCopy}
 				>
 					{copied ? (
 						<>
-							<Check className="mr-1 h-3 w-3" />
-							Copied!
+							<Check className="mr-2 h-4 w-4" />
+							Copied to clipboard!
 						</>
 					) : (
 						<>
-							<Copy className="mr-1 h-3 w-3" />
-							Copy
+							<Copy className="mr-2 h-4 w-4" />
+							Copy API Key
 						</>
 					)}
 				</Button>
-			</div>
-
-			{/* Dismiss button */}
-			<div className="flex justify-end">
-				<Button onClick={onDismiss}>Done</Button>
+				<Button variant="outline" onClick={onDismiss}>
+					Done
+				</Button>
 			</div>
 		</div>
 	);

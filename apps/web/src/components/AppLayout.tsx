@@ -55,7 +55,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 				<Sidebar onClose={() => setMobileMenuOpen(false)} />
 			</div>
 
-			<main className="flex-1 overflow-y-auto bg-background p-4 pt-16 md:p-6 md:pt-6">
+			<main className="flex-1 overflow-y-auto bg-background p-4 pt-14 md:px-5 md:py-4">
 				{children}
 			</main>
 		</div>

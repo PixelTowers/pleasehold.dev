@@ -36,7 +36,7 @@ function ApiKeysPage() {
 
 	if (error || !project) {
 		return (
-			<div className="mx-auto max-w-3xl">
+			<div className="mx-auto max-w-4xl">
 				<div className="mb-4">
 					<Link to="/" className="text-sm text-muted hover:text-foreground">
 						&larr; Back to dashboard

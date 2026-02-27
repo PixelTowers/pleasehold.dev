@@ -88,7 +88,7 @@ function UserSettingsPage() {
 	}
 
 	return (
-		<div className="mx-auto max-w-3xl">
+		<div className="mx-auto max-w-4xl">
 			<h1 className="mb-1 text-xl font-semibold text-foreground">Settings</h1>
 			<p className="mb-6 text-sm text-muted-foreground">
 				Manage your account and email provider configuration.
