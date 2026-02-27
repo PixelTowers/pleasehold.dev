@@ -5,9 +5,11 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { ApiKeyCreateDialog } from '@/components/ApiKeyCreateDialog';
+import { ApiKeyDocs } from '@/components/ApiKeyDocs';
 import { ApiKeyList } from '@/components/ApiKeyList';
 import { Button } from '@/components/ui/button';
 import { useProject } from '@/hooks/useProjects';
+import { trpc } from '@/lib/trpc';
 
 export const Route = createFileRoute('/projects/$projectId/keys')({
 	component: ApiKeysPage,
@@ -16,7 +18,13 @@ export const Route = createFileRoute('/projects/$projectId/keys')({
 function ApiKeysPage() {
 	const { projectId } = Route.useParams();
 	const { data: project, isPending, error } = useProject(projectId);
+	const { data: keys } = trpc.apiKey.list.useQuery({ projectId });
 	const [dialogOpen, setDialogOpen] = useState(false);
+
+	const firstActiveKey = keys?.find((k) => k.enabled);
+	const keyPrefix = firstActiveKey
+		? `${firstActiveKey.prefix}${firstActiveKey.start}...`
+		: undefined;
 
 	if (isPending) {
 		return (
@@ -71,6 +79,14 @@ function ApiKeysPage() {
 
 			{/* Key list — flat, no Card wrapper */}
 			<ApiKeyList projectId={projectId} />
+
+			{/* Integration docs */}
+			<div className="mt-10">
+				<h2 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-muted">
+					Integration Guide
+				</h2>
+				<ApiKeyDocs apiKeyPrefix={keyPrefix} />
+			</div>
 
 			{/* Create dialog */}
 			<ApiKeyCreateDialog
