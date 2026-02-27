@@ -66,14 +66,3 @@ export const telegramChannelSchema = z.object({
 	chatId: z.string().min(1, 'Chat ID is required'),
 });
 export type TelegramChannelValues = z.infer<typeof telegramChannelSchema>;
-
-export const emailProviderSchema = z.object({
-	resendApiKey: z.string().optional(),
-	emailFromAddress: z
-		.string()
-		.email('Please enter a valid email address')
-		.or(z.literal(''))
-		.optional(),
-	emailFromName: z.string().max(100, 'Name must be 100 characters or fewer').optional(),
-});
-export type EmailProviderValues = z.infer<typeof emailProviderSchema>;
