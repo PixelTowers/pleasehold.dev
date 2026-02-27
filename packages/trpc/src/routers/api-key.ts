@@ -3,7 +3,7 @@
 
 import { apikeys, projects } from '@pleasehold/db';
 import { TRPCError } from '@trpc/server';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { protectedProcedure, router } from '../trpc';
 
@@ -62,8 +62,8 @@ export const apiKeyRouter = router({
 				throw new TRPCError({ code: 'NOT_FOUND', message: 'Project not found' });
 			}
 
-			// Fetch all keys for this user, then filter by project in metadata
-			const allKeys = await ctx.db
+			// Filter keys by project directly in SQL via JSONB metadata
+			const projectKeys = await ctx.db
 				.select({
 					id: apikeys.id,
 					name: apikeys.name,
@@ -71,27 +71,17 @@ export const apiKeyRouter = router({
 					prefix: apikeys.prefix,
 					enabled: apikeys.enabled,
 					createdAt: apikeys.createdAt,
-					metadata: apikeys.metadata,
 				})
 				.from(apikeys)
-				.where(eq(apikeys.userId, ctx.user.id))
+				.where(
+					and(
+						eq(apikeys.userId, ctx.user.id),
+						sql`${apikeys.metadata}::jsonb->>'projectId' = ${input.projectId}`,
+					),
+				)
 				.orderBy(apikeys.createdAt);
 
-			// Filter to keys whose metadata.projectId matches the requested project
-			const projectKeys = allKeys
-				.filter((key) => {
-					if (!key.metadata) return false;
-					try {
-						const parsed = JSON.parse(key.metadata);
-						return parsed.projectId === input.projectId;
-					} catch {
-						return false;
-					}
-				})
-				.map(({ metadata: _metadata, ...rest }) => rest)
-				.reverse(); // Descending by createdAt
-
-			return projectKeys;
+			return projectKeys.reverse();
 		}),
 
 	revoke: protectedProcedure

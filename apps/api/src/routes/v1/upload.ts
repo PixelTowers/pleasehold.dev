@@ -6,6 +6,7 @@ import { Hono } from 'hono';
 import { createPresignedUploadUrl, isStorageConfigured } from '../../lib/storage';
 
 const ALLOWED_MIME_PREFIXES = ['image/'];
+const BLOCKED_MIME_TYPES = ['image/svg+xml'];
 const MAX_FILE_SIZE = 512 * 1024;
 
 export function createUploadRoute(auth: ReturnType<typeof createAuth>) {
@@ -24,8 +25,12 @@ export function createUploadRoute(auth: ReturnType<typeof createAuth>) {
 		const body = await c.req.json<{ contentType?: string; fileName?: string }>();
 		const { contentType, fileName } = body;
 
-		if (!contentType || !ALLOWED_MIME_PREFIXES.some((p) => contentType.startsWith(p))) {
-			return c.json({ error: 'Only image files are allowed' }, 400);
+		if (
+			!contentType ||
+			!ALLOWED_MIME_PREFIXES.some((p) => contentType.startsWith(p)) ||
+			BLOCKED_MIME_TYPES.includes(contentType)
+		) {
+			return c.json({ error: 'Only raster image files (PNG, JPEG, WebP, GIF) are allowed' }, 400);
 		}
 
 		const ext = fileName?.split('.').pop() ?? contentType.split('/')[1] ?? 'png';

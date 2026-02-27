@@ -73,8 +73,15 @@ app.use(
 // Strict rate limit on auth mutation endpoints (brute-force protection)
 app.use('/api/auth/sign-in/*', authRateLimiter);
 app.use('/api/auth/sign-up/*', authRateLimiter);
-// Session checks (get-session, etc.) use the more generous dashboard limit
-app.use('/api/auth/*', dashboardRateLimiter);
+// Session checks (get-session, etc.) use the more generous dashboard limit.
+// Skip paths already covered by authRateLimiter to avoid double-counting.
+app.use('/api/auth/*', async (c, next) => {
+	const path = c.req.path;
+	if (path.startsWith('/api/auth/sign-in/') || path.startsWith('/api/auth/sign-up/')) {
+		return next();
+	}
+	return dashboardRateLimiter(c, next);
+});
 app.use(
 	'/api/upload/*',
 	cors({
@@ -136,7 +143,7 @@ app.doc('/doc', {
 		description:
 			'API-first waitlist and demo-booking service. Integrate with a single API key and POST request.',
 	},
-	servers: [{ url: 'http://localhost:3001', description: 'Local development' }],
+	servers: [{ url: process.env.API_URL ?? 'http://localhost:3001', description: 'API Server' }],
 });
 
 // Interactive API documentation

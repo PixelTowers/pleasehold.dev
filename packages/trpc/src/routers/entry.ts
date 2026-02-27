@@ -47,7 +47,8 @@ const list = protectedProcedure
 		}
 
 		if (input.search) {
-			const pattern = `%${input.search}%`;
+			const escaped = input.search.replace(/%/g, '\\%').replace(/_/g, '\\_');
+			const pattern = `%${escaped}%`;
 			conditions.push(
 				or(
 					ilike(entries.email, pattern),
@@ -186,18 +187,24 @@ const exportProcedure = protectedProcedure
 			throw new TRPCError({ code: 'NOT_FOUND', message: 'Project not found' });
 		}
 
-		const rows = await ctx.db
-			.select()
+		const [{ total }] = await ctx.db
+			.select({ total: sql<number>`cast(count(*) as integer)` })
 			.from(entries)
-			.where(eq(entries.projectId, input.projectId))
-			.orderBy(desc(entries.createdAt));
+			.where(eq(entries.projectId, input.projectId));
 
-		if (rows.length > 10_000) {
+		if (total > 10_000) {
 			throw new TRPCError({
 				code: 'PAYLOAD_TOO_LARGE',
 				message: 'Export limited to 10,000 entries. Contact support for larger exports.',
 			});
 		}
+
+		const rows = await ctx.db
+			.select()
+			.from(entries)
+			.where(eq(entries.projectId, input.projectId))
+			.orderBy(desc(entries.createdAt))
+			.limit(10_000);
 
 		return {
 			entries: rows,
