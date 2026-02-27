@@ -2,7 +2,7 @@
 // ABOUTME: Shows workspace name, nav links with Lucide icons, project list, and user section.
 
 import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router';
-import { LayoutGrid, LogOut, Plus } from 'lucide-react';
+import { LayoutGrid, LogOut, Plus, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -10,7 +10,11 @@ import { useProjects } from '@/hooks/useProjects';
 import { authClient } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 
-export function Sidebar() {
+interface SidebarProps {
+	onClose?: () => void;
+}
+
+export function Sidebar({ onClose }: SidebarProps) {
 	const { data: session } = authClient.useSession();
 	const { data: projects } = useProjects();
 	const navigate = useNavigate();
@@ -29,7 +33,11 @@ export function Sidebar() {
 		<aside className="flex h-screen w-60 flex-col border-r border-sidebar-border bg-sidebar">
 			{/* Workspace header */}
 			<div className="px-4 py-3">
-				<Link to="/" className="text-sm font-bold text-foreground no-underline">
+				<Link
+					to="/"
+					onClick={() => onClose?.()}
+					className="text-sm font-bold text-foreground no-underline"
+				>
 					pleasehold
 				</Link>
 			</div>
@@ -41,6 +49,7 @@ export function Sidebar() {
 				<div className="space-y-0.5">
 					<Link
 						to="/"
+						onClick={() => onClose?.()}
 						className={cn(
 							'flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm no-underline transition-colors',
 							isActive('/', {}) && !isActive('/projects/$projectId', { projectId: '' })
@@ -65,6 +74,7 @@ export function Sidebar() {
 									<TooltipTrigger asChild>
 										<Link
 											to="/projects/new"
+											onClick={() => onClose?.()}
 											className="flex h-5 w-5 cursor-pointer items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
 										>
 											<Plus className="h-3.5 w-3.5" />
@@ -82,6 +92,7 @@ export function Sidebar() {
 									key={project.id}
 									to="/projects/$projectId"
 									params={{ projectId: project.id }}
+									onClick={() => onClose?.()}
 									className={cn(
 										'flex items-center gap-2.5 truncate rounded-md px-2.5 py-1.5 text-sm no-underline transition-colors',
 										isActive('/projects/$projectId', { projectId: project.id })
@@ -108,7 +119,20 @@ export function Sidebar() {
 			{/* User section */}
 			{session?.user && (
 				<div className="px-2 py-2">
-					<div className="flex items-center justify-between rounded-md px-2.5 py-1.5">
+					<Link
+						to="/settings"
+						onClick={() => onClose?.()}
+						className={cn(
+							'flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm no-underline transition-colors',
+							isActive('/settings', {})
+								? 'bg-accent font-medium text-foreground'
+								: 'text-muted hover:bg-accent hover:text-foreground',
+						)}
+					>
+						<Settings className="h-4 w-4" />
+						Settings
+					</Link>
+					<div className="mt-0.5 flex items-center justify-between rounded-md px-2.5 py-1.5">
 						<div className="flex cursor-default items-center gap-2.5 min-w-0">
 							<div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
 								{(session.user.name?.[0] ?? session.user.email[0]).toUpperCase()}

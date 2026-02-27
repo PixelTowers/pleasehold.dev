@@ -12,6 +12,7 @@ import { cors } from 'hono/cors';
 import { apiKeyAuth } from './middleware/api-key-auth';
 import { apiRateLimiter } from './middleware/rate-limit';
 import { entriesRoute } from './routes/v1/entries';
+import { createUploadRoute } from './routes/v1/upload';
 import { createVerifyRoute } from './routes/v1/verify';
 
 const app = new OpenAPIHono();
@@ -62,6 +63,16 @@ app.use(
 		credentials: true,
 	}),
 );
+app.use(
+	'/api/upload/*',
+	cors({
+		origin: [webUrl],
+		credentials: true,
+	}),
+);
+
+// Mount file upload route (dashboard-only, session-authenticated)
+app.route('/api/upload', createUploadRoute(auth));
 
 app.use(
 	'/trpc/*',

@@ -113,7 +113,10 @@ function EntriesPage() {
 						Back to project
 					</Link>
 				</div>
-				<h1 className="mb-6 text-xl font-semibold text-foreground">Entries</h1>
+				<h1 className="mb-1 text-xl font-semibold text-foreground">Entries</h1>
+				<p className="mb-6 text-sm text-muted-foreground">
+					View, search, and manage all submissions for this project.
+				</p>
 				<div className="py-12 text-center">
 					<p className="text-sm text-muted-foreground">
 						No entries yet. Entries will appear here once you start collecting submissions via the
@@ -139,16 +142,19 @@ function EntriesPage() {
 			</div>
 
 			{/* Header with inline count */}
-			<div className="mb-4 flex items-center justify-between">
+			<div className="mb-1 flex items-center justify-between">
 				<div className="flex items-baseline gap-2">
 					<h1 className="text-xl font-semibold text-foreground">Entries</h1>
 					{statsData && <span className="text-sm text-muted">{statsData.total}</span>}
 				</div>
 				{project && <CsvExportButton projectId={projectId} projectName={project.name} />}
 			</div>
+			<p className="mb-4 text-sm text-muted-foreground">
+				View, search, and manage all submissions for this project.
+			</p>
 
 			{/* Filter toolbar */}
-			<div className="mb-0.5 flex items-center gap-2 border-b border-border/50 pb-2">
+			<div className="mb-0.5 flex flex-col gap-2 border-b border-border/50 pb-2 md:flex-row md:items-center">
 				<div className="relative flex-1">
 					<Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
 					<Input

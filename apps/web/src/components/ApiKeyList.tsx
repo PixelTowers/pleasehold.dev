@@ -19,6 +19,7 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { trpc } from '@/lib/trpc';
 import { cn } from '@/lib/utils';
 
@@ -29,6 +30,7 @@ interface ApiKeyListProps {
 export function ApiKeyList({ projectId }: ApiKeyListProps) {
 	const { data: keys, isPending, error } = trpc.apiKey.list.useQuery({ projectId });
 	const [revokeConfirmId, setRevokeConfirmId] = useState<string | null>(null);
+	const isMobile = useIsMobile();
 
 	const utils = trpc.useUtils();
 
@@ -82,7 +84,7 @@ export function ApiKeyList({ projectId }: ApiKeyListProps) {
 						<TableHead>Label</TableHead>
 						<TableHead>Key</TableHead>
 						<TableHead>Status</TableHead>
-						<TableHead>Created</TableHead>
+						{!isMobile && <TableHead>Created</TableHead>}
 						<TableHead className="text-right">Actions</TableHead>
 					</TableRow>
 				</TableHeader>
@@ -116,14 +118,16 @@ export function ApiKeyList({ projectId }: ApiKeyListProps) {
 									</span>
 								)}
 							</TableCell>
-							<TableCell className="text-xs text-muted">
-								{new Date(key.createdAt).toLocaleDateString()}
-							</TableCell>
+							{!isMobile && (
+								<TableCell className="text-xs text-muted">
+									{new Date(key.createdAt).toLocaleDateString()}
+								</TableCell>
+							)}
 							<TableCell className="text-right">
 								{key.enabled && (
 									<button
 										type="button"
-										className="rounded px-2 py-0.5 text-xs text-destructive hover:bg-red-50"
+										className="rounded px-2 py-1 text-xs text-destructive hover:bg-red-50"
 										onClick={() => setRevokeConfirmId(key.id)}
 									>
 										Revoke

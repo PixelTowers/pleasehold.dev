@@ -1,17 +1,23 @@
 // ABOUTME: Verification email sender for the double opt-in flow, sends a confirmation link to the submitter.
-// ABOUTME: Uses the shared Resend client to deliver a styled HTML email with a confirm button.
+// ABOUTME: Supports BYOK Resend clients and custom from addresses via EmailSenderOptions.
 
-import { resend } from './mailer';
+import type { EmailSenderOptions } from '../types';
+import { getResendClient } from './mailer';
 
-const EMAIL_FROM = process.env.EMAIL_FROM ?? 'noreply@pleasehold.dev';
+const DEFAULT_EMAIL_FROM = process.env.EMAIL_FROM ?? 'noreply@pleasehold.dev';
 const API_URL = process.env.API_URL ?? 'http://localhost:3001';
 
 export async function sendVerificationEmail(
 	email: string,
 	verificationToken: string,
 	projectName: string,
+	options?: EmailSenderOptions,
 ): Promise<void> {
 	const verificationUrl = `${API_URL}/verify/${verificationToken}`;
+	const fromAddress = options?.fromAddress ?? DEFAULT_EMAIL_FROM;
+	const fromName = options?.fromName;
+	const from = fromName ? `${fromName} <${fromAddress}>` : fromAddress;
+	const client = getResendClient(options?.resendApiKey);
 
 	const subject = `Confirm your submission to ${projectName}`;
 
@@ -37,8 +43,8 @@ export async function sendVerificationEmail(
   <p style="color: #999; font-size: 12px;">Or copy this link: ${escapeHtml(verificationUrl)}</p>
 </div>`.trim();
 
-	await resend.emails.send({
-		from: EMAIL_FROM,
+	await client.emails.send({
+		from,
 		to: [email],
 		subject,
 		text: textBody,

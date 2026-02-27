@@ -90,8 +90,8 @@ function EntryDetailPage() {
 				<h1 className="text-xl font-semibold text-foreground">{entry.email}</h1>
 			</div>
 
-			{/* Two-column layout */}
-			<div className="flex gap-8">
+			{/* Two-column layout — stacks on mobile */}
+			<div className="flex flex-col gap-6 md:flex-row md:gap-8">
 				{/* Main content — left column */}
 				<div className="min-w-0 flex-1">
 					{/* Details */}
@@ -143,8 +143,8 @@ function EntryDetailPage() {
 					</div>
 				</div>
 
-				{/* Properties sidebar — right column */}
-				<div className="w-56 shrink-0">
+				{/* Properties sidebar — right column, full-width on mobile */}
+				<div className="w-full md:w-56 md:shrink-0">
 					<h2 className="mb-2 text-[11px] uppercase tracking-wider text-muted-foreground">
 						Properties
 					</h2>

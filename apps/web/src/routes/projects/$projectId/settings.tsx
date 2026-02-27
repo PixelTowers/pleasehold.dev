@@ -1,10 +1,10 @@
-// ABOUTME: Project settings page with editable name and field configuration toggles.
+// ABOUTME: Project settings page with editable name, field configuration, and branding controls.
 // ABOUTME: Mode is displayed as read-only badge; field toggles auto-save via tRPC mutation.
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { ArrowLeft } from 'lucide-react';
-import { useEffect } from 'react';
+import { ArrowLeft, Upload, X } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { FieldConfigForm } from '@/components/FieldConfigForm';
@@ -43,23 +43,83 @@ function ProjectSettingsPage() {
 		defaultValues: { name: '' },
 	});
 
+	const [brandColor, setBrandColor] = useState('#5e6ad2');
+	const [companyName, setCompanyName] = useState('');
+	const [logoUrl, setLogoUrl] = useState<string | null>(null);
+	const [uploading, setUploading] = useState(false);
+
 	const utils = trpc.useUtils();
 	const updateProject = trpc.project.update.useMutation({
 		onSuccess: () => {
-			toast.success('Name updated');
+			toast.success('Settings updated');
 			utils.project.getById.invalidate({ id: projectId });
 			utils.project.list.invalidate();
 		},
 		onError: () => {
-			toast.error('Failed to update name');
+			toast.error('Failed to update settings');
 		},
 	});
 
 	useEffect(() => {
 		if (project) {
 			form.reset({ name: project.name });
+			setBrandColor(project.brandColor ?? '#5e6ad2');
+			setCompanyName(project.companyName ?? '');
+			setLogoUrl(project.logoUrl ?? null);
 		}
 	}, [project, form]);
+
+	const handleLogoUpload = useCallback(
+		async (file: File) => {
+			if (file.size > 512 * 1024) {
+				toast.error('Logo must be under 512KB');
+				return;
+			}
+			if (!file.type.startsWith('image/')) {
+				toast.error('Only image files are allowed');
+				return;
+			}
+
+			setUploading(true);
+			try {
+				const res = await fetch('/api/upload/presign', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					credentials: 'include',
+					body: JSON.stringify({ contentType: file.type, fileName: file.name }),
+				});
+
+				if (!res.ok) {
+					const err = await res.json();
+					throw new Error(err.error ?? 'Upload failed');
+				}
+
+				const { uploadUrl, publicUrl } = await res.json();
+
+				await fetch(uploadUrl, {
+					method: 'PUT',
+					headers: { 'Content-Type': file.type },
+					body: file,
+				});
+
+				setLogoUrl(publicUrl);
+				updateProject.mutate({ id: projectId, logoUrl: publicUrl });
+			} catch (err) {
+				toast.error(err instanceof Error ? err.message : 'Upload failed');
+			} finally {
+				setUploading(false);
+			}
+		},
+		[projectId, updateProject],
+	);
+
+	const handleBrandingSave = () => {
+		updateProject.mutate({
+			id: projectId,
+			brandColor,
+			companyName: companyName || null,
+		});
+	};
 
 	if (isPending) {
 		return (
@@ -107,7 +167,10 @@ function ProjectSettingsPage() {
 				</Link>
 			</div>
 
-			<h1 className="mb-6 text-xl font-semibold text-foreground">Project Settings</h1>
+			<h1 className="mb-1 text-xl font-semibold text-foreground">Project Settings</h1>
+			<p className="mb-6 text-sm text-muted-foreground">
+				Configure project name, collected fields, and branding.
+			</p>
 
 			{/* General section */}
 			<div className="mb-8">
@@ -171,7 +234,7 @@ function ProjectSettingsPage() {
 			</div>
 
 			{/* Field Configuration section */}
-			<div>
+			<div className="mb-8">
 				{project.fieldConfig && (
 					<FieldConfigForm
 						projectId={projectId}
@@ -180,6 +243,106 @@ function ProjectSettingsPage() {
 						collectMessage={project.fieldConfig.collectMessage}
 					/>
 				)}
+			</div>
+
+			{/* Branding section */}
+			<div className="mb-8">
+				<h2 className="mb-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+					Branding
+				</h2>
+				<p className="mb-3 text-xs text-muted-foreground">
+					Customize how your emails and public-facing pages look.
+				</p>
+				<div className="border-t border-border/50">
+					{/* Logo upload */}
+					<div className="border-b border-border/50 py-3">
+						<Label className="mb-2 block text-xs text-muted-foreground">Logo</Label>
+						<div className="flex items-center gap-4">
+							{logoUrl ? (
+								<div className="relative">
+									<img
+										src={logoUrl}
+										alt="Project logo"
+										className="h-16 w-16 rounded-md border border-border/50 object-contain"
+									/>
+									<button
+										type="button"
+										onClick={() => {
+											setLogoUrl(null);
+											updateProject.mutate({ id: projectId, logoUrl: null });
+										}}
+										className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-white shadow-sm"
+									>
+										<X className="h-3 w-3" />
+									</button>
+								</div>
+							) : (
+								<label className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-border/50 text-muted-foreground transition-colors hover:border-foreground hover:text-foreground">
+									<Upload className="h-5 w-5" />
+									<input
+										type="file"
+										accept="image/*"
+										className="hidden"
+										onChange={(e) => {
+											const file = e.target.files?.[0];
+											if (file) handleLogoUpload(file);
+										}}
+									/>
+								</label>
+							)}
+							<div className="text-xs text-muted-foreground">
+								{uploading ? 'Uploading...' : 'Max 512KB, image files only'}
+							</div>
+						</div>
+					</div>
+
+					{/* Brand color */}
+					<div className="border-b border-border/50 py-3">
+						<Label className="mb-2 block text-xs text-muted-foreground">Brand Color</Label>
+						<div className="flex items-center gap-3">
+							<input
+								type="color"
+								value={brandColor}
+								onChange={(e) => setBrandColor(e.target.value)}
+								className="h-8 w-8 cursor-pointer rounded border border-border/50"
+							/>
+							<Input
+								type="text"
+								value={brandColor}
+								onChange={(e) => setBrandColor(e.target.value)}
+								className="h-8 w-28 font-mono text-xs"
+								maxLength={7}
+							/>
+						</div>
+					</div>
+
+					{/* Company name */}
+					<div className="border-b border-border/50 py-3">
+						<Label className="mb-2 block text-xs text-muted-foreground">Company Name</Label>
+						<Input
+							type="text"
+							value={companyName}
+							onChange={(e) => setCompanyName(e.target.value)}
+							placeholder="Acme Inc"
+							className="h-8 max-w-sm"
+							maxLength={100}
+						/>
+						<p className="mt-1 text-[11px] text-muted-foreground">
+							Used in email footers and as the sender name.
+						</p>
+					</div>
+				</div>
+
+				<div className="mt-3">
+					<Button
+						size="sm"
+						className="h-8 text-xs"
+						disabled={updateProject.isPending}
+						onClick={handleBrandingSave}
+					>
+						{updateProject.isPending ? 'Saving...' : 'Save Branding'}
+					</Button>
+				</div>
 			</div>
 		</div>
 	);

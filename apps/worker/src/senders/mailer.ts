@@ -1,5 +1,5 @@
-// ABOUTME: Shared Resend client singleton for email-based senders (notifications and verification).
-// ABOUTME: Configured from RESEND_API_KEY env var; logs a warning if the key is unset.
+// ABOUTME: Resend client factory supporting both the platform singleton and per-user BYOK clients.
+// ABOUTME: Configured from RESEND_API_KEY env var; getResendClient() creates BYOK clients on demand.
 
 import { Resend } from 'resend';
 
@@ -18,3 +18,10 @@ if (!RESEND_API_KEY) {
 }
 
 export const resend = new Resend(RESEND_API_KEY);
+
+export function getResendClient(apiKey?: string | null): Resend {
+	if (apiKey) {
+		return new Resend(apiKey);
+	}
+	return resend;
+}

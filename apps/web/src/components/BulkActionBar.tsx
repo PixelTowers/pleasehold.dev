@@ -15,7 +15,7 @@ export function BulkActionBar({ selectedCount, onStatusChange, isPending }: Bulk
 	}
 
 	return (
-		<div className="flex items-center gap-3 border-b border-border/50 bg-accent/50 px-2 py-1.5 text-xs">
+		<div className="flex flex-wrap items-center gap-3 border-b border-border/50 bg-accent/50 px-2 py-1.5 text-xs">
 			<span className="font-medium text-foreground">{selectedCount} selected</span>
 			<span className="text-muted-foreground">Set status:</span>
 			{statuses.map((status) => (

@@ -7,6 +7,7 @@ import {
 	notificationChannels,
 	notificationLogs,
 	projects,
+	userSettings,
 } from '@pleasehold/db';
 import type { Job } from 'bullmq';
 import { and, eq } from 'drizzle-orm';
@@ -16,7 +17,7 @@ import { sendSlackNotification } from './senders/slack';
 import { sendTelegramNotification } from './senders/telegram';
 import { sendVerificationEmail } from './senders/verification-email';
 import { sendWebhookNotification } from './senders/webhook';
-import type { EntryPayload } from './types';
+import type { EmailSenderOptions, EntryPayload } from './types';
 
 interface NotificationJobData {
 	entryId: string;
@@ -25,6 +26,18 @@ interface NotificationJobData {
 }
 
 const db = createDb(process.env.DATABASE_URL!);
+
+async function getEmailSenderOptions(userId: string): Promise<EmailSenderOptions> {
+	const settings = await db.query.userSettings.findFirst({
+		where: eq(userSettings.userId, userId),
+	});
+	if (!settings) return {};
+	return {
+		resendApiKey: settings.resendApiKey,
+		fromAddress: settings.emailFromAddress,
+		fromName: settings.emailFromName,
+	};
+}
 
 export async function processNotification(job: Job<NotificationJobData>): Promise<void> {
 	const { data } = job;
@@ -72,6 +85,8 @@ async function processEntryCreated(data: NotificationJobData): Promise<void> {
 		return;
 	}
 
+	const emailOptions = await getEmailSenderOptions(project.userId);
+
 	const entryPayload: EntryPayload = {
 		email: entry.email,
 		name: entry.name,
@@ -98,7 +113,7 @@ async function processEntryCreated(data: NotificationJobData): Promise<void> {
 		}
 
 		try {
-			await dispatchToChannel(channel, entryPayload);
+			await dispatchToChannel(channel, entryPayload, emailOptions);
 
 			await db.insert(notificationLogs).values({
 				channelId: channel.id,
@@ -133,13 +148,14 @@ async function processEntryCreated(data: NotificationJobData): Promise<void> {
 async function dispatchToChannel(
 	channel: typeof notificationChannels.$inferSelect,
 	entry: EntryPayload,
+	emailOptions?: EmailSenderOptions,
 ): Promise<void> {
 	const config = channel.config as Record<string, unknown>;
 
 	switch (channel.type) {
 		case 'email': {
 			const recipients = config.recipients as string[];
-			await sendEmailNotification(recipients, entry);
+			await sendEmailNotification(recipients, entry, emailOptions);
 			break;
 		}
 		case 'slack': {
@@ -205,6 +221,7 @@ async function processVerificationEmail(data: NotificationJobData): Promise<void
 		return;
 	}
 
-	await sendVerificationEmail(entry.email, entry.verificationToken, project.name);
+	const emailOptions = await getEmailSenderOptions(project.userId);
+	await sendVerificationEmail(entry.email, entry.verificationToken, project.name, emailOptions);
 	console.log(`Verification email sent to ${entry.email} for project ${project.name}`);
 }

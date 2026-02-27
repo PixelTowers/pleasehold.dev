@@ -2,7 +2,7 @@
 // ABOUTME: Allows adding, editing, removing, and toggling notification channels and double opt-in.
 
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { Check, Copy } from 'lucide-react';
+import { ArrowLeft, Check, Copy } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { NotificationChannelForm } from '@/components/NotificationChannelForm';
@@ -243,20 +243,22 @@ function NotificationSettingsPage() {
 
 	return (
 		<div className="mx-auto max-w-3xl">
-			{/* Breadcrumb */}
-			<div className="mb-6 flex items-center gap-1.5 text-sm text-muted">
-				<Link to="/" className="hover:text-foreground">
-					Dashboard
+			{/* Back link */}
+			<div className="mb-6">
+				<Link
+					to="/projects/$projectId"
+					params={{ projectId }}
+					className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground"
+				>
+					<ArrowLeft className="h-3.5 w-3.5" />
+					Back to project
 				</Link>
-				<span>/</span>
-				<Link to="/projects/$projectId" params={{ projectId }} className="hover:text-foreground">
-					{project.name}
-				</Link>
-				<span>/</span>
-				<span className="font-medium text-foreground">Notifications</span>
 			</div>
 
-			<h1 className="mb-6 text-xl font-semibold text-foreground">Notification Settings</h1>
+			<h1 className="mb-1 text-xl font-semibold text-foreground">Notification Settings</h1>
+			<p className="mb-6 text-sm text-muted-foreground">
+				Configure how you get notified when someone submits.
+			</p>
 
 			{/* Email Verification section */}
 			<div className="mb-8">
@@ -365,7 +367,7 @@ function NotificationSettingsPage() {
 						channels.map((channel) => (
 							<div
 								key={channel.id}
-								className="flex items-center justify-between border-b border-border/50 py-2.5"
+								className="flex flex-col gap-2 border-b border-border/50 py-2.5 md:flex-row md:items-center md:justify-between"
 							>
 								<div className="min-w-0 flex-1">
 									<div className="flex items-center gap-2">
@@ -387,7 +389,7 @@ function NotificationSettingsPage() {
 										{channelConfigSummary(channel.type, channel.config)}
 									</div>
 								</div>
-								<div className="flex items-center gap-2">
+								<div className="flex flex-wrap items-center gap-2">
 									{channel.type === 'webhook' && (
 										<button
 											type="button"

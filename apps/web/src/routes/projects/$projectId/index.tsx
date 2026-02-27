@@ -186,8 +186,8 @@ function ProjectOverviewPage() {
 	return (
 		<div className="mx-auto max-w-4xl">
 			{/* Header — compact, no excessive top margin */}
-			<div className="mb-4 flex items-center justify-between">
-				<div className="flex items-center gap-3">
+			<div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+				<div className="flex flex-wrap items-center gap-3">
 					<h1 className="text-xl font-semibold text-foreground">{project.name}</h1>
 					<Badge
 						variant="secondary"
@@ -206,9 +206,12 @@ function ProjectOverviewPage() {
 					</Link>
 				</Button>
 			</div>
+			<p className="mb-4 text-sm text-muted-foreground">
+				At a glance stats and quick links for your project.
+			</p>
 
 			{/* Graph cards row */}
-			<div className="mb-6 grid grid-cols-3 gap-3">
+			<div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-3">
 				{/* Total entries card with donut */}
 				<Card className="p-4">
 					<div className="mb-3 text-[11px] uppercase tracking-wider text-muted-foreground">
@@ -292,6 +295,14 @@ function ProjectOverviewPage() {
 							Entries
 							{total > 0 && <span className="ml-2 text-xs text-muted">{total}</span>}
 						</span>
+						<ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+					</Link>
+					<Link
+						to="/projects/$projectId/emails"
+						params={{ projectId }}
+						className="flex items-center justify-between border-b border-border/50 py-2.5 text-sm text-foreground no-underline transition-colors hover:bg-accent"
+					>
+						<span>Email Templates</span>
 						<ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
 					</Link>
 					<Link

@@ -2,7 +2,7 @@
 // ABOUTME: Combines create dialog, key list, and breadcrumb navigation for key lifecycle management.
 
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { Plus } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { ApiKeyCreateDialog } from '@/components/ApiKeyCreateDialog';
 import { ApiKeyDocs } from '@/components/ApiKeyDocs';
@@ -51,31 +51,29 @@ function ApiKeysPage() {
 
 	return (
 		<div className="mx-auto max-w-4xl">
-			{/* Breadcrumb */}
-			<div className="mb-6 flex items-center gap-1.5 text-sm text-muted">
-				<Link to="/" className="text-muted hover:text-foreground">
-					Dashboard
-				</Link>
-				<span>/</span>
+			{/* Back link */}
+			<div className="mb-6">
 				<Link
 					to="/projects/$projectId"
 					params={{ projectId }}
-					className="text-muted hover:text-foreground"
+					className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground"
 				>
-					{project.name}
+					<ArrowLeft className="h-3.5 w-3.5" />
+					Back to project
 				</Link>
-				<span>/</span>
-				<span className="font-medium text-foreground">API Keys</span>
 			</div>
 
 			{/* Header with create button */}
-			<div className="mb-4 flex items-center justify-between">
+			<div className="mb-1 flex items-center justify-between">
 				<h1 className="text-xl font-semibold text-foreground">API Keys</h1>
 				<Button size="sm" className="h-7 text-xs" onClick={() => setDialogOpen(true)}>
 					<Plus className="mr-1 h-3.5 w-3.5" />
 					Create Key
 				</Button>
 			</div>
+			<p className="mb-4 text-sm text-muted-foreground">
+				Create and manage API keys used to accept submissions.
+			</p>
 
 			{/* Key list — flat, no Card wrapper */}
 			<ApiKeyList projectId={projectId} />

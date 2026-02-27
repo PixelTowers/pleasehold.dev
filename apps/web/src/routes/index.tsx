@@ -74,7 +74,7 @@ function DashboardIndex() {
 				</Button>
 			</div>
 
-			<div className="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-3">
+			<div className="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-3">
 				{projects.map((project) => (
 					<ProjectCard
 						key={project.id}

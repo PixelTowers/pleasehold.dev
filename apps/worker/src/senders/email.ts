@@ -1,15 +1,21 @@
 // ABOUTME: Email notification sender that delivers formatted entry alerts to configured recipients via Resend.
-// ABOUTME: Sends both HTML and plain text versions with entry details (email, name, position, project).
+// ABOUTME: Supports BYOK Resend clients and custom from addresses via EmailSenderOptions.
 
-import type { EntryPayload } from '../types';
-import { resend } from './mailer';
+import type { EmailSenderOptions, EntryPayload } from '../types';
+import { getResendClient } from './mailer';
 
-const EMAIL_FROM = process.env.EMAIL_FROM ?? 'notifications@pleasehold.dev';
+const DEFAULT_EMAIL_FROM = process.env.EMAIL_FROM ?? 'notifications@pleasehold.dev';
 
 export async function sendEmailNotification(
 	recipients: string[],
 	entry: EntryPayload,
+	options?: EmailSenderOptions,
 ): Promise<void> {
+	const fromAddress = options?.fromAddress ?? DEFAULT_EMAIL_FROM;
+	const fromName = options?.fromName;
+	const from = fromName ? `${fromName} <${fromAddress}>` : fromAddress;
+	const client = getResendClient(options?.resendApiKey);
+
 	const subject = `New entry on ${entry.projectName}: ${entry.email}`;
 
 	const textBody = [
@@ -34,8 +40,8 @@ export async function sendEmailNotification(
   </table>
 </div>`.trim();
 
-	await resend.emails.send({
-		from: EMAIL_FROM,
+	await client.emails.send({
+		from,
 		to: recipients,
 		subject,
 		text: textBody,

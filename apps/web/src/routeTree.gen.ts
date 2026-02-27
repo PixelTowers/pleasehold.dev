@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectsNewRouteImport } from './routes/projects/new'
@@ -19,11 +20,17 @@ import { Route as ProjectsProjectIdSettingsRouteImport } from './routes/projects
 import { Route as ProjectsProjectIdNotificationsRouteImport } from './routes/projects/$projectId/notifications'
 import { Route as ProjectsProjectIdKeysRouteImport } from './routes/projects/$projectId/keys'
 import { Route as ProjectsProjectIdEntriesRouteImport } from './routes/projects/$projectId/entries'
+import { Route as ProjectsProjectIdEmailsRouteImport } from './routes/projects/$projectId/emails'
 import { Route as ProjectsProjectIdEntriesEntryIdRouteImport } from './routes/projects/$projectId/entries/$entryId'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -74,6 +81,11 @@ const ProjectsProjectIdEntriesRoute =
     path: '/entries',
     getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
+const ProjectsProjectIdEmailsRoute = ProjectsProjectIdEmailsRouteImport.update({
+  id: '/emails',
+  path: '/emails',
+  getParentRoute: () => ProjectsProjectIdRoute,
+} as any)
 const ProjectsProjectIdEntriesEntryIdRoute =
   ProjectsProjectIdEntriesEntryIdRouteImport.update({
     id: '/$entryId',
@@ -84,9 +96,11 @@ const ProjectsProjectIdEntriesEntryIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
   '/projects/new': typeof ProjectsNewRoute
+  '/projects/$projectId/emails': typeof ProjectsProjectIdEmailsRoute
   '/projects/$projectId/entries': typeof ProjectsProjectIdEntriesRouteWithChildren
   '/projects/$projectId/keys': typeof ProjectsProjectIdKeysRoute
   '/projects/$projectId/notifications': typeof ProjectsProjectIdNotificationsRoute
@@ -97,8 +111,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/projects/new': typeof ProjectsNewRoute
+  '/projects/$projectId/emails': typeof ProjectsProjectIdEmailsRoute
   '/projects/$projectId/entries': typeof ProjectsProjectIdEntriesRouteWithChildren
   '/projects/$projectId/keys': typeof ProjectsProjectIdKeysRoute
   '/projects/$projectId/notifications': typeof ProjectsProjectIdNotificationsRoute
@@ -110,9 +126,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
   '/projects/new': typeof ProjectsNewRoute
+  '/projects/$projectId/emails': typeof ProjectsProjectIdEmailsRoute
   '/projects/$projectId/entries': typeof ProjectsProjectIdEntriesRouteWithChildren
   '/projects/$projectId/keys': typeof ProjectsProjectIdKeysRoute
   '/projects/$projectId/notifications': typeof ProjectsProjectIdNotificationsRoute
@@ -125,9 +143,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/settings'
     | '/signup'
     | '/projects/$projectId'
     | '/projects/new'
+    | '/projects/$projectId/emails'
     | '/projects/$projectId/entries'
     | '/projects/$projectId/keys'
     | '/projects/$projectId/notifications'
@@ -138,8 +158,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/settings'
     | '/signup'
     | '/projects/new'
+    | '/projects/$projectId/emails'
     | '/projects/$projectId/entries'
     | '/projects/$projectId/keys'
     | '/projects/$projectId/notifications'
@@ -150,9 +172,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/login'
+    | '/settings'
     | '/signup'
     | '/projects/$projectId'
     | '/projects/new'
+    | '/projects/$projectId/emails'
     | '/projects/$projectId/entries'
     | '/projects/$projectId/keys'
     | '/projects/$projectId/notifications'
@@ -164,6 +188,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
+  SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRouteWithChildren
   ProjectsNewRoute: typeof ProjectsNewRoute
@@ -176,6 +201,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -241,6 +273,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdEntriesRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
+    '/projects/$projectId/emails': {
+      id: '/projects/$projectId/emails'
+      path: '/emails'
+      fullPath: '/projects/$projectId/emails'
+      preLoaderRoute: typeof ProjectsProjectIdEmailsRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
     '/projects/$projectId/entries/$entryId': {
       id: '/projects/$projectId/entries/$entryId'
       path: '/$entryId'
@@ -266,6 +305,7 @@ const ProjectsProjectIdEntriesRouteWithChildren =
   )
 
 interface ProjectsProjectIdRouteChildren {
+  ProjectsProjectIdEmailsRoute: typeof ProjectsProjectIdEmailsRoute
   ProjectsProjectIdEntriesRoute: typeof ProjectsProjectIdEntriesRouteWithChildren
   ProjectsProjectIdKeysRoute: typeof ProjectsProjectIdKeysRoute
   ProjectsProjectIdNotificationsRoute: typeof ProjectsProjectIdNotificationsRoute
@@ -274,6 +314,7 @@ interface ProjectsProjectIdRouteChildren {
 }
 
 const ProjectsProjectIdRouteChildren: ProjectsProjectIdRouteChildren = {
+  ProjectsProjectIdEmailsRoute: ProjectsProjectIdEmailsRoute,
   ProjectsProjectIdEntriesRoute: ProjectsProjectIdEntriesRouteWithChildren,
   ProjectsProjectIdKeysRoute: ProjectsProjectIdKeysRoute,
   ProjectsProjectIdNotificationsRoute: ProjectsProjectIdNotificationsRoute,
@@ -287,6 +328,7 @@ const ProjectsProjectIdRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
+  SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
   ProjectsProjectIdRoute: ProjectsProjectIdRouteWithChildren,
   ProjectsNewRoute: ProjectsNewRoute,

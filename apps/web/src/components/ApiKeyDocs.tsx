@@ -377,7 +377,7 @@ export function ApiKeyDocs({ apiKeyPrefix, apiBaseUrl }: ApiKeyDocsProps) {
 	return (
 		<div>
 			{/* Tab row */}
-			<div className="flex items-center gap-0 border-b border-border">
+			<div className="flex items-center gap-0 overflow-x-auto border-b border-border">
 				{tabs.map((tab) => (
 					<button
 						key={tab}

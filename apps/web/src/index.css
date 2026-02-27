@@ -1,4 +1,4 @@
-/* ABOUTME: Global stylesheet with Tailwind CSS v4 directives and Linear-inspired theme. */
+/* ABOUTME: Global stylesheet with Tailwind CSS v4 directives and pleasehold theme. */
 /* ABOUTME: Defines custom color palette, Inter font family, and base reset styles. */
 
 @import "tailwindcss";
@@ -12,7 +12,7 @@
   --color-muted-foreground: #9ca3af;
   --color-border: #e5e7eb;
   --color-input: #e0e0e0;
-  --color-primary: #5e6ad2;
+  --color-primary: #0d9488;
   --color-primary-foreground: #ffffff;
   --color-destructive: #dc2626;
   --color-accent: #f3f4f6;

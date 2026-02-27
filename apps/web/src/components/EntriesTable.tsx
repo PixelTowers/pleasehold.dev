@@ -7,6 +7,7 @@ import {
 	getCoreRowModel,
 	type RowSelectionState,
 	useReactTable,
+	type VisibilityState,
 } from '@tanstack/react-table';
 import {
 	Table,
@@ -16,6 +17,7 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { EntryStatusBadge } from './EntryStatusBadge';
 
 interface Entry {
@@ -46,7 +48,7 @@ const columns: ColumnDef<Entry, unknown>[] = [
 				type="checkbox"
 				checked={table.getIsAllPageRowsSelected()}
 				onChange={table.getToggleAllPageRowsSelectedHandler()}
-				className="h-3.5 w-3.5 rounded border-gray-300"
+				className="h-4 w-4 rounded border-gray-300"
 			/>
 		),
 		cell: ({ row }) => (
@@ -54,7 +56,7 @@ const columns: ColumnDef<Entry, unknown>[] = [
 				type="checkbox"
 				checked={row.getIsSelected()}
 				onChange={row.getToggleSelectedHandler()}
-				className="h-3.5 w-3.5 rounded border-gray-300"
+				className="h-4 w-4 rounded border-gray-300"
 			/>
 		),
 		size: 32,
@@ -106,6 +108,11 @@ export function EntriesTable({
 	onEntryClick,
 }: EntriesTableProps) {
 	const totalPages = Math.ceil(total / pageSize);
+	const isMobile = useIsMobile();
+
+	const columnVisibility: VisibilityState = isMobile
+		? { name: false, position: false, createdAt: false }
+		: {};
 
 	const table = useReactTable({
 		data,
@@ -114,6 +121,7 @@ export function EntriesTable({
 		state: {
 			rowSelection,
 			pagination: { pageIndex: page - 1, pageSize },
+			columnVisibility,
 		},
 		onRowSelectionChange,
 		manualPagination: true,
@@ -145,7 +153,7 @@ export function EntriesTable({
 					{table.getRowModel().rows.length === 0 ? (
 						<TableRow>
 							<TableCell
-								colSpan={columns.length}
+								colSpan={table.getVisibleLeafColumns().length}
 								className="py-8 text-center text-muted-foreground"
 							>
 								No entries found
@@ -186,7 +194,7 @@ export function EntriesTable({
 				<div className="flex items-center gap-1">
 					<button
 						type="button"
-						className="rounded px-2 py-1 text-xs text-muted hover:bg-accent hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent"
+						className="rounded px-3 py-1.5 text-xs text-muted hover:bg-accent hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent"
 						disabled={page <= 1}
 						onClick={() => onPageChange(page - 1)}
 					>
@@ -197,7 +205,7 @@ export function EntriesTable({
 					</span>
 					<button
 						type="button"
-						className="rounded px-2 py-1 text-xs text-muted hover:bg-accent hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent"
+						className="rounded px-3 py-1.5 text-xs text-muted hover:bg-accent hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent"
 						disabled={page >= totalPages}
 						onClick={() => onPageChange(page + 1)}
 					>

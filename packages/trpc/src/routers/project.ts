@@ -72,7 +72,13 @@ export const projectRouter = router({
 			z.object({
 				id: z.string().uuid(),
 				// Mode is deliberately excluded -- immutable after creation (Pitfall 2).
-				name: z.string().min(1).max(100),
+				name: z.string().min(1).max(100).optional(),
+				logoUrl: z.string().url().optional().nullable(),
+				brandColor: z
+					.string()
+					.regex(/^#[0-9a-fA-F]{6}$/, 'Must be a valid hex color')
+					.optional(),
+				companyName: z.string().max(100).optional().nullable(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -85,9 +91,15 @@ export const projectRouter = router({
 				throw new TRPCError({ code: 'NOT_FOUND', message: 'Project not found' });
 			}
 
+			const updates: Record<string, unknown> = { updatedAt: new Date() };
+			if (input.name !== undefined) updates.name = input.name;
+			if (input.logoUrl !== undefined) updates.logoUrl = input.logoUrl;
+			if (input.brandColor !== undefined) updates.brandColor = input.brandColor;
+			if (input.companyName !== undefined) updates.companyName = input.companyName;
+
 			const [updated] = await ctx.db
 				.update(projects)
-				.set({ name: input.name, updatedAt: new Date() })
+				.set(updates)
 				.where(eq(projects.id, input.id))
 				.returning();
 
