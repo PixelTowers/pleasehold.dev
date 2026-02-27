@@ -85,7 +85,7 @@ function ApiKeysPage() {
 				<h2 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-muted">
 					Integration Guide
 				</h2>
-				<ApiKeyDocs apiKeyPrefix={keyPrefix} />
+				<ApiKeyDocs apiKeyPrefix={keyPrefix} apiBaseUrl={window.location.origin} />
 			</div>
 
 			{/* Create dialog */}
