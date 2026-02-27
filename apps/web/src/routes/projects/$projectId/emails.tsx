@@ -1,5 +1,5 @@
 // ABOUTME: Email template management page for customizing verification and confirmation emails.
-// ABOUTME: Uses TipTap editor with variable insertion, live preview, and per-template save/reset.
+// ABOUTME: Uses tabbed layout with TipTap editor, variable insertion, live preview, and per-template save/reset.
 
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ArrowLeft, RotateCcw } from 'lucide-react';
@@ -9,6 +9,7 @@ import { EmailTemplateEditor } from '@/components/EmailTemplateEditor';
 import { Button } from '@/components/ui/button';
 import { useProject } from '@/hooks/useProjects';
 import { trpc } from '@/lib/trpc';
+import { cn } from '@/lib/utils';
 
 export const Route = createFileRoute('/projects/$projectId/emails')({
 	component: EmailTemplatesPage,
@@ -31,8 +32,20 @@ const DEFAULT_TEMPLATES = {
 
 type TemplateType = 'verification' | 'confirmation';
 
-function TemplateCard({ projectId, type }: { projectId: string; type: TemplateType }) {
-	const [expanded, setExpanded] = useState(false);
+const TAB_CONFIG: { type: TemplateType; label: string; description: string }[] = [
+	{
+		type: 'verification',
+		label: 'Verification Email',
+		description: 'Sent when double opt-in is enabled to confirm the submission.',
+	},
+	{
+		type: 'confirmation',
+		label: 'Confirmation Email',
+		description: 'Sent after a submission is confirmed to welcome the user.',
+	},
+];
+
+function TemplatePanel({ projectId, type }: { projectId: string; type: TemplateType }) {
 	const defaults = DEFAULT_TEMPLATES[type];
 
 	const { data: template } = trpc.emailTemplate.get.useQuery({ projectId, type });
@@ -69,68 +82,49 @@ function TemplateCard({ projectId, type }: { projectId: string; type: TemplateTy
 		onError: () => toast.error('Failed to reset template'),
 	});
 
-	const label = type === 'verification' ? 'Verification Email' : 'Confirmation Email';
-	const desc =
-		type === 'verification'
-			? 'Sent when double opt-in is enabled to confirm the submission.'
-			: 'Sent after a submission is confirmed to welcome the user.';
+	const desc = TAB_CONFIG.find((t) => t.type === type)?.description ?? '';
 
 	return (
-		<div className="border-b border-border/50">
-			<button
-				type="button"
-				onClick={() => setExpanded(!expanded)}
-				className="flex w-full items-center justify-between py-3 text-left"
-			>
-				<div>
-					<div className="text-sm font-medium text-foreground">{label}</div>
-					<div className="text-xs text-muted-foreground">{desc}</div>
-				</div>
-				<span className="text-xs text-muted-foreground">{expanded ? '▲' : '▼'}</span>
-			</button>
-
-			{expanded && (
-				<div className="pb-4">
-					<EmailTemplateEditor
-						subject={subject}
-						onSubjectChange={setSubject}
-						bodyHtml={bodyHtml}
-						onBodyHtmlChange={setBodyHtml}
-						buttonText={buttonText}
-						onButtonTextChange={setButtonText}
-					/>
-					<div className="mt-4 flex gap-2">
-						<Button
-							size="sm"
-							className="h-7 text-xs"
-							disabled={upsert.isPending}
-							onClick={() =>
-								upsert.mutate({
-									projectId,
-									type,
-									subject,
-									bodyHtml,
-									buttonText: buttonText || null,
-								})
-							}
-						>
-							{upsert.isPending ? 'Saving...' : 'Save Template'}
-						</Button>
-						{template && (
-							<Button
-								variant="outline"
-								size="sm"
-								className="h-7 text-xs"
-								disabled={deleteMutation.isPending}
-								onClick={() => deleteMutation.mutate({ projectId, type })}
-							>
-								<RotateCcw className="mr-1 h-3 w-3" />
-								Reset to Default
-							</Button>
-						)}
-					</div>
-				</div>
-			)}
+		<div>
+			<p className="mb-4 text-xs text-muted-foreground">{desc}</p>
+			<EmailTemplateEditor
+				subject={subject}
+				onSubjectChange={setSubject}
+				bodyHtml={bodyHtml}
+				onBodyHtmlChange={setBodyHtml}
+				buttonText={buttonText}
+				onButtonTextChange={setButtonText}
+			/>
+			<div className="mt-4 flex gap-2">
+				<Button
+					size="sm"
+					className="h-7 text-xs"
+					disabled={upsert.isPending}
+					onClick={() =>
+						upsert.mutate({
+							projectId,
+							type,
+							subject,
+							bodyHtml,
+							buttonText: buttonText || null,
+						})
+					}
+				>
+					{upsert.isPending ? 'Saving...' : 'Save Template'}
+				</Button>
+				{template && (
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-7 text-xs"
+						disabled={deleteMutation.isPending}
+						onClick={() => deleteMutation.mutate({ projectId, type })}
+					>
+						<RotateCcw className="mr-1 h-3 w-3" />
+						Reset to Default
+					</Button>
+				)}
+			</div>
 		</div>
 	);
 }
@@ -138,6 +132,7 @@ function TemplateCard({ projectId, type }: { projectId: string; type: TemplateTy
 function EmailTemplatesPage() {
 	const { projectId } = Route.useParams();
 	const { data: project, isPending, error } = useProject(projectId);
+	const [activeType, setActiveType] = useState<TemplateType>('verification');
 
 	if (isPending) {
 		return (
@@ -185,9 +180,28 @@ function EmailTemplatesPage() {
 				Customize what your users see when they join your waitlist.
 			</p>
 
-			<div className="border-t border-border/50">
-				<TemplateCard projectId={projectId} type="verification" />
-				<TemplateCard projectId={projectId} type="confirmation" />
+			{/* Tab switcher */}
+			<div className="flex items-center gap-0 border-b border-border">
+				{TAB_CONFIG.map((tab) => (
+					<button
+						key={tab.type}
+						type="button"
+						onClick={() => setActiveType(tab.type)}
+						className={cn(
+							'px-3 py-2 text-xs font-medium transition-colors',
+							activeType === tab.type
+								? 'border-b-2 border-primary text-foreground'
+								: 'text-muted hover:text-foreground',
+						)}
+					>
+						{tab.label}
+					</button>
+				))}
+			</div>
+
+			{/* Template editor panel */}
+			<div className="mt-6">
+				<TemplatePanel key={activeType} projectId={projectId} type={activeType} />
 			</div>
 		</div>
 	);
