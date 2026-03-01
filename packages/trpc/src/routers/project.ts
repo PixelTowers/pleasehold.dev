@@ -17,7 +17,7 @@ const DEFAULT_VERIFICATION_TEMPLATE = {
 const DEFAULT_CONFIRMATION_TEMPLATE = {
 	subject: "You're on the {{project_name}} waitlist!",
 	bodyHtml:
-		"<h2>You're on the list!</h2><p>Hey {{name}}, thanks for joining <strong>{{project_name}}</strong>!</p><p>You're <strong>#{{position}}</strong> on the waitlist. We'll keep you updated as things progress.</p><p>Welcome aboard — we're excited to have you.</p>",
+		"<h2>You're on the list!</h2><p>Hey {{name}}, thanks for joining <strong>{{project_name}}</strong>!</p><p>We'll keep you updated as things progress.</p><p>Welcome aboard — we're excited to have you.</p>",
 	buttonText: null,
 };
 

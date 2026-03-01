@@ -25,7 +25,7 @@ const DEFAULT_TEMPLATES = {
 	confirmation: {
 		subject: "You're on the {{project_name}} waitlist!",
 		bodyHtml:
-			"<h2>You're on the list!</h2><p>Hey {{name}}, thanks for joining <strong>{{project_name}}</strong>!</p><p>You're <strong>#{{position}}</strong> on the waitlist. We'll keep you updated as things progress.</p><p>Welcome aboard — we're excited to have you.</p>",
+			"<h2>You're on the list!</h2><p>Hey {{name}}, thanks for joining <strong>{{project_name}}</strong>!</p><p>We'll keep you updated as things progress.</p><p>Welcome aboard — we're excited to have you.</p>",
 		buttonText: '',
 	},
 } satisfies Record<TemplateType, { subject: string; bodyHtml: string; buttonText: string }>;
@@ -54,10 +54,12 @@ function TemplatePanel({
 	projectId,
 	type,
 	brandColor,
+	logoUrl,
 }: {
 	projectId: string;
 	type: TemplateType;
 	brandColor?: string;
+	logoUrl?: string;
 }) {
 	const defaults = DEFAULT_TEMPLATES[type];
 	const { data: template, isLoading } = trpc.emailTemplate.get.useQuery({ projectId, type });
@@ -78,6 +80,7 @@ function TemplatePanel({
 			initialButtonText={template?.buttonText ?? defaults.buttonText}
 			hasCustomTemplate={!!template}
 			brandColor={brandColor}
+			logoUrl={logoUrl}
 		/>
 	);
 }
@@ -90,6 +93,7 @@ interface TemplatePanelEditorProps {
 	initialButtonText: string;
 	hasCustomTemplate: boolean;
 	brandColor?: string;
+	logoUrl?: string;
 }
 
 /**
@@ -104,6 +108,7 @@ function TemplatePanelEditor({
 	initialButtonText,
 	hasCustomTemplate,
 	brandColor,
+	logoUrl,
 }: TemplatePanelEditorProps) {
 	const defaults = DEFAULT_TEMPLATES[type];
 	const utils = trpc.useUtils();
@@ -151,6 +156,7 @@ function TemplatePanelEditor({
 				buttonText={buttonText}
 				onButtonTextChange={setButtonText}
 				brandColor={brandColor}
+				logoUrl={logoUrl}
 			/>
 			<div className="mt-4 flex gap-2">
 				<Button
@@ -263,6 +269,7 @@ function EmailTemplatesPage() {
 					projectId={projectId}
 					type={activeType}
 					brandColor={project.brandColor ?? undefined}
+					logoUrl={project.logoUrl ?? undefined}
 				/>
 			</div>
 		</div>

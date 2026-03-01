@@ -36,11 +36,11 @@ describe('sendConfirmationEmail', () => {
 			expect(call.subject).toBe("You're on the Acme Waitlist waitlist!");
 		});
 
-		it('includes position in the HTML body', async () => {
+		it('does not include position in the default HTML body', async () => {
 			await sendConfirmationEmail(basePayload);
 
 			const call = mockSend.mock.calls[0][0];
-			expect(call.html).toContain('#42');
+			expect(call.html).not.toContain('#42');
 		});
 
 		it('includes user name in the HTML body', async () => {
@@ -50,11 +50,11 @@ describe('sendConfirmationEmail', () => {
 			expect(call.html).toContain('Jane Doe');
 		});
 
-		it('includes position in the text body', async () => {
+		it('does not include position in the default text body', async () => {
 			await sendConfirmationEmail(basePayload);
 
 			const call = mockSend.mock.calls[0][0];
-			expect(call.text).toContain('#42');
+			expect(call.text).not.toContain('#42');
 		});
 
 		it('uses default from address when no options provided', async () => {

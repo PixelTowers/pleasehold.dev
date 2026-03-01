@@ -64,7 +64,7 @@ export async function sendConfirmationEmail(
 		const displayName = payload.name ? escapeHtml(payload.name) : 'there';
 		htmlBody = `<h2>You're on the list!</h2>
   <p>Hey ${displayName}, thanks for joining <strong>${escapeHtml(payload.projectName)}</strong>!</p>
-  <p>You're <strong>#${payload.position}</strong> on the waitlist. We'll keep you updated as things progress.</p>
+  <p>We'll keep you updated as things progress.</p>
   <p>Welcome aboard — we're excited to have you.</p>`;
 	}
 
@@ -72,8 +72,6 @@ export async function sendConfirmationEmail(
 
 	const textBody = [
 		`You're on the ${payload.projectName} waitlist!`,
-		'',
-		`Your position is #${payload.position}.`,
 		'',
 		"We'll keep you updated as things progress. Welcome aboard!",
 	].join('\n');

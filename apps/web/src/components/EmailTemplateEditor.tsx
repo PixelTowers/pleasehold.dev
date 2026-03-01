@@ -45,6 +45,7 @@ interface EmailTemplateEditorProps {
 	buttonText: string;
 	onButtonTextChange: (value: string) => void;
 	brandColor?: string;
+	logoUrl?: string;
 }
 
 export function EmailTemplateEditor({
@@ -55,6 +56,7 @@ export function EmailTemplateEditor({
 	buttonText,
 	onButtonTextChange,
 	brandColor,
+	logoUrl,
 }: EmailTemplateEditorProps) {
 	const buttonColor = brandColor && /^#[0-9a-fA-F]{6}$/.test(brandColor) ? brandColor : '#5e6ad2';
 	const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
@@ -214,6 +216,17 @@ export function EmailTemplateEditor({
 						<p className="mb-3 text-xs text-muted-foreground">
 							Subject: <strong>{replaceVariables(subject)}</strong>
 						</p>
+						{/* Logo above card, matching email-layout.ts */}
+						{logoUrl && (
+							<div className="mb-4 text-center">
+								<img
+									src={logoUrl}
+									alt=""
+									className="mx-auto block"
+									style={{ maxHeight: 48, maxWidth: 180 }}
+								/>
+							</div>
+						)}
 						{/* Email layout card matching the actual email-layout.ts output */}
 						<div className="overflow-hidden rounded-xl border border-border/30 bg-white shadow-sm">
 							<div className="h-1" style={{ backgroundColor: buttonColor }} />

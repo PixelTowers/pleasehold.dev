@@ -1,0 +1,1 @@
+ALTER TABLE "apikeys" ADD COLUMN "last_request" timestamp with time zone;

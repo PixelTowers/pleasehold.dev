@@ -27,9 +27,6 @@ coverage/
 *.swp
 *.swo
 
-# Drizzle -- migrations are generated from schema source via `pnpm db:generate`.
-# Docker compose generates them at deploy time; local dev generates on demand.
-drizzle/
 
 # Claude private journal
 .private-journal/
