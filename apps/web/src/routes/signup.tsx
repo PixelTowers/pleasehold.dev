@@ -37,7 +37,8 @@ function SignupPage() {
 		try {
 			const result = await authClient.signUp.email(values);
 			if (result.error) {
-				toast.error(result.error.message ?? 'Signup failed. Please try again.');
+				// Generic message to prevent user enumeration — never expose raw auth errors
+				toast.error('Unable to create account. Please try again.');
 			} else {
 				window.location.href = '/';
 			}

@@ -197,6 +197,7 @@ function NotificationSettingsPage() {
 	const regenerateSecret = trpc.notification.regenerateSecret.useMutation({
 		onSuccess: (data) => {
 			setRevealedSecret(data.secret);
+			utils.notification.list.invalidate({ projectId });
 		},
 		onError: () => {
 			toast.error('Failed to regenerate secret');

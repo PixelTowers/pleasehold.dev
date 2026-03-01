@@ -55,11 +55,13 @@ function TemplatePanel({
 	type,
 	brandColor,
 	logoUrl,
+	projectName,
 }: {
 	projectId: string;
 	type: TemplateType;
 	brandColor?: string;
 	logoUrl?: string;
+	projectName?: string;
 }) {
 	const defaults = DEFAULT_TEMPLATES[type];
 	const { data: template, isLoading } = trpc.emailTemplate.get.useQuery({ projectId, type });
@@ -81,6 +83,7 @@ function TemplatePanel({
 			hasCustomTemplate={!!template}
 			brandColor={brandColor}
 			logoUrl={logoUrl}
+			projectName={projectName}
 		/>
 	);
 }
@@ -94,6 +97,7 @@ interface TemplatePanelEditorProps {
 	hasCustomTemplate: boolean;
 	brandColor?: string;
 	logoUrl?: string;
+	projectName?: string;
 }
 
 /**
@@ -109,6 +113,7 @@ function TemplatePanelEditor({
 	hasCustomTemplate,
 	brandColor,
 	logoUrl,
+	projectName,
 }: TemplatePanelEditorProps) {
 	const defaults = DEFAULT_TEMPLATES[type];
 	const utils = trpc.useUtils();
@@ -157,6 +162,7 @@ function TemplatePanelEditor({
 				onButtonTextChange={setButtonText}
 				brandColor={brandColor}
 				logoUrl={logoUrl}
+				projectName={projectName}
 			/>
 			<div className="mt-4 flex gap-2">
 				<Button
@@ -270,6 +276,7 @@ function EmailTemplatesPage() {
 					type={activeType}
 					brandColor={project.brandColor ?? undefined}
 					logoUrl={project.logoUrl ?? undefined}
+					projectName={project.name}
 				/>
 			</div>
 		</div>

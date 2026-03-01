@@ -37,7 +37,8 @@ function LoginPage() {
 		try {
 			const result = await authClient.signIn.email(values);
 			if (result.error) {
-				toast.error(result.error.message ?? 'Login failed. Please check your credentials.');
+				// Generic message to prevent user enumeration — never expose raw auth errors
+				toast.error('Invalid email or password.');
 			} else {
 				window.location.href = '/';
 			}

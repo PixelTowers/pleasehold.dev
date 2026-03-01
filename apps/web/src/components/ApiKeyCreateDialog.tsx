@@ -40,6 +40,7 @@ export function ApiKeyCreateDialog({ projectId, open, onClose }: ApiKeyCreateDia
 	const createKey = trpc.apiKey.create.useMutation({
 		onSuccess: (data) => {
 			setCreatedKey(data.key);
+			utils.apiKey.list.invalidate({ projectId });
 		},
 		onError: (err) => {
 			toast.error(err.message || 'Failed to create API key');
