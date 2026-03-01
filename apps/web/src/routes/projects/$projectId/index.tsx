@@ -14,7 +14,7 @@ export const Route = createFileRoute('/projects/$projectId/')({
 	component: ProjectOverviewPage,
 });
 
-const modeBadgeClasses: Record<string, string> = {
+const modeBadgeFallbackClasses: Record<string, string> = {
 	waitlist: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
 	'demo-booking': 'bg-violet-100 text-violet-700 hover:bg-violet-100',
 };
@@ -189,15 +189,25 @@ function ProjectOverviewPage() {
 			<div className="mb-1 flex flex-wrap items-center justify-between gap-2">
 				<div className="flex flex-wrap items-center gap-3">
 					<h1 className="text-xl font-semibold text-foreground">{project.name}</h1>
-					<Badge
-						variant="secondary"
-						className={cn(
-							'border-0 text-[10px] font-medium px-1.5 py-0',
-							modeBadgeClasses[project.mode],
-						)}
-					>
-						{project.mode === 'demo-booking' ? 'Demo Booking' : 'Waitlist'}
-					</Badge>
+					{project.brandColor ? (
+						<Badge
+							variant="secondary"
+							className="border-0 px-1.5 py-0 text-[10px] font-medium text-white"
+							style={{ backgroundColor: project.brandColor }}
+						>
+							{project.mode === 'demo-booking' ? 'Demo Booking' : 'Waitlist'}
+						</Badge>
+					) : (
+						<Badge
+							variant="secondary"
+							className={cn(
+								'border-0 text-[10px] font-medium px-1.5 py-0',
+								modeBadgeFallbackClasses[project.mode],
+							)}
+						>
+							{project.mode === 'demo-booking' ? 'Demo Booking' : 'Waitlist'}
+						</Badge>
+					)}
 				</div>
 				<Button variant="outline" size="sm" className="h-7 text-xs" asChild>
 					<Link to="/projects/$projectId/settings" params={{ projectId }}>

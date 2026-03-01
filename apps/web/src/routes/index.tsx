@@ -68,6 +68,8 @@ function DashboardIndex() {
 						mode={project.mode}
 						createdAt={project.createdAt}
 						updatedAt={project.updatedAt}
+						brandColor={project.brandColor}
+						logoUrl={project.logoUrl}
 					/>
 				))}
 			</div>

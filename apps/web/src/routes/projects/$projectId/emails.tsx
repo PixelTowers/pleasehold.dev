@@ -50,7 +50,15 @@ const TAB_CONFIG: { type: TemplateType; label: string; description: string }[] =
  * editor. This guarantees TipTap initializes with the correct content instead
  * of flashing defaults and then trying to sync after mount.
  */
-function TemplatePanel({ projectId, type }: { projectId: string; type: TemplateType }) {
+function TemplatePanel({
+	projectId,
+	type,
+	brandColor,
+}: {
+	projectId: string;
+	type: TemplateType;
+	brandColor?: string;
+}) {
 	const defaults = DEFAULT_TEMPLATES[type];
 	const { data: template, isLoading } = trpc.emailTemplate.get.useQuery({ projectId, type });
 
@@ -69,6 +77,7 @@ function TemplatePanel({ projectId, type }: { projectId: string; type: TemplateT
 			initialBodyHtml={template?.bodyHtml ?? defaults.bodyHtml}
 			initialButtonText={template?.buttonText ?? defaults.buttonText}
 			hasCustomTemplate={!!template}
+			brandColor={brandColor}
 		/>
 	);
 }
@@ -80,6 +89,7 @@ interface TemplatePanelEditorProps {
 	initialBodyHtml: string;
 	initialButtonText: string;
 	hasCustomTemplate: boolean;
+	brandColor?: string;
 }
 
 /**
@@ -93,6 +103,7 @@ function TemplatePanelEditor({
 	initialBodyHtml,
 	initialButtonText,
 	hasCustomTemplate,
+	brandColor,
 }: TemplatePanelEditorProps) {
 	const defaults = DEFAULT_TEMPLATES[type];
 	const utils = trpc.useUtils();
@@ -139,6 +150,7 @@ function TemplatePanelEditor({
 				onBodyHtmlChange={setBodyHtml}
 				buttonText={buttonText}
 				onButtonTextChange={setButtonText}
+				brandColor={brandColor}
 			/>
 			<div className="mt-4 flex gap-2">
 				<Button
@@ -246,7 +258,12 @@ function EmailTemplatesPage() {
 
 			{/* Template editor panel */}
 			<div className="mt-6">
-				<TemplatePanel key={activeType} projectId={projectId} type={activeType} />
+				<TemplatePanel
+					key={activeType}
+					projectId={projectId}
+					type={activeType}
+					brandColor={project.brandColor ?? undefined}
+				/>
 			</div>
 		</div>
 	);

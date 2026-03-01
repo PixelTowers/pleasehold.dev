@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { FieldConfigForm } from '@/components/FieldConfigForm';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ColorPicker } from '@/components/ui/color-picker';
 import {
 	Form,
 	FormControl,
@@ -303,21 +304,7 @@ function ProjectSettingsPage() {
 					{/* Brand color */}
 					<div className="border-b border-border/50 py-3">
 						<Label className="mb-2 block text-xs text-muted-foreground">Brand Color</Label>
-						<div className="flex items-center gap-3">
-							<input
-								type="color"
-								value={brandColor}
-								onChange={(e) => setBrandColor(e.target.value)}
-								className="h-8 w-8 cursor-pointer rounded border border-border/50"
-							/>
-							<Input
-								type="text"
-								value={brandColor}
-								onChange={(e) => setBrandColor(e.target.value)}
-								className="h-8 w-28 font-mono text-xs"
-								maxLength={7}
-							/>
-						</div>
+						<ColorPicker value={brandColor} onChange={setBrandColor} />
 					</div>
 
 					{/* Company name */}

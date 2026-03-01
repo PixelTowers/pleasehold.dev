@@ -44,6 +44,7 @@ interface EmailTemplateEditorProps {
 	onBodyHtmlChange: (value: string) => void;
 	buttonText: string;
 	onButtonTextChange: (value: string) => void;
+	brandColor?: string;
 }
 
 export function EmailTemplateEditor({
@@ -53,7 +54,9 @@ export function EmailTemplateEditor({
 	onBodyHtmlChange,
 	buttonText,
 	onButtonTextChange,
+	brandColor,
 }: EmailTemplateEditorProps) {
+	const buttonColor = brandColor && /^#[0-9a-fA-F]{6}$/.test(brandColor) ? brandColor : '#5e6ad2';
 	const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
 
 	const editor = useEditor({
@@ -206,23 +209,34 @@ export function EmailTemplateEditor({
 					/>
 				</div>
 			) : (
-				<div className="rounded-md border border-border/50 bg-white p-4">
+				<div className="rounded-md border border-border/50 bg-[#f4f4f5] p-6">
 					<div className="mx-auto max-w-md">
-						<p className="mb-2 text-xs text-muted-foreground">
+						<p className="mb-3 text-xs text-muted-foreground">
 							Subject: <strong>{replaceVariables(subject)}</strong>
 						</p>
-						<div
-							className="prose prose-sm max-w-none text-sm"
-							// biome-ignore lint/security/noDangerouslySetInnerHtml: sanitized via DOMPurify before rendering
-							dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(replaceVariables(bodyHtml)) }}
-						/>
-						{buttonText && (
-							<div className="mt-4 text-center">
-								<span className="inline-block rounded-md bg-[#5e6ad2] px-6 py-2.5 text-sm font-medium text-white">
-									{replaceVariables(buttonText)}
-								</span>
+						{/* Email layout card matching the actual email-layout.ts output */}
+						<div className="overflow-hidden rounded-xl border border-border/30 bg-white shadow-sm">
+							<div className="h-1" style={{ backgroundColor: buttonColor }} />
+							<div className="p-6">
+								<div
+									className="prose prose-sm max-w-none text-sm"
+									// biome-ignore lint/security/noDangerouslySetInnerHtml: sanitized via DOMPurify before rendering
+									dangerouslySetInnerHTML={{
+										__html: DOMPurify.sanitize(replaceVariables(bodyHtml)),
+									}}
+								/>
+								{buttonText && (
+									<div className="mt-4 text-center">
+										<span
+											className="inline-block rounded-md px-6 py-2.5 text-sm font-medium text-white"
+											style={{ backgroundColor: buttonColor }}
+										>
+											{replaceVariables(buttonText)}
+										</span>
+									</div>
+								)}
 							</div>
-						)}
+						</div>
 					</div>
 				</div>
 			)}

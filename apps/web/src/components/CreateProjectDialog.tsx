@@ -6,6 +6,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { ColorPicker } from '@/components/ui/color-picker';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
 	Form,
@@ -38,9 +39,9 @@ export function CreateProjectDialog({ open, onClose }: CreateProjectDialogProps)
 	const utils = trpc.useUtils();
 
 	const createProject = trpc.project.create.useMutation({
-		onSuccess: (data) => {
+		onSuccess: async (data) => {
 			toast.success('Project created');
-			utils.project.list.invalidate();
+			await utils.project.list.invalidate();
 			navigate({ to: '/projects/$projectId', params: { projectId: data.id } });
 			handleClose();
 		},
@@ -64,7 +65,6 @@ export function CreateProjectDialog({ open, onClose }: CreateProjectDialogProps)
 	};
 
 	const mode = form.watch('mode');
-	const brandColor = form.watch('brandColor');
 
 	return (
 		<Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
@@ -148,27 +148,10 @@ export function CreateProjectDialog({ open, onClose }: CreateProjectDialogProps)
 										Brand Color{' '}
 										<span className="font-normal text-muted-foreground">(optional)</span>
 									</FormLabel>
-									<div className="flex items-center gap-2">
-										<div
-											className="h-8 w-8 flex-shrink-0 rounded border border-border"
-											style={{
-												backgroundColor:
-													brandColor && /^#[0-9a-fA-F]{6}$/.test(brandColor)
-														? brandColor
-														: '#0d9488',
-											}}
-										/>
-										<FormControl>
-											<Input
-												type="text"
-												placeholder="#0d9488"
-												maxLength={7}
-												className="font-mono"
-												{...field}
-											/>
-										</FormControl>
-									</div>
-									<FormDescription>Hex color for email buttons.</FormDescription>
+									<FormControl>
+										<ColorPicker value={field.value ?? '#0d9488'} onChange={field.onChange} />
+									</FormControl>
+									<FormDescription>Used for email buttons and project accents.</FormDescription>
 									<FormMessage />
 								</FormItem>
 							)}

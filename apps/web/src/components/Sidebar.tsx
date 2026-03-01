@@ -113,10 +113,11 @@ export function Sidebar({ onClose, onCreateProject }: SidebarProps) {
 									)}
 								>
 									<span
-										className={cn(
-											'h-2 w-2 flex-shrink-0 rounded-full',
-											project.mode === 'waitlist' ? 'bg-blue-500' : 'bg-violet-500',
-										)}
+										className="h-2 w-2 flex-shrink-0 rounded-full"
+										style={{
+											backgroundColor:
+												project.brandColor ?? (project.mode === 'waitlist' ? '#3b82f6' : '#8b5cf6'),
+										}}
 									/>
 									<span className="truncate">{project.name}</span>
 								</Link>
