@@ -17,11 +17,14 @@ if (!RESEND_API_KEY) {
   Set these in your .env file or docker-compose.yml environment block.`);
 }
 
-export const resend = new Resend(RESEND_API_KEY);
+export const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 export function getResendClient(apiKey?: string | null): Resend {
 	if (apiKey) {
 		return new Resend(apiKey);
+	}
+	if (!resend) {
+		throw new Error('Resend is not configured. Set RESEND_API_KEY environment variable.');
 	}
 	return resend;
 }
