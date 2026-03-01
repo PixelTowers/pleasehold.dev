@@ -22,19 +22,20 @@ const TEMPLATE_VARIABLES = [
 	{ key: 'company_name', label: 'Company Name' },
 ] as const;
 
-const SAMPLE_DATA: Record<string, string> = {
+const DEFAULT_SAMPLE_DATA: Record<string, string> = {
 	name: 'Jane Doe',
 	email: 'jane@example.com',
 	position: '42',
 	company: 'Acme Corp',
-	project_name: 'My Waitlist',
+	project_name: 'My Project',
 	verification_url: 'https://example.com/verify/abc123',
 	logo_url: 'https://placehold.co/120x40/0d9488/white?text=Logo',
 	company_name: 'Acme Inc',
 };
 
-function replaceVariables(text: string): string {
-	return text.replace(/\{\{(\w+)\}\}/g, (_, key) => SAMPLE_DATA[key] ?? `{{${key}}}`);
+function replaceVariables(text: string, overrides?: Record<string, string>): string {
+	const data = overrides ? { ...DEFAULT_SAMPLE_DATA, ...overrides } : DEFAULT_SAMPLE_DATA;
+	return text.replace(/\{\{(\w+)\}\}/g, (_, key) => data[key] ?? `{{${key}}}`);
 }
 
 interface EmailTemplateEditorProps {
@@ -46,6 +47,7 @@ interface EmailTemplateEditorProps {
 	onButtonTextChange: (value: string) => void;
 	brandColor?: string;
 	logoUrl?: string;
+	projectName?: string;
 }
 
 export function EmailTemplateEditor({
@@ -57,8 +59,11 @@ export function EmailTemplateEditor({
 	onButtonTextChange,
 	brandColor,
 	logoUrl,
+	projectName,
 }: EmailTemplateEditorProps) {
 	const buttonColor = brandColor && /^#[0-9a-fA-F]{6}$/.test(brandColor) ? brandColor : '#5e6ad2';
+	const sampleOverrides: Record<string, string> = {};
+	if (projectName) sampleOverrides.project_name = projectName;
 	const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
 
 	const editor = useEditor({
@@ -214,7 +219,7 @@ export function EmailTemplateEditor({
 				<div className="rounded-md border border-border/50 bg-[#f4f4f5] p-6">
 					<div className="mx-auto max-w-md">
 						<p className="mb-3 text-xs text-muted-foreground">
-							Subject: <strong>{replaceVariables(subject)}</strong>
+							Subject: <strong>{replaceVariables(subject, sampleOverrides)}</strong>
 						</p>
 						{/* Logo above card, matching email-layout.ts */}
 						{logoUrl && (
@@ -235,7 +240,7 @@ export function EmailTemplateEditor({
 									className="prose prose-sm max-w-none text-sm"
 									// biome-ignore lint/security/noDangerouslySetInnerHtml: sanitized via DOMPurify before rendering
 									dangerouslySetInnerHTML={{
-										__html: DOMPurify.sanitize(replaceVariables(bodyHtml)),
+										__html: DOMPurify.sanitize(replaceVariables(bodyHtml, sampleOverrides)),
 									}}
 								/>
 								{buttonText && (
@@ -244,7 +249,7 @@ export function EmailTemplateEditor({
 											className="inline-block rounded-md px-6 py-2.5 text-sm font-medium text-white"
 											style={{ backgroundColor: buttonColor }}
 										>
-											{replaceVariables(buttonText)}
+											{replaceVariables(buttonText, sampleOverrides)}
 										</span>
 									</div>
 								)}
