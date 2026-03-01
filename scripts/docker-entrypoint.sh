@@ -8,7 +8,7 @@ if [ -n "$INFISICAL_CLIENT_ID" ] && [ -n "$INFISICAL_CLIENT_SECRET" ]; then
   exec infisical run \
     --env="${INFISICAL_ENV:-production}" \
     --path="/" \
-    --domain="${INFISICAL_DOMAIN:-https://secrets.pixeltowers.io}" \
+    --domain="${INFISICAL_DOMAIN:-https://app.infisical.com}" \
     --projectId="${INFISICAL_PROJECT_ID}" \
     -- "$@"
 else

@@ -95,7 +95,7 @@ services:
       INFISICAL_CLIENT_SECRET: ${INFISICAL_CLIENT_SECRET:-}
       INFISICAL_PROJECT_ID: ${INFISICAL_PROJECT_ID:-}
       INFISICAL_ENV: ${INFISICAL_ENV:-production}
-      INFISICAL_DOMAIN: ${INFISICAL_DOMAIN:-https://secrets.pixeltowers.io}
+      INFISICAL_DOMAIN: ${INFISICAL_DOMAIN:-https://app.infisical.com}
     ports:
       - "${API_PORT:-3001}:3001"
     depends_on:
@@ -127,7 +127,7 @@ services:
       INFISICAL_CLIENT_SECRET: ${INFISICAL_CLIENT_SECRET:-}
       INFISICAL_PROJECT_ID: ${INFISICAL_PROJECT_ID:-}
       INFISICAL_ENV: ${INFISICAL_ENV:-production}
-      INFISICAL_DOMAIN: ${INFISICAL_DOMAIN:-https://secrets.pixeltowers.io}
+      INFISICAL_DOMAIN: ${INFISICAL_DOMAIN:-https://app.infisical.com}
     depends_on:
       postgres:
         condition: service_healthy

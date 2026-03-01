@@ -4,7 +4,7 @@
 
 set -e
 
-INFISICAL_DOMAIN="https://secrets.pixeltowers.io"
+INFISICAL_DOMAIN="${INFISICAL_DOMAIN:-https://app.infisical.com}"
 
 echo "============================================================"
 echo "  pleasehold - Infisical Secret Setup"

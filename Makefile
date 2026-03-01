@@ -2,7 +2,7 @@
 # ABOUTME: Provides make targets for dev workflow, Docker, database, and optional Infisical integration.
 
 PACKAGE_MANAGER := pnpm
-INFISICAL_DOMAIN := https://secrets.pixeltowers.io
+INFISICAL_DOMAIN := https://app.infisical.com
 INFISICAL_PATH := /
 
 .DEFAULT_GOAL := help
