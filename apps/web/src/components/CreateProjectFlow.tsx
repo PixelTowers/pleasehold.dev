@@ -89,11 +89,15 @@ export function CreateProjectFlow() {
 
 				const { uploadUrl, publicUrl } = await res.json();
 
-				await fetch(uploadUrl, {
+				const putRes = await fetch(uploadUrl, {
 					method: 'PUT',
 					headers: { 'Content-Type': file.type },
 					body: file,
 				});
+
+				if (!putRes.ok) {
+					throw new Error('Failed to upload file to storage');
+				}
 
 				await updateProject.mutateAsync({ id: projectId, logoUrl: publicUrl });
 			} finally {
