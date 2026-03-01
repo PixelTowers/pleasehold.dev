@@ -165,21 +165,55 @@ Routes use TanStack Router with file-based routing and type-safe navigation.
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` and configure:
+Copy `.env.example` to `.env` and configure. See also the [Secret Management](#secret-management) section below for Infisical-based workflows.
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `POSTGRES_PASSWORD` | Yes | PostgreSQL password (Docker Compose) |
-| `BETTER_AUTH_SECRET` | Yes | 32+ character string for session signing |
-| `DATABASE_URL` | Dev only | PostgreSQL connection string (Docker builds it from `POSTGRES_*`) |
-| `API_URL` | No | Public API URL (default: `http://localhost:3001`) |
-| `WEB_URL` | No | Public dashboard URL (default: `http://localhost:8080`) |
-| `GITHUB_CLIENT_ID` | No | GitHub OAuth app client ID |
-| `GITHUB_CLIENT_SECRET` | No | GitHub OAuth app secret |
-| `GOOGLE_CLIENT_ID` | No | Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | No | Google OAuth secret |
-| `RESEND_API_KEY` | No | [Resend](https://resend.com) API key for email notifications + double opt-in |
-| `EMAIL_FROM` | No | Sender email address (must be verified in Resend) |
+### Required (app won't start without these)
+
+| Variable | Description | Suggestion |
+|----------|-------------|------------|
+| `DATABASE_URL` | PostgreSQL connection string (dev only — Docker Compose builds it from `POSTGRES_*` vars) | `postgresql://pleasehold:<pw>@<host>:5432/pleasehold` |
+| `POSTGRES_DB` | Database name | `pleasehold` |
+| `POSTGRES_USER` | Database user | `pleasehold` |
+| `POSTGRES_PASSWORD` | Database password | Generate: `openssl rand -base64 16` |
+| `BETTER_AUTH_SECRET` | Session signing key (32+ chars) | Generate: `openssl rand -base64 32` |
+| `REDIS_PASSWORD` | Redis auth password | Generate: `openssl rand -base64 16` |
+| `MINIO_ROOT_USER` | MinIO/S3 admin username | `minioadmin` or custom |
+| `MINIO_ROOT_PASSWORD` | MinIO/S3 admin password | Generate: `openssl rand -base64 16` |
+
+### Required for production routing
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `API_URL` | Public-facing API URL | `http://localhost:3001` |
+| `WEB_URL` | Public-facing dashboard URL | `http://localhost:8080` |
+
+### Optional (features degrade gracefully without them)
+
+| Variable | Description | Needed for |
+|----------|-------------|------------|
+| `RESEND_API_KEY` | [Resend](https://resend.com) API key | Email notifications + double opt-in |
+| `EMAIL_FROM` | Sender address (must be verified in Resend) | Email delivery |
+| `GITHUB_CLIENT_ID` | GitHub OAuth app client ID | GitHub login |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth app secret | GitHub login |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID | Google login |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth secret | Google login |
+| `S3_ENDPOINT` | S3-compatible endpoint URL | Logo uploads (defaults to MinIO) |
+| `S3_BUCKET` | S3 bucket name | Logo uploads (defaults to `pleasehold`) |
+| `S3_ACCESS_KEY_ID` | S3 access key | Logo uploads |
+| `S3_SECRET_ACCESS_KEY` | S3 secret key | Logo uploads |
+| `S3_PUBLIC_URL` | Public URL for serving S3 assets | Logo display |
+
+### Infisical (for managed deployments only)
+
+These are only needed if using [Infisical](https://infisical.com) for centralized secret management. Self-hosters can ignore them entirely.
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `INFISICAL_CLIENT_ID` | Machine identity client ID | — |
+| `INFISICAL_CLIENT_SECRET` | Machine identity client secret | — |
+| `INFISICAL_PROJECT_ID` | Infisical project ID | — |
+| `INFISICAL_ENV` | Environment to pull secrets from | `production` |
+| `INFISICAL_DOMAIN` | Infisical instance URL (for self-hosted Infisical) | `https://app.infisical.com` |
 
 ## Secret Management
 
