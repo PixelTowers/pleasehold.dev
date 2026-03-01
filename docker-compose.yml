@@ -90,6 +90,12 @@ services:
       S3_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
       S3_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
       S3_PUBLIC_URL: ${S3_PUBLIC_URL:-}
+      # Infisical (optional — for managed deployments)
+      INFISICAL_CLIENT_ID: ${INFISICAL_CLIENT_ID:-}
+      INFISICAL_CLIENT_SECRET: ${INFISICAL_CLIENT_SECRET:-}
+      INFISICAL_PROJECT_ID: ${INFISICAL_PROJECT_ID:-}
+      INFISICAL_ENV: ${INFISICAL_ENV:-production}
+      INFISICAL_DOMAIN: ${INFISICAL_DOMAIN:-https://secrets.pixeltowers.io}
     ports:
       - "${API_PORT:-3001}:3001"
     depends_on:
@@ -116,6 +122,12 @@ services:
       WEB_URL: ${WEB_URL:-http://localhost:8080}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       EMAIL_FROM: ${EMAIL_FROM:-}
+      # Infisical (optional — for managed deployments)
+      INFISICAL_CLIENT_ID: ${INFISICAL_CLIENT_ID:-}
+      INFISICAL_CLIENT_SECRET: ${INFISICAL_CLIENT_SECRET:-}
+      INFISICAL_PROJECT_ID: ${INFISICAL_PROJECT_ID:-}
+      INFISICAL_ENV: ${INFISICAL_ENV:-production}
+      INFISICAL_DOMAIN: ${INFISICAL_DOMAIN:-https://secrets.pixeltowers.io}
     depends_on:
       postgres:
         condition: service_healthy

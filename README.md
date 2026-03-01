@@ -181,6 +181,43 @@ Copy `.env.example` to `.env` and configure:
 | `RESEND_API_KEY` | No | [Resend](https://resend.com) API key for email notifications + double opt-in |
 | `EMAIL_FROM` | No | Sender email address (must be verified in Resend) |
 
+## Secret Management
+
+pleasehold supports two ways to manage secrets:
+
+### Option A: `.env` File (Self-Hosted)
+
+The default for self-hosters. Copy `.env.example` to `.env`, fill in your values, and run `docker compose up`. No extra tooling required.
+
+```bash
+cp .env.example .env
+# Edit .env with your values
+docker compose up
+```
+
+### Option B: Infisical (Managed Deployments)
+
+For teams using [Infisical](https://infisical.com) for centralized secret management. The app code is identical — Infisical injects secrets via the `infisical run` CLI wrapper.
+
+**Local development with Infisical:**
+
+```bash
+# One-time setup
+brew install infisical/get-cli/infisical   # or see https://infisical.com/docs/cli/overview
+make infisical-login                        # Authenticate
+make infisical-init                         # Link workspace (creates .infisical.json)
+make infisical-setup                        # Interactive: populate secrets
+
+# Daily development
+make dev                                    # Starts with Infisical-injected secrets
+```
+
+**Docker with Infisical:**
+
+Set `INFISICAL_CLIENT_ID`, `INFISICAL_CLIENT_SECRET`, and `INFISICAL_PROJECT_ID` in your environment (or CI). The Docker entrypoint automatically wraps the app with `infisical run` when these are present. Without them, containers run normally with env vars from `docker-compose.yml`.
+
+Run `make help` to see all available targets.
+
 ## Tech Stack
 
 - **Runtime:** Node.js 22, TypeScript 5.7

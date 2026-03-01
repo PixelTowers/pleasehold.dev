@@ -26,7 +26,16 @@ RUN pnpm turbo build --filter=@pleasehold/api...
 FROM base AS runner
 WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 appuser
+
+# Install Infisical CLI (optional runtime secret injection)
+RUN apk add --no-cache bash curl && \
+    curl -1sLf 'https://dl.cloudsmith.io/public/infisical/infisical-cli/setup.alpine.sh' | bash && \
+    apk add --no-cache infisical || true
+
 COPY --from=builder /app/ .
+COPY scripts/docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 USER appuser
 EXPOSE 3001
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["node", "apps/api/dist/index.js"]
