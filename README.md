@@ -281,3 +281,60 @@ The Docker Compose stack runs five services:
 The `web` service includes an nginx reverse proxy that routes `/api/*`, `/trpc/*`, and `/health` to the API container. The dashboard SPA handles all other routes client-side.
 
 Migrations run automatically on startup via the `migrate` service before the API and worker start.
+
+## Database Migrations
+
+Drizzle ORM manages the database schema. Migration SQL files live in `packages/db/drizzle/` and are tracked in `packages/db/drizzle/meta/_journal.json`.
+
+### How Migrations Run
+
+Migrations are applied automatically on every deployment — no manual steps required. The mechanism differs by environment:
+
+**Docker Compose (self-hosted):**
+
+The `migrate` service runs `pnpm db:generate && pnpm db:migrate` as a one-shot container before the API and worker start. Both `api` and `worker` have `depends_on: migrate: condition: service_completed_successfully`, so they wait until migrations finish.
+
+**Kubernetes (staging/production):**
+
+Each container (API and worker) runs migrations inline at startup via `packages/db/migrate.mjs`. The Dockerfile CMD is:
+
+```
+CMD ["sh", "-c", "node packages/db/migrate.mjs && exec node apps/api/dist/index.js"]
+```
+
+The startup sequence is:
+
+1. `docker-entrypoint.sh` runs as the ENTRYPOINT
+2. If Infisical credentials are present, the entrypoint wraps the CMD with `infisical run`, injecting secrets (including `DATABASE_URL`) into the environment
+3. `migrate.mjs` connects to PostgreSQL, applies any pending migrations from `packages/db/drizzle/`, then exits
+4. If `DATABASE_URL` is not set, `migrate.mjs` logs a warning and exits cleanly (exit 0)
+5. The application starts
+
+Migrations are **idempotent** — Drizzle tracks applied migrations in a `__drizzle_migrations` table, so running them on every boot is safe even when multiple replicas start simultaneously.
+
+### Creating New Migrations
+
+```bash
+# After modifying the schema in packages/db/src/schema.ts:
+pnpm db:generate          # Generate SQL migration files
+pnpm db:migrate           # Apply locally (dev)
+```
+
+Migration files are committed to git and deployed with the application code. They are applied automatically on the next deployment — no additional steps needed.
+
+### Troubleshooting
+
+If migrations fail on startup, the container exits with code 1 and logs the error. Check container logs:
+
+```bash
+# Docker Compose
+docker compose logs api
+
+# Kubernetes
+kubectl logs -l app=api --tail=50
+```
+
+Common causes:
+- `DATABASE_URL` not set or incorrect — check Infisical secrets or environment variables
+- Database not reachable — verify network connectivity and PostgreSQL health
+- Conflicting schema — a migration references a table/column that was manually modified
