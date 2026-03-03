@@ -19,7 +19,7 @@ export async function sendEmailNotification(
 	options?: EmailSenderOptions,
 	branding?: BrandingContext,
 ): Promise<void> {
-	const fromAddress = stripControlChars(options?.fromAddress ?? DEFAULT_EMAIL_FROM);
+	const fromAddress = stripControlChars(DEFAULT_EMAIL_FROM);
 	const fromName = options?.fromName ? stripControlChars(options.fromName) : undefined;
 	const from = fromName ? `${fromName} <${fromAddress}>` : fromAddress;
 	const client = getResendClient(options?.resendApiKey);

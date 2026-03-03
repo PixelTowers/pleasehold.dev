@@ -32,6 +32,16 @@ RUN apk add --no-cache bash curl && \
     curl -1sLf 'https://dl.cloudsmith.io/public/infisical/infisical-cli/setup.alpine.sh' | bash && \
     apk add --no-cache infisical || true
 
+ARG INFISICAL_CLIENT_ID
+ARG INFISICAL_CLIENT_SECRET
+ARG INFISICAL_PROJECT_ID
+ARG INFISICAL_ENV=staging
+ENV INFISICAL_CLIENT_ID=$INFISICAL_CLIENT_ID
+ENV INFISICAL_CLIENT_SECRET=$INFISICAL_CLIENT_SECRET
+ENV INFISICAL_PROJECT_ID=$INFISICAL_PROJECT_ID
+ENV INFISICAL_ENV=$INFISICAL_ENV
+ENV INFISICAL_DOMAIN=https://secrets.pixeltowers.io
+
 COPY --from=builder /app/ .
 COPY scripts/docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
