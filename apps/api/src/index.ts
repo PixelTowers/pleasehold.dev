@@ -8,7 +8,6 @@ import { createAuth } from '@pleasehold/auth';
 import { createDb } from '@pleasehold/db';
 import { appRouter, createContext } from '@pleasehold/trpc';
 import { apiReference } from '@scalar/hono-api-reference';
-import { sql } from 'drizzle-orm';
 import { cors } from 'hono/cors';
 import { apiKeyAuth } from './middleware/api-key-auth';
 import {
@@ -128,74 +127,11 @@ app.use(
 );
 
 app.all('/api/auth/*', async (c) => {
-	const reqDiag = {
-		url: c.req.raw.url,
-		method: c.req.method,
-		path: c.req.path,
-		host: c.req.header('host') ?? null,
-		xForwardedProto: c.req.header('x-forwarded-proto') ?? null,
-		xForwardedFor: c.req.header('x-forwarded-for') ?? null,
-		origin: c.req.header('origin') ?? null,
-	};
-	try {
-		const response = await auth.handler(c.req.raw);
-		if (response.status >= 400) {
-			const body = await response.clone().text();
-			console.error(
-				`[auth] ${c.req.method} ${c.req.path} → ${response.status}`,
-				body || '(empty body)',
-				JSON.stringify(reqDiag),
-			);
-			return c.json(
-				{
-					error: 'Auth error',
-					status: response.status,
-					body: body || null,
-					path: c.req.path,
-					_debug: reqDiag,
-				},
-				response.status as 400,
-			);
-		}
-		return new Response(response.body, {
-			status: response.status,
-			headers: response.headers,
-		});
-	} catch (error) {
-		console.error('[auth] Unhandled error:', error, JSON.stringify(reqDiag));
-		return c.json({ error: 'Internal auth error', details: String(error), _debug: reqDiag }, 500);
-	}
+	return auth.handler(c.req.raw);
 });
 
 app.get('/health', (c) => {
 	return c.json({ status: 'ok' });
-});
-
-// Temporary diagnostic endpoint — remove after OAuth debugging
-app.get('/api/debug/env', async (c) => {
-	let dbCheck = 'not tested';
-	try {
-		const rows = await db.execute(
-			sql`SELECT COUNT(*)::text as cnt FROM information_schema.tables WHERE table_name = 'verifications' AND table_schema = 'public'`,
-		);
-		const cnt = String((rows as unknown as Array<Record<string, unknown>>)?.[0]?.cnt ?? 'unknown');
-		dbCheck =
-			cnt === '1' ? 'verifications table EXISTS' : `verifications table MISSING (count=${cnt})`;
-	} catch (e) {
-		dbCheck = `DB error: ${String(e)}`;
-	}
-	return c.json({
-		GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID
-			? `set (${process.env.GITHUB_CLIENT_ID.length} chars, starts: ${process.env.GITHUB_CLIENT_ID.slice(0, 4)}...)`
-			: 'NOT SET',
-		GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET
-			? `set (${process.env.GITHUB_CLIENT_SECRET.length} chars)`
-			: 'NOT SET',
-		API_URL: process.env.API_URL ?? 'NOT SET',
-		WEB_URL: process.env.WEB_URL ?? 'NOT SET',
-		BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET ? 'set' : 'NOT SET',
-		verifications_table: dbCheck,
-	});
 });
 
 // Register API key security scheme in the OpenAPI registry
