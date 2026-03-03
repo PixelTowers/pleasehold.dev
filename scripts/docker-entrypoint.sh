@@ -1,4 +1,4 @@
-#\!/bin/sh
+#!/bin/sh
 # ABOUTME: Conditional Infisical secret injection for Docker containers.
 # ABOUTME: Wraps the CMD with `infisical run` when credentials are present, passes through otherwise.
 
