@@ -49,13 +49,16 @@ function LoginPage() {
 
 	const handleOAuth = async (provider: 'github' | 'google') => {
 		setOauthLoading(provider);
+		const label = provider === 'github' ? 'GitHub' : 'Google';
 
 		try {
-			await authClient.signIn.social({ provider, callbackURL: '/' });
+			const result = await authClient.signIn.social({ provider, callbackURL: '/' });
+			if (result.error) {
+				toast.error(`Failed to sign in with ${label}. Please try again.`);
+				setOauthLoading(null);
+			}
 		} catch {
-			toast.error(
-				`Failed to sign in with ${provider === 'github' ? 'GitHub' : 'Google'}. Please try again.`,
-			);
+			toast.error(`Failed to sign in with ${label}. Please try again.`);
 			setOauthLoading(null);
 		}
 	};
