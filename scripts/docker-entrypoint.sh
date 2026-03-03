@@ -5,10 +5,17 @@
 set -e
 
 if [ -n "$INFISICAL_CLIENT_ID" ] && [ -n "$INFISICAL_CLIENT_SECRET" ]; then
+  INFISICAL_TOKEN=$(infisical login --method=universal-auth \
+    --client-id="$INFISICAL_CLIENT_ID" \
+    --client-secret="$INFISICAL_CLIENT_SECRET" \
+    --domain="${INFISICAL_DOMAIN:-https://secrets.pixeltowers.io}" \
+    --plain --silent)
+
   exec infisical run \
+    --token="$INFISICAL_TOKEN" \
     --env="${INFISICAL_ENV:-production}" \
     --path="/" \
-    --domain="${INFISICAL_DOMAIN:-https://app.infisical.com}" \
+    --domain="${INFISICAL_DOMAIN:-https://secrets.pixeltowers.io}" \
     --projectId="${INFISICAL_PROJECT_ID}" \
     -- "$@"
 else
