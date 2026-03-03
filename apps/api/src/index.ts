@@ -154,6 +154,21 @@ app.get('/health', (c) => {
 	return c.json({ status: 'ok' });
 });
 
+// Temporary diagnostic endpoint — remove after OAuth debugging
+app.get('/api/debug/env', (c) => {
+	return c.json({
+		GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID
+			? `set (${process.env.GITHUB_CLIENT_ID.length} chars, starts: ${process.env.GITHUB_CLIENT_ID.slice(0, 4)}...)`
+			: 'NOT SET',
+		GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET
+			? `set (${process.env.GITHUB_CLIENT_SECRET.length} chars)`
+			: 'NOT SET',
+		API_URL: process.env.API_URL ?? 'NOT SET',
+		WEB_URL: process.env.WEB_URL ?? 'NOT SET',
+		BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET ? 'set' : 'NOT SET',
+	});
+});
+
 // Register API key security scheme in the OpenAPI registry
 app.openAPIRegistry.registerComponent('securitySchemes', 'apiKey', {
 	type: 'apiKey',
