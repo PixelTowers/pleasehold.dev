@@ -48,4 +48,4 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 USER appuser
 EXPOSE 3001
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["node", "apps/api/dist/index.js"]
+CMD ["sh", "-c", "node packages/db/migrate.mjs && exec node apps/api/dist/index.js"]
