@@ -1,4 +1,4 @@
-#!/bin/sh
+#\!/bin/sh
 # ABOUTME: Conditional Infisical secret injection for Docker containers.
 # ABOUTME: Wraps the CMD with `infisical run` when credentials are present, passes through otherwise.
 
@@ -14,7 +14,7 @@ if [ -n "$INFISICAL_CLIENT_ID" ] && [ -n "$INFISICAL_CLIENT_SECRET" ]; then
   exec infisical run \
     --token="$INFISICAL_TOKEN" \
     --env="${INFISICAL_ENV:-production}" \
-    --path="/" \
+    --path="${INFISICAL_PATH:-/}" \
     --domain="${INFISICAL_DOMAIN:-https://secrets.pixeltowers.io}" \
     --projectId="${INFISICAL_PROJECT_ID}" \
     -- "$@"
