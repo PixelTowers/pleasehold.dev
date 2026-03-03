@@ -127,6 +127,15 @@ app.use(
 );
 
 app.all('/api/auth/*', async (c) => {
+	const reqDiag = {
+		url: c.req.raw.url,
+		method: c.req.method,
+		path: c.req.path,
+		host: c.req.header('host') ?? null,
+		xForwardedProto: c.req.header('x-forwarded-proto') ?? null,
+		xForwardedFor: c.req.header('x-forwarded-for') ?? null,
+		origin: c.req.header('origin') ?? null,
+	};
 	try {
 		const response = await auth.handler(c.req.raw);
 		if (response.status >= 400) {
@@ -134,9 +143,16 @@ app.all('/api/auth/*', async (c) => {
 			console.error(
 				`[auth] ${c.req.method} ${c.req.path} → ${response.status}`,
 				body || '(empty body)',
+				JSON.stringify(reqDiag),
 			);
 			return c.json(
-				{ error: 'Auth error', status: response.status, body: body || null, path: c.req.path },
+				{
+					error: 'Auth error',
+					status: response.status,
+					body: body || null,
+					path: c.req.path,
+					_debug: reqDiag,
+				},
 				response.status as 400,
 			);
 		}
@@ -145,8 +161,8 @@ app.all('/api/auth/*', async (c) => {
 			headers: response.headers,
 		});
 	} catch (error) {
-		console.error('[auth] Unhandled error:', error);
-		return c.json({ error: 'Internal auth error', details: String(error) }, 500);
+		console.error('[auth] Unhandled error:', error, JSON.stringify(reqDiag));
+		return c.json({ error: 'Internal auth error', details: String(error), _debug: reqDiag }, 500);
 	}
 });
 
