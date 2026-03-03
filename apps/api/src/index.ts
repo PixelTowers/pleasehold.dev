@@ -129,6 +129,17 @@ app.use(
 app.all('/api/auth/*', async (c) => {
 	try {
 		const response = await auth.handler(c.req.raw);
+		if (response.status >= 400) {
+			const body = await response.clone().text();
+			console.error(
+				`[auth] ${c.req.method} ${c.req.path} → ${response.status}`,
+				body || '(empty body)',
+			);
+			return c.json(
+				{ error: 'Auth error', status: response.status, body: body || null, path: c.req.path },
+				response.status as 400,
+			);
+		}
 		return new Response(response.body, {
 			status: response.status,
 			headers: response.headers,
