@@ -86,16 +86,7 @@ function LoginPage() {
 					<GitHubIcon />
 					{oauthLoading === 'github' ? 'Redirecting...' : 'Continue with GitHub'}
 				</Button>
-				<Button
-					type="button"
-					variant="outline"
-					className="w-full gap-2"
-					disabled={anyLoading}
-					onClick={() => handleOAuth('google')}
-				>
-					<GoogleIcon />
-					{oauthLoading === 'google' ? 'Redirecting...' : 'Continue with Google'}
-				</Button>
+				{/* Google OAuth disabled until credentials are configured */}
 			</div>
 
 			<div className="relative mb-6">
