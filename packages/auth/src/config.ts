@@ -73,6 +73,9 @@ export function createAuth(options: AuthOptions) {
 			updateAge: 60 * 60 * 24, // 1 day
 		},
 		socialProviders,
+		onAPIError: {
+			throw: true,
+		},
 		plugins: [
 			apiKey({
 				defaultPrefix: 'ph_live_',
