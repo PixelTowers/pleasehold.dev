@@ -127,11 +127,16 @@ app.use(
 );
 
 app.all('/api/auth/*', async (c) => {
-	const response = await auth.handler(c.req.raw);
-	return new Response(response.body, {
-		status: response.status,
-		headers: response.headers,
-	});
+	try {
+		const response = await auth.handler(c.req.raw);
+		return new Response(response.body, {
+			status: response.status,
+			headers: response.headers,
+		});
+	} catch (error) {
+		console.error('[auth] Unhandled error:', error);
+		return c.json({ error: 'Internal auth error', details: String(error) }, 500);
+	}
 });
 
 app.get('/health', (c) => {
