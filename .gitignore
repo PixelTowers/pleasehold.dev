@@ -28,5 +28,8 @@ coverage/
 *.swo
 
 
+# Infisical
+.infisical.json
+
 # Claude private journal
 .private-journal/
