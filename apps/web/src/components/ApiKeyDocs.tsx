@@ -1,7 +1,7 @@
 // ABOUTME: PostHog-style tabbed integration guide with numbered steps per platform.
 // ABOUTME: Each tab shows a walkthrough for Next.js, Astro, React, HTML, or cURL with code + prose.
 
-import { Check, Copy } from 'lucide-react';
+import { Check, Copy, Sparkles } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -314,6 +314,121 @@ const res = await fetch("/api/waitlist", {
 	}
 }
 
+function buildAiPrompt(key: string, baseUrl: string): string {
+	const endpoint = `${baseUrl}/api/v1/entries`;
+
+	return `# Pleasehold Waitlist Integration
+
+## API Endpoint
+
+POST ${endpoint}
+
+## Authentication
+
+Include the API key in the \`x-api-key\` header:
+
+x-api-key: ${key}
+
+## Request Body Schema
+
+| Field      | Type   | Required | Constraints                                |
+|------------|--------|----------|--------------------------------------------|
+| email      | string | Yes      | Valid email, max 254 characters             |
+| name       | string | No       | Min 1, max 200 characters                  |
+| company    | string | No       | Min 1, max 200 characters                  |
+| message    | string | No       | Min 1, max 2000 characters                 |
+| metadata   | object | No       | String/number/boolean/null values, max 4096 bytes serialized |
+
+> **Note:** The project owner configures which optional fields are enabled. If a field is disabled, sending it will return a 400 error. When in doubt, only send \`email\`.
+
+## Example Request Body
+
+\`\`\`json
+{
+  "email": "jane@acme.co",
+  "name": "Jane Smith",
+  "company": "Acme Inc",
+  "message": "Interested in the pro plan",
+  "metadata": {
+    "source": "landing-page",
+    "plan": "pro"
+  }
+}
+\`\`\`
+
+## Response Shapes
+
+### 201 Created — new entry
+\`\`\`json
+{
+  "data": {
+    "id": "entry_abc123",
+    "email": "jane@acme.co",
+    "name": "Jane Smith",
+    "company": "Acme Inc",
+    "position": 42,
+    "createdAt": "2025-01-15T12:00:00.000Z"
+  }
+}
+\`\`\`
+
+### 200 OK — duplicate (email already on the list)
+\`\`\`json
+{
+  "data": {
+    "id": "entry_abc123",
+    "email": "jane@acme.co",
+    "name": "Jane Smith",
+    "company": "Acme Inc",
+    "position": 42,
+    "createdAt": "2025-01-15T12:00:00.000Z"
+  }
+}
+\`\`\`
+
+### 400 Bad Request — validation error
+\`\`\`json
+{
+  "error": "Validation failed",
+  "details": [
+    { "field": "email", "message": "Invalid email" }
+  ]
+}
+\`\`\`
+
+### 401 Unauthorized — invalid or missing API key
+\`\`\`json
+{ "error": "Invalid API key" }
+\`\`\`
+
+### 429 Too Many Requests — rate limited
+\`\`\`json
+{ "error": "Too many requests" }
+\`\`\`
+
+## cURL Example
+
+\`\`\`bash
+curl -X POST ${endpoint} \\
+  -H "x-api-key: ${key}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "email": "test@example.com",
+    "name": "Test User"
+  }'
+\`\`\`
+
+## Implementation Guidelines
+
+1. **Keep the API key server-side.** Use a backend route, server action, or serverless function to proxy requests. Never expose the key in client-side JavaScript.
+2. **Store the key in an environment variable** (e.g. \`PLEASEHOLD_API_KEY\`). Do not hard-code it.
+3. **Handle errors gracefully.** Check the status code and show a user-friendly message for 400 (validation), 401 (auth), and 429 (rate limit) responses.
+4. **Add a loading state** to the submit button to prevent double submissions.
+5. **Handle duplicates as success.** A 200 response means the email is already on the list — show a positive message, not an error.
+6. **Send only enabled fields.** If you are unsure which fields the project accepts, start with just \`email\` and add others once confirmed.
+`;
+}
+
 function CodeBlock({
 	code,
 	onCopy,
@@ -364,6 +479,7 @@ function CodeBlock({
 export function ApiKeyDocs({ apiKeyPrefix, apiBaseUrl }: ApiKeyDocsProps) {
 	const [activeTab, setActiveTab] = useState<Tab>('Next.js');
 	const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+	const [copiedAi, setCopiedAi] = useState(false);
 
 	const displayKey = apiKeyPrefix ?? 'YOUR_API_KEY';
 	const steps = buildSteps(activeTab, displayKey, apiBaseUrl);
@@ -374,8 +490,40 @@ export function ApiKeyDocs({ apiKeyPrefix, apiBaseUrl }: ApiKeyDocsProps) {
 		setTimeout(() => setCopiedIndex(null), 2000);
 	}, []);
 
+	const handleCopyAi = useCallback(() => {
+		navigator.clipboard.writeText(buildAiPrompt(displayKey, apiBaseUrl));
+		setCopiedAi(true);
+		setTimeout(() => setCopiedAi(false), 2000);
+	}, [displayKey, apiBaseUrl]);
+
 	return (
 		<div>
+			{/* AI copy button */}
+			<div className="mb-3 flex justify-end">
+				<button
+					type="button"
+					onClick={handleCopyAi}
+					className={cn(
+						'flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors',
+						copiedAi
+							? 'border-green-600/30 bg-green-600/10 text-green-600'
+							: 'border-border text-muted-foreground hover:bg-muted hover:text-foreground',
+					)}
+				>
+					{copiedAi ? (
+						<>
+							<Check className="h-3.5 w-3.5" />
+							Copied
+						</>
+					) : (
+						<>
+							<Sparkles className="h-3.5 w-3.5" />
+							Copy instructions for AI
+						</>
+					)}
+				</button>
+			</div>
+
 			{/* Tab row */}
 			<div className="flex items-center gap-0 overflow-x-auto border-b border-border">
 				{tabs.map((tab) => (
