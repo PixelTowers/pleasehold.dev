@@ -1,9 +1,22 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import Nav from "../components/Nav.astro";
+import Hero from "../components/Hero.astro";
+import Problem from "../components/Problem.astro";
+import HowItWorks from "../components/HowItWorks.astro";
+import Features from "../components/Features.astro";
+import FinalCTA from "../components/FinalCTA.astro";
+import Footer from "../components/Footer.astro";
 ---
 
-<Layout title="Please Hold">
-	<main class="flex min-h-screen items-center justify-center">
-		<h1 class="text-4xl font-bold">Please Hold</h1>
+<Layout title="pleasehold.dev — Waitlists. One API call.">
+	<Nav />
+	<main>
+		<Hero />
+		<Problem />
+		<HowItWorks />
+		<Features />
+		<FinalCTA />
 	</main>
+	<Footer />
 </Layout>

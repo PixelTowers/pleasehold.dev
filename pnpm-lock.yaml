@@ -245,6 +245,9 @@ importers:
       astro:
         specifier: ^5.17.1
         version: 5.18.0(@types/node@25.3.1)(ioredis@5.9.3)(jiti@2.6.1)(lightningcss@1.31.1)(rollup@4.59.0)(tsx@4.21.0)(typescript@5.7.3)(yaml@2.8.2)
+      simplex-noise:
+        specifier: ^4.0.3
+        version: 4.0.3
       tailwindcss:
         specifier: ^4.2.1
         version: 4.2.1
@@ -4608,6 +4611,9 @@ packages:
 
   siginfo@2.0.0:
     resolution: {integrity: sha512-ybx0WO1/8bSBLEWXZvEd7gMW3Sn3JFlW3TvX1nREbDLRNQNaeNN8WK0meBwPdAaOI7TtRRRJn/Es1zhrrCHu7g==}
+
+  simplex-noise@4.0.3:
+    resolution: {integrity: sha512-qSE2I4AngLQG7BXqoZj51jokT4WUXe8mOBrvfOXpci8+6Yu44+/dD5zqDpOx3Ux792eamTd2lLcI8jqFntk/lg==}
 
   sisteransi@1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
@@ -10017,6 +10023,8 @@ snapshots:
       '@types/hast': 3.0.4
 
   siginfo@2.0.0: {}
+
+  simplex-noise@4.0.3: {}
 
   sisteransi@1.0.5: {}
 

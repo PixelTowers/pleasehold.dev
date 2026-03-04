@@ -1,0 +1,81 @@
+---
+const heroFeatures = [
+	{
+		icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />`,
+		title: "Your form, your rules",
+		description: "No widget. No embed. Build your own signup form and POST JSON. Full control over the user experience.",
+	},
+	{
+		icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />`,
+		title: "Slack, Discord, Telegram, email, webhooks",
+		description: "Get pinged where your team works. Not just email. Every channel retries independently with exponential backoff.",
+	},
+];
+
+const features = [
+	{
+		icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />`,
+		title: "Flexible fields",
+		description: "Email-only for low friction, or collect name, company, and a message. You decide what the form asks for.",
+	},
+	{
+		icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M5.625 3.75h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Zm0 6.75h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Zm0 6.75h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />`,
+		title: `"You're #42 on the list"`,
+		description: "Atomic position assignment. No gaps, no races. Return the position in your API response.",
+	},
+	{
+		icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3m3 3a3 3 0 1 0 0 6h13.5a3 3 0 1 0 0-6m-16.5-3a3 3 0 0 1 3-3h13.5a3 3 0 0 1 3 3m-19.5 0a4.5 4.5 0 0 1 .9-2.7L5.737 5.1a3.375 3.375 0 0 1 2.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 0 1 .9 2.7m0 0a3 3 0 0 1-3 3m0 3h.008v.008h-.008V17.25Zm2.25-6V11.25" />`,
+		title: "Self-hostable",
+		description: "Deploy with Docker Compose or use the managed service. Your data, your infrastructure.",
+	},
+	{
+		icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z" />`,
+		title: "Dashboard",
+		description: "Search, filter, bulk actions, CSV export, and status tracking from one place.",
+	},
+	{
+		icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M21.75 9v.906a2.25 2.25 0 0 1-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 0 0 1.183 1.981l6.478 3.488m8.839 2.51-4.66-2.51m0 0-1.023-.55a2.25 2.25 0 0 0-2.134 0l-1.022.55m0 0-4.661 2.51m16.5 1.615a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V8.844a2.25 2.25 0 0 1 1.183-1.981l7.5-4.039a2.25 2.25 0 0 1 2.134 0l7.5 4.039a2.25 2.25 0 0 1 1.183 1.98V19.5Z" />`,
+		title: "Double opt-in",
+		description: "Optional per project. Custom email templates. Tokens expire after 48 hours.",
+	},
+	{
+		icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />`,
+		title: "Signed webhooks",
+		description: "HMAC-SHA256 signature and timestamp on every webhook. Verify payloads. Prevent replays.",
+	},
+];
+---
+
+<section class="px-6 py-24 md:py-32">
+	<div class="mx-auto max-w-[1080px] text-center">
+		<h2 class="text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl" style="text-wrap: balance;">
+			What you get.
+		</h2>
+
+		<!-- Hero features — two large cards -->
+		<div class="mt-14 grid gap-4 sm:grid-cols-2">
+			{heroFeatures.map((feature) => (
+				<div class="rounded-xl bg-surface p-8 text-left">
+					<svg class="mb-4 h-6 w-6 text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+						<Fragment set:html={feature.icon} />
+					</svg>
+					<h3 class="text-base font-medium text-text-primary">{feature.title}</h3>
+					<p class="mt-2 text-sm leading-relaxed text-text-tertiary">{feature.description}</p>
+				</div>
+			))}
+		</div>
+
+		<!-- Remaining features — 3-col compact grid -->
+		<div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+			{features.map((feature) => (
+				<div class="rounded-xl border border-border p-6 text-left">
+					<svg class="mb-3 h-5 w-5 text-text-quaternary" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+						<Fragment set:html={feature.icon} />
+					</svg>
+					<h3 class="text-sm font-medium text-text-primary">{feature.title}</h3>
+					<p class="mt-1.5 text-[13px] leading-relaxed text-text-tertiary">{feature.description}</p>
+				</div>
+			))}
+		</div>
+	</div>
+</section>
