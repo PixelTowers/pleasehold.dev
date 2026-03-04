@@ -26,6 +26,22 @@ export const Route = createFileRoute('/signup')({
 	component: SignupPage,
 });
 
+/** Map Better Auth error messages to user-friendly text. Sensitive errors
+ *  (e.g. "user already exists") stay generic to prevent user enumeration. */
+function signupErrorMessage(code: string | undefined): string {
+	const fallback = 'Unable to create account. Please try again.';
+	if (!code) return fallback;
+
+	const safeMessages: Record<string, string> = {
+		'Password too short': 'Password must be at least 10 characters.',
+		'Password too long': 'Password is too long. Maximum 128 characters.',
+		'Invalid email': 'Please enter a valid email address.',
+		'Invalid password': 'Password is invalid.',
+	};
+
+	return safeMessages[code] ?? fallback;
+}
+
 function SignupPage() {
 	const [oauthLoading, setOauthLoading] = useState<string | null>(null);
 
@@ -38,8 +54,7 @@ function SignupPage() {
 		try {
 			const result = await authClient.signUp.email(values);
 			if (result.error) {
-				// Generic message to prevent user enumeration — never expose raw auth errors
-				toast.error('Unable to create account. Please try again.');
+				toast.error(signupErrorMessage(result.error.message));
 			} else {
 				capture('user_signed_up', { method: 'email' });
 				window.location.href = `/verify-email?email=${encodeURIComponent(values.email)}`;
