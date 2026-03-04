@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { authClient } from '@/lib/auth-client';
 import { type SignupValues, signupSchema } from '@/lib/schemas';
+import { capture } from '@/lib/tracking';
 
 export const Route = createFileRoute('/signup')({
 	component: SignupPage,
@@ -40,6 +41,7 @@ function SignupPage() {
 				// Generic message to prevent user enumeration — never expose raw auth errors
 				toast.error('Unable to create account. Please try again.');
 			} else {
+				capture('user_signed_up', { method: 'email' });
 				window.location.href = '/';
 			}
 		} catch {
@@ -52,6 +54,7 @@ function SignupPage() {
 		const label = provider === 'github' ? 'GitHub' : 'Google';
 
 		try {
+			capture('user_signed_up_oauth', { provider });
 			const result = await authClient.signIn.social({ provider, callbackURL: '/' });
 			if (result.error) {
 				toast.error(`Failed to sign in with ${label}. Please try again.`);

@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useProjects } from '@/hooks/useProjects';
 import { authClient } from '@/lib/auth-client';
+import { reset as resetTracking } from '@/lib/tracking';
 import { cn } from '@/lib/utils';
 
 interface SidebarProps {
@@ -29,6 +30,7 @@ export function Sidebar({ onClose, onCreateProject }: SidebarProps) {
 	const matchRoute = useMatchRoute();
 
 	const handleLogout = async () => {
+		resetTracking();
 		await authClient.signOut();
 		navigate({ to: '/login' });
 	};
