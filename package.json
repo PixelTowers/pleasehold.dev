@@ -16,6 +16,7 @@
 		"prepare": "husky"
 	},
 	"pnpm": {
+		"//overrides": "Dual zod: v4 global, v3 for @tanstack/router-* and astro (no v4 support yet). See scripts/patch-pruned-lockfile.mjs for Docker implications.",
 		"overrides": {
 			"zod": "^4.3.6",
 			"@tanstack/router-generator>zod": "^3.25.76",

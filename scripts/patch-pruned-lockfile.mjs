@@ -1,5 +1,23 @@
 // ABOUTME: Patches turbo-pruned package.json and pnpm-lock.yaml for Docker builds.
 // ABOUTME: Strips astro overrides and injects missing zod package entries from scoped overrides.
+//
+// WHY THIS EXISTS:
+// We run dual zod versions (v4 global + v3 for @tanstack/router-* and astro) via pnpm overrides.
+// turbo prune has a bug where it omits `packages:` and `snapshots:` entries from pnpm-lock.yaml
+// for versions resolved via scoped overrides (e.g. `@tanstack/router-generator>zod: ^3.25.76`)
+// when they differ from the global override. This causes `pnpm install --frozen-lockfile` to fail
+// with ERR_PNPM_LOCKFILE_MISSING_DEPENDENCY inside Docker builds.
+//
+// Additionally, astro (which also needs zod v3) is never Docker-built, so its overrides must be
+// stripped from both package.json and the lockfile header to avoid ERR_PNPM_LOCKFILE_CONFIG_MISMATCH.
+//
+// WHEN CAN THIS BE REMOVED:
+// This script can be deleted once BOTH conditions are met:
+//   1. @tanstack/router-generator and @tanstack/router-plugin ship zod v4 support
+//      (check: `npm view @tanstack/router-generator dependencies.zod`)
+//   2. turbo prune correctly handles scoped pnpm overrides
+//      (track: https://github.com/vercel/turborepo/issues — no specific issue filed yet)
+// Once zod is unified to a single version, the overrides and this script are unnecessary.
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 
