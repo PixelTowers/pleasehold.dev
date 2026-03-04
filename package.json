@@ -15,6 +15,14 @@
 		"clean": "turbo clean && rm -rf node_modules",
 		"prepare": "husky"
 	},
+	"pnpm": {
+		"overrides": {
+			"zod": "^4.3.6",
+			"@tanstack/router-generator>zod": "^3.25.76",
+			"@tanstack/router-plugin>zod": "^3.25.76",
+			"astro>zod": "^3.25.76"
+		}
+	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.4",
 		"dotenv-cli": "^11.0.0",

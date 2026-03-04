@@ -85,7 +85,13 @@ app.openapi(submitEntryRoute, async (c) => {
 		);
 	}
 
-	const data = parseResult.data;
+	const data = parseResult.data as {
+		email: string;
+		name?: string;
+		company?: string;
+		message?: string;
+		metadata?: Record<string, string | number | boolean | null>;
+	};
 
 	const verificationToken = project.doubleOptIn ? crypto.randomUUID() : null;
 	const verificationExpiresAt = project.doubleOptIn

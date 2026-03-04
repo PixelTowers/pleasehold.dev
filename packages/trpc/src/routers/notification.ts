@@ -96,7 +96,7 @@ const create = protectedProcedure
 		z.object({
 			projectId: z.string().uuid(),
 			type: z.enum(['email', 'slack', 'discord', 'telegram', 'webhook']),
-			config: z.record(z.unknown()),
+			config: z.record(z.string(), z.unknown()),
 		}),
 	)
 	.mutation(async ({ ctx, input }) => {
@@ -139,7 +139,7 @@ const update = protectedProcedure
 			projectId: z.string().uuid(),
 			channelId: z.string().uuid(),
 			enabled: z.boolean().optional(),
-			config: z.record(z.unknown()).optional(),
+			config: z.record(z.string(), z.unknown()).optional(),
 		}),
 	)
 	.mutation(async ({ ctx, input }) => {

@@ -10,7 +10,7 @@ export const EntryRequestSchema = z
 		company: z.string().max(200).optional().openapi({ example: 'Acme Inc' }),
 		message: z.string().max(2000).optional().openapi({ example: 'Interested in early access' }),
 		metadata: z
-			.record(z.union([z.string(), z.number(), z.boolean(), z.null()]))
+			.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
 			.optional()
 			.openapi({ example: { referral: 'twitter', plan: 'pro' } }),
 	})
