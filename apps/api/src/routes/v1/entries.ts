@@ -7,6 +7,7 @@ import { entries } from '@pleasehold/db';
 import { and, eq, sql } from 'drizzle-orm';
 import { buildEntrySchema } from '../../lib/field-validator';
 import { enqueueNotification } from '../../lib/notification-queue';
+import { posthog } from '../../lib/posthog';
 import type { ApiKeyVariables } from '../../middleware/api-key-auth';
 import { EntryRequestSchema, EntryResponseSchema, ErrorResponseSchema } from '../../openapi';
 
@@ -124,6 +125,17 @@ app.openapi(submitEntryRoute, async (c) => {
 
 	if (insertResult.length > 0) {
 		const entry = insertResult[0];
+
+		posthog.capture({
+			distinctId: project.id,
+			event: 'waitlist_entry_created',
+			properties: {
+				projectId: project.id,
+				entryId: entry.id,
+				position: entry.position,
+				doubleOptIn: project.doubleOptIn,
+			},
+		});
 
 		if (project.doubleOptIn) {
 			enqueueNotification({

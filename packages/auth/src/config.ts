@@ -32,6 +32,8 @@ export interface AuthOptions {
 	onUserCreated?: (user: { id: string; email: string; name: string }) => Promise<void>;
 	/** Disable API key rate limiting (useful for integration tests). */
 	disableApiKeyRateLimit?: boolean;
+	/** Send an email (used for verification emails). */
+	sendEmail?: (to: string, subject: string, html: string) => Promise<void>;
 }
 
 export function createAuth(options: AuthOptions) {
@@ -67,6 +69,23 @@ export function createAuth(options: AuthOptions) {
 			enabled: true,
 			minPasswordLength: 10,
 			maxPasswordLength: 128,
+			requireEmailVerification: true,
+		},
+		emailVerification: {
+			sendOnSignUp: true,
+			autoSignInAfterVerification: true,
+			expiresIn: 3600,
+			sendVerificationEmail: async ({ user, url }) => {
+				if (!options.sendEmail) {
+					console.warn('[auth] sendEmail not configured — skipping verification email');
+					return;
+				}
+				await options.sendEmail(
+					user.email,
+					'Verify your email — pleasehold',
+					buildVerificationEmailHtml(url),
+				);
+			},
 		},
 		session: {
 			expiresIn: 60 * 60 * 24 * 7, // 7 days
@@ -99,4 +118,36 @@ export function createAuth(options: AuthOptions) {
 			},
 		},
 	});
+}
+
+function buildVerificationEmailHtml(url: string): string {
+	return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0">
+<tr><td align="center">
+<table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;padding:40px;max-width:480px">
+<tr><td style="text-align:center;padding-bottom:24px">
+  <span style="font-size:20px;font-weight:700;color:#0d9488">pleasehold</span>
+</td></tr>
+<tr><td style="text-align:center;padding-bottom:16px">
+  <h1 style="margin:0;font-size:22px;font-weight:600;color:#18181b">Verify your email</h1>
+</td></tr>
+<tr><td style="text-align:center;padding-bottom:32px;color:#52525b;font-size:15px;line-height:1.5">
+  Click the button below to verify your email address and activate your account.
+</td></tr>
+<tr><td style="text-align:center;padding-bottom:32px">
+  <a href="${url}" style="display:inline-block;background:#0d9488;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:6px">
+    Verify email
+  </a>
+</td></tr>
+<tr><td style="text-align:center;color:#a1a1aa;font-size:13px;line-height:1.5">
+  This link expires in 1 hour. If you didn't create an account, you can safely ignore this email.
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
 }

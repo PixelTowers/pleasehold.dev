@@ -28,7 +28,15 @@ const slackConfigSchema = z.object({
 });
 
 const discordConfigSchema = z.object({
-	webhookUrl: z.string().url().startsWith('https://discord.com/api/webhooks/'),
+	webhookUrl: z
+		.string()
+		.url()
+		.refine(
+			(url) =>
+				url.startsWith('https://discord.com/api/webhooks/') ||
+				url.startsWith('https://discordapp.com/api/webhooks/'),
+			{ message: 'Must be a valid Discord webhook URL' },
+		),
 });
 
 const telegramConfigSchema = z.object({

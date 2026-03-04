@@ -42,7 +42,7 @@ function SignupPage() {
 				toast.error('Unable to create account. Please try again.');
 			} else {
 				capture('user_signed_up', { method: 'email' });
-				window.location.href = '/';
+				window.location.href = `/verify-email?email=${encodeURIComponent(values.email)}`;
 			}
 		} catch {
 			toast.error('An unexpected error occurred. Please try again.');

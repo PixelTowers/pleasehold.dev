@@ -1,6 +1,12 @@
-# pleasehold
+<p align="center">
+  <img src=".github/logo.svg" width="80" height="80" alt="pleasehold logo" />
+</p>
 
-API-first waitlist and demo-booking service. Add a signup form to any landing page in minutes — just an API key and a POST request. No backend work, no form infrastructure.
+<h1 align="center">pleasehold</h1>
+
+<p align="center">
+  API-first waitlist service. Add a signup form to any landing page in minutes — just an API key and a POST request. No backend work, no form infrastructure.
+</p>
 
 Developers build their own frontend forms; pleasehold handles the backend: entry capture, deduplication, notifications, and a management dashboard.
 
@@ -342,3 +348,10 @@ Common causes:
 - `DATABASE_URL` not set or incorrect — check Infisical secrets or environment variables
 - Database not reachable — verify network connectivity and PostgreSQL health
 - Conflicting schema — a migration references a table/column that was manually modified
+
+---
+
+<p align="center">
+  Built by <a href="https://pixeltowers.io">PixelTowers.io</a><br />
+  <sub>Products that empower, not replace.</sub>
+</p>

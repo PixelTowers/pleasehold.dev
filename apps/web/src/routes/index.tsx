@@ -70,6 +70,7 @@ function DashboardIndex() {
 						updatedAt={project.updatedAt}
 						brandColor={project.brandColor}
 						logoUrl={project.logoUrl}
+						entryCount={'entryCount' in project ? (project.entryCount as number) : undefined}
 					/>
 				))}
 			</div>

@@ -1,9 +1,9 @@
 // ABOUTME: tRPC router for project CRUD and field configuration management.
 // ABOUTME: All queries enforce userId ownership checks; mode is immutable after creation.
 
-import { emailTemplates, projectFieldConfigs, projects } from '@pleasehold/db';
+import { emailTemplates, entries, projectFieldConfigs, projects } from '@pleasehold/db';
 import { TRPCError } from '@trpc/server';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, count, desc, eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import { protectedProcedure, router } from '../trpc';
 
@@ -84,11 +84,31 @@ export const projectRouter = router({
 		}),
 
 	list: protectedProcedure.query(async ({ ctx }) => {
-		return ctx.db.query.projects.findMany({
+		const projectRows = await ctx.db.query.projects.findMany({
 			where: eq(projects.userId, ctx.user.id),
 			with: { fieldConfig: true },
 			orderBy: [desc(projects.createdAt)],
 		});
+
+		if (projectRows.length === 0) return [];
+
+		const counts = await ctx.db
+			.select({ projectId: entries.projectId, count: count() })
+			.from(entries)
+			.where(
+				inArray(
+					entries.projectId,
+					projectRows.map((p) => p.id),
+				),
+			)
+			.groupBy(entries.projectId);
+
+		const countMap = new Map(counts.map((c) => [c.projectId, c.count]));
+
+		return projectRows.map((p) => ({
+			...p,
+			entryCount: countMap.get(p.id) ?? 0,
+		}));
 	}),
 
 	getById: protectedProcedure
