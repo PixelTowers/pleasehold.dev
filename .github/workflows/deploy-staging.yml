@@ -26,11 +26,6 @@ jobs:
           file: apps/api/Dockerfile
           push: true
           tags: ghcr.io/pixeltowers/pleasehold/api:${{ github.sha }}
-          build-args: |
-            INFISICAL_CLIENT_ID=${{ secrets.INFISICAL_CLIENT_ID }}
-            INFISICAL_CLIENT_SECRET=${{ secrets.INFISICAL_CLIENT_SECRET }}
-            INFISICAL_PROJECT_ID=${{ secrets.INFISICAL_PROJECT_ID }}
-            INFISICAL_ENV=staging
 
       - name: Build & push Web
         uses: docker/build-push-action@v6
@@ -48,11 +43,6 @@ jobs:
           file: apps/worker/Dockerfile
           push: true
           tags: ghcr.io/pixeltowers/pleasehold/worker:${{ github.sha }}
-          build-args: |
-            INFISICAL_CLIENT_ID=${{ secrets.INFISICAL_CLIENT_ID }}
-            INFISICAL_CLIENT_SECRET=${{ secrets.INFISICAL_CLIENT_SECRET }}
-            INFISICAL_PROJECT_ID=${{ secrets.INFISICAL_PROJECT_ID }}
-            INFISICAL_ENV=staging
 
   deploy:
     needs: build

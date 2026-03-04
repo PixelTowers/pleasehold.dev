@@ -37,7 +37,7 @@ const ALLOWED_HTML_TAGS = [
 ];
 
 const ALLOWED_HTML_ATTRIBUTES: Record<string, string[]> = {
-	'*': ['style', 'class'],
+	'*': ['class'],
 	a: ['href'],
 	img: ['src', 'alt', 'width', 'height'],
 	td: ['width', 'height'],

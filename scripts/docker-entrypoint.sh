@@ -11,6 +11,11 @@ if [ -n "$INFISICAL_CLIENT_ID" ] && [ -n "$INFISICAL_CLIENT_SECRET" ]; then
     --domain="${INFISICAL_DOMAIN:-https://secrets.pixeltowers.io}" \
     --plain --silent)
 
+  # Clear long-lived machine identity credentials from the process environment.
+  # The short-lived INFISICAL_TOKEN is sufficient for the infisical run command.
+  unset INFISICAL_CLIENT_ID
+  unset INFISICAL_CLIENT_SECRET
+
   exec infisical run \
     --token="$INFISICAL_TOKEN" \
     --env="${INFISICAL_ENV:-production}" \

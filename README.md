@@ -119,7 +119,8 @@ pleasehold/
 ├── apps/
 │   ├── api/           Hono server — REST API + tRPC + auth + OpenAPI docs
 │   ├── web/           React 19 SPA — dashboard (Vite + TanStack Router)
-│   └── worker/        BullMQ processor — notifications + background jobs
+│   ├── worker/        BullMQ processor — notifications + background jobs
+│   └── www/           Astro landing site (Cloudflare Pages)
 ├── packages/
 │   ├── db/            Drizzle ORM schema + PostgreSQL client
 │   ├── auth/          Better Auth configuration
@@ -128,6 +129,8 @@ pleasehold/
 ├── docker-compose.dev.yml      Dev infrastructure (Postgres + Redis)
 └── .env.example                Environment template
 ```
+
+For deployment pipelines and infrastructure topology, see [docs/infrastructure.md](docs/infrastructure.md).
 
 ### Design Decisions
 
@@ -263,7 +266,8 @@ Run `make help` to see all available targets.
 - **API Docs:** [Scalar](https://scalar.com) (auto-generated from OpenAPI spec)
 - **Monorepo:** pnpm + [Turborepo](https://turbo.build)
 - **Code Quality:** [Biome](https://biomejs.dev) + [Vitest](https://vitest.dev)
-- **Deployment:** Docker multi-stage builds + nginx reverse proxy
+- **Landing Site:** [Astro](https://astro.build) + Tailwind CSS 4 (Cloudflare Pages)
+- **Deployment:** Docker multi-stage builds + nginx reverse proxy + Cloudflare Pages
 
 ## Self-Hosting Notes
 
