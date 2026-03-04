@@ -13,6 +13,7 @@ interface ProjectCardProps {
 	updatedAt: Date;
 	brandColor?: string | null;
 	logoUrl?: string | null;
+	entryCount?: number;
 }
 
 function formatRelativeTime(date: Date): string {
@@ -37,6 +38,7 @@ export function ProjectCard({
 	updatedAt,
 	brandColor,
 	logoUrl,
+	entryCount,
 }: ProjectCardProps) {
 	const accentColor = brandColor ?? (mode === 'waitlist' ? '#3b82f6' : '#8b5cf6');
 
@@ -63,6 +65,14 @@ export function ProjectCard({
 							{mode === 'demo-booking' ? 'Demo' : 'Waitlist'}
 						</Badge>
 					</div>
+					{entryCount !== undefined && (
+						<p className="mb-3 text-lg font-semibold text-foreground">
+							{entryCount.toLocaleString()}{' '}
+							<span className="text-xs font-normal text-muted">
+								{mode === 'demo-booking' ? 'bookings' : 'waiting'}
+							</span>
+						</p>
+					)}
 					<div className="flex justify-between text-xs text-muted">
 						<span>Active {formatRelativeTime(updatedAt)}</span>
 						<span className="text-muted-foreground">
