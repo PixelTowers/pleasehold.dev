@@ -1,7 +1,7 @@
 // ABOUTME: Patches turbo-pruned package.json and pnpm-lock.yaml for Docker builds.
 // ABOUTME: Strips astro overrides and injects missing zod package entries from scoped overrides.
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 
 // 1. Read package.json overrides before stripping, to know which zod versions are needed
 const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
@@ -51,15 +51,53 @@ while (i < lines.length) {
 }
 lockfile = out.join('\n');
 
-// 2b. Inject missing zod package entries.
+// 2b. Inject missing zod package and snapshot entries.
 // turbo prune omits package entries for versions resolved via scoped overrides
 // when those versions differ from the global override.
+// We read integrity hashes from the original (unpruned) lockfile so nothing is hardcoded.
+const originalLockPath = '/tmp/original-pnpm-lock.yaml';
+const originalLockfile = existsSync(originalLockPath)
+	? readFileSync(originalLockPath, 'utf8')
+	: '';
+
 for (const version of zodVersionsNeeded) {
-	const entryPattern = `  zod@${version}: {}`;
-	if (!lockfile.includes(entryPattern)) {
+	const pkgEntry = `  zod@${version}:`;
+	const snapshotEntry = `  zod@${version}: {}`;
+
+	// Check if the packages: section already has this entry
+	if (!lockfile.includes(pkgEntry)) {
+		// Extract the resolution line from the original lockfile
+		let resolution = '';
+		if (originalLockfile) {
+			const entryIdx = originalLockfile.indexOf(`  zod@${version}:\n    resolution:`);
+			if (entryIdx !== -1) {
+				const resStart = originalLockfile.indexOf('resolution:', entryIdx);
+				const resEnd = originalLockfile.indexOf('\n', resStart);
+				resolution = originalLockfile.slice(resStart, resEnd).trim();
+			}
+		}
+
+		if (!resolution) {
+			console.warn(`WARNING: Could not find resolution for zod@${version}, skipping packages entry`);
+			continue;
+		}
+
+		// Inject into the packages: section (before snapshots:)
+		const snapshotsIdx = lockfile.indexOf('\nsnapshots:');
+		if (snapshotsIdx !== -1) {
+			const before = lockfile.slice(0, snapshotsIdx);
+			const after = lockfile.slice(snapshotsIdx);
+			lockfile = `${before}\n${pkgEntry}\n    ${resolution}\n${after}`;
+			console.log(`Injected packages entry: zod@${version}`);
+		}
+	}
+
+	// Check if the snapshots: section already has this entry
+	if (!lockfile.includes(snapshotEntry)) {
+		// Append to end of file (snapshots section is last)
 		const trimmed = lockfile.trimEnd();
-		lockfile = `${trimmed}\n\n${entryPattern}\n`;
-		console.log(`Injected missing lockfile entry: zod@${version}`);
+		lockfile = `${trimmed}\n\n${snapshotEntry}\n`;
+		console.log(`Injected snapshots entry: zod@${version}`);
 	}
 }
 

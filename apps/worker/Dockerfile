@@ -19,6 +19,7 @@ COPY --from=pruner /app/out/json/ .
 # Strip overrides for packages not in any Docker-built app (e.g. astro).
 # Must patch both package.json AND pnpm-lock.yaml so --frozen-lockfile sees matching config.
 # Also inject missing zod package entries that turbo prune omits (scoped override bug).
+COPY --from=pruner /app/pnpm-lock.yaml /tmp/original-pnpm-lock.yaml
 COPY scripts/patch-pruned-lockfile.mjs /tmp/
 RUN node /tmp/patch-pruned-lockfile.mjs
 RUN pnpm install --frozen-lockfile
