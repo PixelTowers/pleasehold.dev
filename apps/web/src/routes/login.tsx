@@ -38,6 +38,11 @@ function LoginPage() {
 		try {
 			const result = await authClient.signIn.email(values);
 			if (result.error) {
+				if (result.error.code === 'EMAIL_NOT_VERIFIED') {
+					toast.error('Please verify your email before logging in.');
+					window.location.href = `/verify-email?email=${encodeURIComponent(values.email)}`;
+					return;
+				}
 				// Generic message to prevent user enumeration — never expose raw auth errors
 				toast.error('Invalid email or password.');
 			} else {

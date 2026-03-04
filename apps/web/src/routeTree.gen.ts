@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as LoginRouteImport } from './routes/login'
@@ -24,6 +25,11 @@ import { Route as ProjectsProjectIdEmailsRouteImport } from './routes/projects/$
 import { Route as ProjectsProjectIdEntriesIndexRouteImport } from './routes/projects/$projectId/entries/index'
 import { Route as ProjectsProjectIdEntriesEntryIdRouteImport } from './routes/projects/$projectId/entries/$entryId'
 
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -105,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
   '/projects/new': typeof ProjectsNewRoute
   '/projects/$projectId/emails': typeof ProjectsProjectIdEmailsRoute
@@ -121,6 +128,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/projects/new': typeof ProjectsNewRoute
   '/projects/$projectId/emails': typeof ProjectsProjectIdEmailsRoute
   '/projects/$projectId/keys': typeof ProjectsProjectIdKeysRoute
@@ -137,6 +145,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
   '/projects/new': typeof ProjectsNewRoute
   '/projects/$projectId/emails': typeof ProjectsProjectIdEmailsRoute
@@ -155,6 +164,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/settings'
     | '/signup'
+    | '/verify-email'
     | '/projects/$projectId'
     | '/projects/new'
     | '/projects/$projectId/emails'
@@ -171,6 +181,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/settings'
     | '/signup'
+    | '/verify-email'
     | '/projects/new'
     | '/projects/$projectId/emails'
     | '/projects/$projectId/keys'
@@ -186,6 +197,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/settings'
     | '/signup'
+    | '/verify-email'
     | '/projects/$projectId'
     | '/projects/new'
     | '/projects/$projectId/emails'
@@ -203,12 +215,20 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRouteWithChildren
   ProjectsNewRoute: typeof ProjectsNewRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -339,6 +359,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
   ProjectsProjectIdRoute: ProjectsProjectIdRouteWithChildren,
   ProjectsNewRoute: ProjectsNewRoute,
 }

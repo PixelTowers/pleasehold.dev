@@ -14,7 +14,7 @@ import { authClient } from '@/lib/auth-client';
 import { identify } from '@/lib/tracking';
 import { AppLayout } from '../components/AppLayout';
 
-const AUTH_PATHS = ['/login', '/signup'];
+const AUTH_PATHS = ['/login', '/signup', '/verify-email'];
 
 export const Route = createRootRoute({
 	beforeLoad: async ({ location }) => {

@@ -9,6 +9,7 @@ import { createDb } from '@pleasehold/db';
 import { appRouter, createContext } from '@pleasehold/trpc';
 import { apiReference } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
+import { Resend } from 'resend';
 import { apiKeyAuth } from './middleware/api-key-auth';
 import {
 	apiRateLimiter,
@@ -26,6 +27,9 @@ const webUrl = process.env.WEB_URL ?? 'http://localhost:5173';
 
 const db = createDb(process.env.DATABASE_URL!);
 
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const emailFrom = process.env.EMAIL_FROM ?? 'noreply@pleasehold.dev';
+
 const auth = createAuth({
 	db,
 	secret: process.env.BETTER_AUTH_SECRET!,
@@ -35,6 +39,11 @@ const auth = createAuth({
 	googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
 	githubClientId: process.env.GITHUB_CLIENT_ID,
 	githubClientSecret: process.env.GITHUB_CLIENT_SECRET,
+	sendEmail: resend
+		? async (to, subject, html) => {
+				await resend.emails.send({ from: emailFrom, to, subject, html });
+			}
+		: undefined,
 });
 
 // Public verification endpoint: no API key required, permissive CORS for email link clicks
