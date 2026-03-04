@@ -28,6 +28,7 @@
 		"hono": "^4.12.2",
 		"hono-rate-limiter": "^0.5.3",
 		"ioredis": "^5",
+		"posthog-node": "^5.26.2",
 		"zod": "^3.25.76"
 	},
 	"devDependencies": {
