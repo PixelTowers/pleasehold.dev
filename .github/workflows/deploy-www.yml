@@ -37,4 +37,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy apps/www/dist --project-name=pleasehold-www --branch=${{ github.head_ref || github.ref_name }}
+          workingDirectory: apps/www
+          command: pages deploy dist --project-name=pleasehold-www --branch=${{ github.head_ref || github.ref_name }}
