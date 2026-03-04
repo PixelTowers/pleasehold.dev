@@ -3,10 +3,22 @@
 
 import { readFileSync, writeFileSync } from 'node:fs';
 
-// 1. Strip astro-scoped overrides from package.json (astro is never Docker-built)
+// 1. Read package.json overrides before stripping, to know which zod versions are needed
 const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+const zodVersionsNeeded = new Set();
+
 if (pkg.pnpm?.overrides) {
 	const overrides = pkg.pnpm.overrides;
+
+	// Collect all zod version specs from overrides (e.g. "^3.25.76" -> "3.25.76")
+	for (const [key, value] of Object.entries(overrides)) {
+		if (key === 'zod' || key.endsWith('>zod')) {
+			const version = value.replace(/^[\^~>=<]*/, '');
+			zodVersionsNeeded.add(version);
+		}
+	}
+
+	// Strip astro-scoped overrides (astro is never Docker-built)
 	for (const key of Object.keys(overrides)) {
 		if (key.startsWith('astro')) {
 			delete overrides[key];
@@ -39,19 +51,12 @@ while (i < lines.length) {
 }
 lockfile = out.join('\n');
 
-// 2b. Find zod versions referenced in the lockfile body but missing from packages section.
-// turbo prune sometimes omits package entries for versions resolved via scoped overrides.
-const zodRefPattern = /zod@(\d+\.\d+\.\d+)/g;
-const referencedVersions = new Set();
-for (const match of lockfile.matchAll(zodRefPattern)) {
-	referencedVersions.add(match[1]);
-}
-
-for (const version of referencedVersions) {
+// 2b. Inject missing zod package entries.
+// turbo prune omits package entries for versions resolved via scoped overrides
+// when those versions differ from the global override.
+for (const version of zodVersionsNeeded) {
 	const entryPattern = `  zod@${version}: {}`;
 	if (!lockfile.includes(entryPattern)) {
-		// Inject the missing entry before the last non-empty line
-		// pnpm-lock.yaml packages are at the end, sorted alphabetically
 		const trimmed = lockfile.trimEnd();
 		lockfile = `${trimmed}\n\n${entryPattern}\n`;
 		console.log(`Injected missing lockfile entry: zod@${version}`);
