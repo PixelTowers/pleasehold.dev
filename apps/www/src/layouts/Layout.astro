@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import PostHog from "../components/posthog.astro";
 
 interface Props {
 	title: string;
@@ -40,6 +41,7 @@ const canonicalURL = new URL(Astro.url.pathname, "https://pleasehold.dev");
 		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
 		<title>{title}</title>
+		<PostHog />
 	</head>
 	<body>
 		<slot />
