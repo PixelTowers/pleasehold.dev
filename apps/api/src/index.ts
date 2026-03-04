@@ -160,6 +160,7 @@ app.get(
 	apiReference({
 		url: '/doc',
 		pageTitle: 'pleasehold API Reference',
+		hideModels: true,
 	}),
 );
 
