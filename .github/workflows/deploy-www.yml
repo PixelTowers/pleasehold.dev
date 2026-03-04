@@ -33,6 +33,15 @@ jobs:
 
       - run: pnpm --filter @pleasehold/www build
 
+      - name: Create CF Pages project if needed
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/www
+          command: pages project create pleasehold-www --production-branch=main
+        continue-on-error: true
+
       - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
