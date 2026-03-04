@@ -16,6 +16,12 @@ RUN turbo prune @pleasehold/api --docker
 FROM base AS installer
 WORKDIR /app
 COPY --from=pruner /app/out/json/ .
+# Strip per-package zod overrides that reference packages not in the pruned workspace;
+# only the global "zod" override applies in Docker builds.
+RUN node -e "const p=JSON.parse(require('fs').readFileSync('package.json','utf8')); \
+  if(p.pnpm?.overrides){const o=p.pnpm.overrides; \
+  Object.keys(o).forEach(k=>{if(k!=='zod')delete o[k]}); \
+  require('fs').writeFileSync('package.json',JSON.stringify(p,null,2))}"
 RUN pnpm install --frozen-lockfile
 
 FROM installer AS builder
