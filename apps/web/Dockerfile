@@ -16,21 +16,20 @@ RUN turbo prune @pleasehold/web --docker
 FROM base AS installer
 WORKDIR /app
 COPY --from=pruner /app/out/json/ .
-# Strip per-package zod overrides that reference packages not in the pruned workspace;
-# only the global "zod" override applies in Docker builds.
+# Strip overrides for packages not in any Docker-built app (e.g. astro).
 # Must patch both package.json AND pnpm-lock.yaml so --frozen-lockfile sees matching config.
 RUN node -e "\
   const fs=require('fs');\
   const p=JSON.parse(fs.readFileSync('package.json','utf8'));\
   if(p.pnpm?.overrides){const o=p.pnpm.overrides;\
-  Object.keys(o).forEach(k=>{if(k!=='zod')delete o[k]});\
+  Object.keys(o).forEach(k=>{if(k.startsWith('astro'))delete o[k]});\
   fs.writeFileSync('package.json',JSON.stringify(p,null,2))}\
   const lf=fs.readFileSync('pnpm-lock.yaml','utf8');\
   const lines=lf.split('\n');let i=0;const out=[];\
   while(i<lines.length){\
     if(lines[i]==='overrides:'){out.push(lines[i]);i++;\
       while(i<lines.length&&lines[i].startsWith('  ')){\
-        if(lines[i].match(/^  zod:/)){out.push(lines[i])}\
+        if(!lines[i].includes('astro')){out.push(lines[i])}\
         i++}\
     }else{out.push(lines[i]);i++}}\
   fs.writeFileSync('pnpm-lock.yaml',out.join('\n'));"
