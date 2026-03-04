@@ -10,6 +10,7 @@ import { CsvExportButton } from '@/components/CsvExportButton';
 import { EmptyState } from '@/components/EmptyState';
 import { EntriesTable } from '@/components/EntriesTable';
 import { Input } from '@/components/ui/input';
+import { capture } from '@/lib/tracking';
 import { trpc } from '@/lib/trpc';
 
 export const Route = createFileRoute('/projects/$projectId/entries/')({
@@ -61,7 +62,11 @@ function EntriesPage() {
 	const { data: statsData } = trpc.entry.stats.useQuery({ projectId });
 
 	const bulkMutation = trpc.entry.bulkUpdateStatus.useMutation({
-		onSuccess: () => {
+		onSuccess: (_data, variables) => {
+			capture('entry_bulk_status_updated', {
+				projectId,
+				count: variables.entryIds.length,
+			});
 			utils.entry.list.invalidate();
 			utils.entry.stats.invalidate();
 			setRowSelection({});

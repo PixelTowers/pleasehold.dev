@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { type CreateProjectValues, createProjectSchema } from '@/lib/schemas';
+import { capture } from '@/lib/tracking';
 import { trpc } from '@/lib/trpc';
 import { cn } from '@/lib/utils';
 
@@ -55,6 +56,7 @@ export function CreateProjectFlow() {
 
 	const createProject = trpc.project.create.useMutation({
 		onSuccess: async (data) => {
+			capture('project_created', { projectId: data.id, mode: form.getValues('mode') });
 			// If a logo was staged, upload it and attach to the project
 			if (logoFile) {
 				try {

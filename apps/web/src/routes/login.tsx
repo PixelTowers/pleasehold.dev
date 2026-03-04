@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { authClient } from '@/lib/auth-client';
 import { type LoginValues, loginSchema } from '@/lib/schemas';
+import { capture } from '@/lib/tracking';
 
 export const Route = createFileRoute('/login')({
 	component: LoginPage,
@@ -40,6 +41,7 @@ function LoginPage() {
 				// Generic message to prevent user enumeration — never expose raw auth errors
 				toast.error('Invalid email or password.');
 			} else {
+				capture('user_logged_in', { method: 'email' });
 				window.location.href = '/';
 			}
 		} catch {
@@ -52,6 +54,7 @@ function LoginPage() {
 		const label = provider === 'github' ? 'GitHub' : 'Google';
 
 		try {
+			capture('user_logged_in_oauth', { provider });
 			const result = await authClient.signIn.social({ provider, callbackURL: '/' });
 			if (result.error) {
 				toast.error(`Failed to sign in with ${label}. Please try again.`);

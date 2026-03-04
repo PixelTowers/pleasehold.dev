@@ -20,6 +20,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { type CreateProjectValues, createProjectSchema } from '@/lib/schemas';
+import { capture } from '@/lib/tracking';
 import { trpc } from '@/lib/trpc';
 import { cn } from '@/lib/utils';
 
@@ -40,6 +41,7 @@ export function CreateProjectDialog({ open, onClose }: CreateProjectDialogProps)
 
 	const createProject = trpc.project.create.useMutation({
 		onSuccess: async (data) => {
+			capture('project_created', { projectId: data.id, mode: form.getValues('mode') });
 			toast.success('Project created');
 			await utils.project.list.invalidate();
 			navigate({ to: '/projects/$projectId', params: { projectId: data.id } });

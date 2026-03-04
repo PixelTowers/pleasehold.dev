@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { type ApiKeyLabelValues, apiKeyLabelSchema } from '@/lib/schemas';
+import { capture } from '@/lib/tracking';
 import { trpc } from '@/lib/trpc';
 import { ApiKeyRevealOnce } from './ApiKeyRevealOnce';
 
@@ -39,6 +40,7 @@ export function ApiKeyCreateDialog({ projectId, open, onClose }: ApiKeyCreateDia
 
 	const createKey = trpc.apiKey.create.useMutation({
 		onSuccess: (data) => {
+			capture('api_key_created', { projectId });
 			setCreatedKey(data.key);
 			utils.apiKey.list.invalidate({ projectId });
 		},

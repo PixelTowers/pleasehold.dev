@@ -11,6 +11,7 @@ import {
 import { NotFoundContent } from '@/components/NotFoundContent';
 import { Toaster } from '@/components/ui/sonner';
 import { authClient } from '@/lib/auth-client';
+import { identify } from '@/lib/tracking';
 import { AppLayout } from '../components/AppLayout';
 
 const AUTH_PATHS = ['/login', '/signup'];
@@ -26,6 +27,7 @@ export const Route = createRootRoute({
 			if (!session?.data?.user) {
 				throw redirect({ to: '/login' });
 			}
+			identify(session.data.user.id, { email: session.data.user.email });
 		} catch (error) {
 			// Re-throw TanStack Router redirects (they use throw for control flow)
 			if (isRedirect(error)) {

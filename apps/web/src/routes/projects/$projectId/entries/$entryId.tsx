@@ -5,6 +5,7 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { EntryStatusBadge } from '@/components/EntryStatusBadge';
+import { capture } from '@/lib/tracking';
 import { trpc } from '@/lib/trpc';
 
 export const Route = createFileRoute('/projects/$projectId/entries/$entryId')({
@@ -18,7 +19,8 @@ function EntryDetailPage() {
 	const { data: entry, isPending, error } = trpc.entry.getById.useQuery({ projectId, entryId });
 
 	const mutation = trpc.entry.updateStatus.useMutation({
-		onSuccess: () => {
+		onSuccess: (_data, variables) => {
+			capture('entry_status_updated', { projectId, status: variables.status });
 			toast.success('Status updated');
 			utils.entry.getById.invalidate({ projectId, entryId });
 			utils.entry.list.invalidate();

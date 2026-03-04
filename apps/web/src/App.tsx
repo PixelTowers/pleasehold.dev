@@ -3,8 +3,11 @@
 
 import { QueryClientProvider } from '@tanstack/react-query';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
+import { initTracking } from './lib/tracking';
 import { queryClient, trpc, trpcClient } from './lib/trpc';
 import { routeTree } from './routeTree.gen';
+
+initTracking();
 
 const router = createRouter({ routeTree });
 
