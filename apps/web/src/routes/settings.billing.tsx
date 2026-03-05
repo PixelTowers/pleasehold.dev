@@ -2,8 +2,9 @@
 // ABOUTME: Free users see upgrade CTA; Pro users see Stripe portal link; self-hosted shows all-unlocked.
 
 import { createFileRoute } from '@tanstack/react-router';
+import confetti from 'canvas-confetti';
 import { Check, Crown, Zap } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useBillingEnabled, useSubscription, useSubscriptionUsage } from '@/hooks/useSubscription';
@@ -35,12 +36,36 @@ function BillingPage() {
 
 	const plan = sub?.plan ?? 'free';
 	const billingEnabled = billing?.enabled ?? false;
+	const confettiFired = useRef(false);
 
 	useEffect(() => {
 		if (!billingLoading && !subLoading) {
 			capture('billing_page_viewed', { plan, billingEnabled });
 		}
 	}, [billingLoading, subLoading, plan, billingEnabled]);
+
+	// Fire confetti on successful Stripe checkout redirect
+	useEffect(() => {
+		const params = new URLSearchParams(window.location.search);
+		if (params.get('success') !== 'true' || confettiFired.current) return;
+		confettiFired.current = true;
+
+		// Clean up the URL param
+		params.delete('success');
+		const newUrl = params.toString()
+			? `${window.location.pathname}?${params.toString()}`
+			: window.location.pathname;
+		window.history.replaceState({}, '', newUrl);
+
+		// Fire confetti bursts from both sides + center
+		const fire = (opts: confetti.Options) => confetti({ ...opts, disableForReducedMotion: true });
+		fire({ particleCount: 80, spread: 70, origin: { x: 0.3, y: 0.5 } });
+		fire({ particleCount: 80, spread: 70, origin: { x: 0.7, y: 0.5 } });
+		const timer = setTimeout(() => {
+			fire({ particleCount: 50, spread: 100, origin: { x: 0.5, y: 0.3 } });
+		}, 250);
+		return () => clearTimeout(timer);
+	}, []);
 
 	if (billingLoading || subLoading || usageLoading) {
 		return (
