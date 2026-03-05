@@ -8,6 +8,12 @@ import { Hono } from 'hono';
 import Stripe from 'stripe';
 import { posthog } from '../../lib/posthog';
 
+function isOurSubscription(sub: Stripe.Subscription): boolean {
+	const priceId = process.env.STRIPE_PRO_PRICE_ID;
+	if (!priceId) return true; // No filter configured — accept all
+	return sub.items.data.some((item) => item.price.id === priceId);
+}
+
 export function createStripeWebhookRoute(db: Database) {
 	const app = new Hono();
 
@@ -48,6 +54,7 @@ export function createStripeWebhookRoute(db: Database) {
 
 				// Fetch the subscription to get the current period end from items
 				const stripeSub = await stripe.subscriptions.retrieve(subscriptionId);
+				if (!isOurSubscription(stripeSub)) break;
 				const periodEnd = stripeSub.items?.data?.[0]?.current_period_end;
 
 				await db
@@ -73,6 +80,7 @@ export function createStripeWebhookRoute(db: Database) {
 
 			case 'customer.subscription.updated': {
 				const sub = event.data.object as Stripe.Subscription;
+				if (!isOurSubscription(sub)) break;
 				const subscriptionId = sub.id;
 				const itemPeriodEnd = sub.items?.data?.[0]?.current_period_end;
 
@@ -96,6 +104,7 @@ export function createStripeWebhookRoute(db: Database) {
 
 			case 'customer.subscription.deleted': {
 				const sub = event.data.object as Stripe.Subscription;
+				if (!isOurSubscription(sub)) break;
 				const subscriptionId = sub.id;
 
 				await db

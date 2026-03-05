@@ -47,11 +47,14 @@ function webhookRequest(body: string, signature = 'valid-sig') {
 	});
 }
 
+const PRO_PRICE_ID = 'price_pro_yearly';
+
 beforeEach(() => {
 	vi.clearAllMocks();
 	resetDbChain();
 	process.env.STRIPE_SECRET_KEY = 'sk_test_123';
 	process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test_123';
+	process.env.STRIPE_PRO_PRICE_ID = PRO_PRICE_ID;
 });
 
 describe('Stripe webhook handler', () => {
@@ -97,7 +100,7 @@ describe('Stripe webhook handler', () => {
 
 		mockRetrieveSubscription.mockResolvedValue({
 			items: {
-				data: [{ current_period_end: 1700000000 }],
+				data: [{ price: { id: PRO_PRICE_ID }, current_period_end: 1700000000 }],
 			},
 			cancel_at_period_end: false,
 		});
@@ -123,7 +126,7 @@ describe('Stripe webhook handler', () => {
 				object: {
 					id: 'sub_123',
 					items: {
-						data: [{ current_period_end: 1800000000 }],
+						data: [{ price: { id: PRO_PRICE_ID }, current_period_end: 1800000000 }],
 					},
 					cancel_at_period_end: true,
 				} as Partial<Stripe.Subscription>,
@@ -146,6 +149,9 @@ describe('Stripe webhook handler', () => {
 			data: {
 				object: {
 					id: 'sub_123',
+					items: {
+						data: [{ price: { id: PRO_PRICE_ID } }],
+					},
 				} as Partial<Stripe.Subscription>,
 			},
 		});
@@ -161,6 +167,25 @@ describe('Stripe webhook handler', () => {
 				cancelAtPeriodEnd: false,
 			}),
 		);
+	});
+
+	it('ignores subscription events for other products', async () => {
+		mockConstructEvent.mockReturnValue({
+			type: 'customer.subscription.updated',
+			data: {
+				object: {
+					id: 'sub_other_product',
+					items: {
+						data: [{ price: { id: 'price_some_other_product' }, current_period_end: 1800000000 }],
+					},
+					cancel_at_period_end: false,
+				} as Partial<Stripe.Subscription>,
+			},
+		});
+
+		const res = await webhookRequest('{"type":"customer.subscription.updated"}');
+		expect(res.status).toBe(200);
+		expect(mockUpdate).not.toHaveBeenCalled();
 	});
 
 	it('acknowledges unhandled event types with 200', async () => {
