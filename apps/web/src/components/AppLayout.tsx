@@ -4,6 +4,7 @@
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { CreateProjectDialog } from './CreateProjectDialog';
+import { SettingsDialog } from './SettingsDialog';
 import { Sidebar } from './Sidebar';
 
 interface AppLayoutProps {
@@ -13,6 +14,8 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const [createOpen, setCreateOpen] = useState(false);
+	const [settingsOpen, setSettingsOpen] = useState(false);
+	const [settingsTab, setSettingsTab] = useState<'profile' | 'billing'>('profile');
 
 	return (
 		<div className="flex h-screen">
@@ -57,6 +60,10 @@ export function AppLayout({ children }: AppLayoutProps) {
 				<Sidebar
 					onClose={() => setMobileMenuOpen(false)}
 					onCreateProject={() => setCreateOpen(true)}
+					onOpenSettings={(tab) => {
+						setSettingsTab(tab ?? 'profile');
+						setSettingsOpen(true);
+					}}
 				/>
 			</div>
 
@@ -65,6 +72,11 @@ export function AppLayout({ children }: AppLayoutProps) {
 			</main>
 
 			<CreateProjectDialog open={createOpen} onClose={() => setCreateOpen(false)} />
+			<SettingsDialog
+				open={settingsOpen}
+				onClose={() => setSettingsOpen(false)}
+				defaultTab={settingsTab}
+			/>
 		</div>
 	);
 }

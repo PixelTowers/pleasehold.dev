@@ -9,6 +9,7 @@ import { projectFieldConfigs } from './field-configs';
 import { notificationChannels } from './notification-channels';
 import { notificationLogs } from './notification-logs';
 import { projects } from './projects';
+import { subscriptions } from './subscriptions';
 import { userSettings } from './user-settings';
 
 export const authUsersRelations = relations(authUsers, ({ one, many }) => ({
@@ -17,6 +18,7 @@ export const authUsersRelations = relations(authUsers, ({ one, many }) => ({
 	apikeys: many(apikeys),
 	projects: many(projects),
 	settings: one(userSettings),
+	subscription: one(subscriptions),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -96,6 +98,13 @@ export const emailTemplatesRelations = relations(emailTemplates, ({ one }) => ({
 export const userSettingsRelations = relations(userSettings, ({ one }) => ({
 	user: one(authUsers, {
 		fields: [userSettings.userId],
+		references: [authUsers.id],
+	}),
+}));
+
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+	user: one(authUsers, {
+		fields: [subscriptions.userId],
 		references: [authUsers.id],
 	}),
 }));

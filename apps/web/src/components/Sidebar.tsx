@@ -2,7 +2,7 @@
 // ABOUTME: Shows workspace name, nav links with Lucide icons, project list, and user dropdown.
 
 import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router';
-import { LayoutGrid, LogOut, Plus, Settings } from 'lucide-react';
+import { CreditCard, LayoutGrid, LogOut, Plus, Settings } from 'lucide-react';
 import { PauseLogo } from '@/components/PauseLogo';
 import {
 	DropdownMenu,
@@ -21,9 +21,10 @@ import { cn } from '@/lib/utils';
 interface SidebarProps {
 	onClose?: () => void;
 	onCreateProject?: () => void;
+	onOpenSettings?: (tab?: 'profile' | 'billing') => void;
 }
 
-export function Sidebar({ onClose, onCreateProject }: SidebarProps) {
+export function Sidebar({ onClose, onCreateProject, onOpenSettings }: SidebarProps) {
 	const { data: session } = authClient.useSession();
 	const { data: projects } = useProjects();
 	const navigate = useNavigate();
@@ -150,11 +151,20 @@ export function Sidebar({ onClose, onCreateProject }: SidebarProps) {
 							<DropdownMenuItem
 								onClick={() => {
 									onClose?.();
-									navigate({ to: '/settings' });
+									onOpenSettings?.('profile');
 								}}
 							>
 								<Settings className="mr-2 h-4 w-4" />
 								Settings
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() => {
+									onClose?.();
+									onOpenSettings?.('billing');
+								}}
+							>
+								<CreditCard className="mr-2 h-4 w-4" />
+								Billing
 							</DropdownMenuItem>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem variant="destructive" onClick={handleLogout}>

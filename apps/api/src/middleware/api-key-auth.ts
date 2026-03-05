@@ -3,7 +3,7 @@
 
 import type { createAuth } from '@pleasehold/auth';
 import type { Database } from '@pleasehold/db';
-import { type projectFieldConfigs, projects } from '@pleasehold/db';
+import { type projectFieldConfigs, projects, subscriptions } from '@pleasehold/db';
 import { eq } from 'drizzle-orm';
 import type { Context, Next } from 'hono';
 
@@ -13,6 +13,7 @@ export type ApiKeyVariables = {
 	};
 	apiKeyId: string;
 	db: Database;
+	plan: 'free' | 'pro';
 };
 
 export function apiKeyAuth(auth: ReturnType<typeof createAuth>, db: Database) {
@@ -63,9 +64,16 @@ export function apiKeyAuth(auth: ReturnType<typeof createAuth>, db: Database) {
 			return c.json({ error: { code: 'PROJECT_NOT_FOUND', message: 'Project not found' } }, 404);
 		}
 
+		// Resolve user's subscription plan for limit enforcement
+		const sub = await db.query.subscriptions.findFirst({
+			where: eq(subscriptions.userId, project.userId),
+			columns: { plan: true },
+		});
+
 		c.set('project', project);
 		c.set('apiKeyId', result.key.id);
 		c.set('db', db);
+		c.set('plan', (sub?.plan ?? 'free') as 'free' | 'pro');
 
 		await next();
 	};

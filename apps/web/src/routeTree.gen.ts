@@ -15,6 +15,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SettingsBillingRouteImport } from './routes/settings.billing'
 import { Route as ProjectsNewRouteImport } from './routes/projects/new'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects/$projectId'
 import { Route as ProjectsProjectIdIndexRouteImport } from './routes/projects/$projectId/index'
@@ -54,6 +55,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsBillingRoute = SettingsBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => SettingsRoute,
 } as any)
 const ProjectsNewRoute = ProjectsNewRouteImport.update({
   id: '/projects/new',
@@ -109,11 +115,12 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/login': typeof LoginRoute
-  '/settings': typeof SettingsRoute
+  '/settings': typeof SettingsRouteWithChildren
   '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
   '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
   '/projects/new': typeof ProjectsNewRoute
+  '/settings/billing': typeof SettingsBillingRoute
   '/projects/$projectId/emails': typeof ProjectsProjectIdEmailsRoute
   '/projects/$projectId/keys': typeof ProjectsProjectIdKeysRoute
   '/projects/$projectId/notifications': typeof ProjectsProjectIdNotificationsRoute
@@ -126,10 +133,11 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/login': typeof LoginRoute
-  '/settings': typeof SettingsRoute
+  '/settings': typeof SettingsRouteWithChildren
   '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
   '/projects/new': typeof ProjectsNewRoute
+  '/settings/billing': typeof SettingsBillingRoute
   '/projects/$projectId/emails': typeof ProjectsProjectIdEmailsRoute
   '/projects/$projectId/keys': typeof ProjectsProjectIdKeysRoute
   '/projects/$projectId/notifications': typeof ProjectsProjectIdNotificationsRoute
@@ -143,11 +151,12 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/login': typeof LoginRoute
-  '/settings': typeof SettingsRoute
+  '/settings': typeof SettingsRouteWithChildren
   '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
   '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
   '/projects/new': typeof ProjectsNewRoute
+  '/settings/billing': typeof SettingsBillingRoute
   '/projects/$projectId/emails': typeof ProjectsProjectIdEmailsRoute
   '/projects/$projectId/keys': typeof ProjectsProjectIdKeysRoute
   '/projects/$projectId/notifications': typeof ProjectsProjectIdNotificationsRoute
@@ -167,6 +176,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/projects/$projectId'
     | '/projects/new'
+    | '/settings/billing'
     | '/projects/$projectId/emails'
     | '/projects/$projectId/keys'
     | '/projects/$projectId/notifications'
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verify-email'
     | '/projects/new'
+    | '/settings/billing'
     | '/projects/$projectId/emails'
     | '/projects/$projectId/keys'
     | '/projects/$projectId/notifications'
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/projects/$projectId'
     | '/projects/new'
+    | '/settings/billing'
     | '/projects/$projectId/emails'
     | '/projects/$projectId/keys'
     | '/projects/$projectId/notifications'
@@ -213,7 +225,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
   LoginRoute: typeof LoginRoute
-  SettingsRoute: typeof SettingsRoute
+  SettingsRoute: typeof SettingsRouteWithChildren
   SignupRoute: typeof SignupRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRouteWithChildren
@@ -263,6 +275,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/settings/billing': {
+      id: '/settings/billing'
+      path: '/billing'
+      fullPath: '/settings/billing'
+      preLoaderRoute: typeof SettingsBillingRouteImport
+      parentRoute: typeof SettingsRoute
     }
     '/projects/new': {
       id: '/projects/new'
@@ -330,6 +349,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface SettingsRouteChildren {
+  SettingsBillingRoute: typeof SettingsBillingRoute
+}
+
+const SettingsRouteChildren: SettingsRouteChildren = {
+  SettingsBillingRoute: SettingsBillingRoute,
+}
+
+const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
+  SettingsRouteChildren,
+)
+
 interface ProjectsProjectIdRouteChildren {
   ProjectsProjectIdEmailsRoute: typeof ProjectsProjectIdEmailsRoute
   ProjectsProjectIdKeysRoute: typeof ProjectsProjectIdKeysRoute
@@ -357,7 +388,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
   LoginRoute: LoginRoute,
-  SettingsRoute: SettingsRoute,
+  SettingsRoute: SettingsRouteWithChildren,
   SignupRoute: SignupRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   ProjectsProjectIdRoute: ProjectsProjectIdRouteWithChildren,

@@ -6,6 +6,7 @@ import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { EmailTemplateEditor } from '@/components/EmailTemplateEditor';
+import { ProFeatureGate } from '@/components/ProFeatureGate';
 import { Button } from '@/components/ui/button';
 import { useProject } from '@/hooks/useProjects';
 import { trpc } from '@/lib/trpc';
@@ -269,16 +270,18 @@ function EmailTemplatesPage() {
 			</div>
 
 			{/* Template editor panel */}
-			<div className="mt-6">
-				<TemplatePanel
-					key={activeType}
-					projectId={projectId}
-					type={activeType}
-					brandColor={project.brandColor ?? undefined}
-					logoUrl={project.logoUrl ?? undefined}
-					projectName={project.name}
-				/>
-			</div>
+			<ProFeatureGate feature="Custom email templates">
+				<div className="mt-6">
+					<TemplatePanel
+						key={activeType}
+						projectId={projectId}
+						type={activeType}
+						brandColor={project.brandColor ?? undefined}
+						logoUrl={project.logoUrl ?? undefined}
+						projectName={project.name}
+					/>
+				</div>
+			</ProFeatureGate>
 		</div>
 	);
 }

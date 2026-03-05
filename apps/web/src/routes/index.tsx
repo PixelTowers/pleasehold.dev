@@ -8,7 +8,9 @@ import { CreateProjectDialog } from '@/components/CreateProjectDialog';
 import { CreateProjectFlow } from '@/components/CreateProjectFlow';
 import { ProjectCard } from '@/components/ProjectCard';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useProjects } from '@/hooks/useProjects';
+import { useBillingEnabled, useSubscription } from '@/hooks/useSubscription';
 
 export const Route = createFileRoute('/')({
 	component: DashboardIndex,
@@ -16,7 +18,12 @@ export const Route = createFileRoute('/')({
 
 function DashboardIndex() {
 	const { data: projects, isPending: projectsLoading, error } = useProjects();
+	const { data: billing } = useBillingEnabled();
+	const { data: sub } = useSubscription();
 	const [createOpen, setCreateOpen] = useState(false);
+
+	const canCreateProject =
+		!billing?.enabled || sub?.plan === 'pro' || !projects || projects.length < 1;
 
 	if (projectsLoading) {
 		return (
@@ -53,10 +60,28 @@ function DashboardIndex() {
 					<h1 className="text-xl font-semibold text-foreground">Projects</h1>
 					<span className="text-sm text-muted">{projects.length}</span>
 				</div>
-				<Button size="sm" className="h-7 text-xs" onClick={() => setCreateOpen(true)}>
-					<Plus className="mr-1 h-3.5 w-3.5" />
-					New Project
-				</Button>
+				<TooltipProvider delayDuration={200}>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<span>
+								<Button
+									size="sm"
+									className="h-7 text-xs"
+									disabled={!canCreateProject}
+									onClick={() => setCreateOpen(true)}
+								>
+									<Plus className="mr-1 h-3.5 w-3.5" />
+									New Project
+								</Button>
+							</span>
+						</TooltipTrigger>
+						{!canCreateProject && (
+							<TooltipContent>
+								<p>Free plan allows 1 project. Upgrade to Pro for unlimited.</p>
+							</TooltipContent>
+						)}
+					</Tooltip>
+				</TooltipProvider>
 			</div>
 
 			<div className="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-3">

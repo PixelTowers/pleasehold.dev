@@ -69,6 +69,39 @@ describe('wrapInLayout', () => {
 		expect(result).toContain('font-size: 15px');
 		expect(result).toContain('font-weight: 600');
 	});
+
+	it('free plan always shows "Powered by pleasehold" even with company name', () => {
+		const result = wrapInLayout('<p>Test</p>', {
+			companyName: 'Acme Corp',
+			plan: 'free',
+		});
+
+		expect(result).toContain('Powered by pleasehold');
+		expect(result).not.toContain('Acme Corp');
+	});
+
+	it('pro plan shows company name when set', () => {
+		const result = wrapInLayout('<p>Test</p>', {
+			companyName: 'Acme Corp',
+			plan: 'pro',
+		});
+
+		expect(result).toContain('Acme Corp');
+		expect(result).not.toContain('Powered by pleasehold');
+	});
+
+	it('pro plan shows "Powered by pleasehold" when no company name', () => {
+		const result = wrapInLayout('<p>Test</p>', { plan: 'pro' });
+
+		expect(result).toContain('Powered by pleasehold');
+	});
+
+	it('no plan (self-hosted) shows company name when set', () => {
+		const result = wrapInLayout('<p>Test</p>', { companyName: 'Self-Hosted Co' });
+
+		expect(result).toContain('Self-Hosted Co');
+		expect(result).not.toContain('Powered by pleasehold');
+	});
 });
 
 describe('applyInlineStyles', () => {

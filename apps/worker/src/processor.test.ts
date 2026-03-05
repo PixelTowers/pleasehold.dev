@@ -144,6 +144,7 @@ describe('processNotification — confirmation_email', () => {
 			logoUrl: 'https://example.com/logo.png',
 			brandColor: '#0d9488',
 			companyName: 'Test Corp',
+			plan: null,
 		});
 	});
 

@@ -26,7 +26,7 @@ export async function sendConfirmationEmail(
 	payload: ConfirmationEmailPayload,
 	context?: ConfirmationEmailContext,
 ): Promise<void> {
-	const fromAddress = DEFAULT_EMAIL_FROM;
+	const fromAddress = context?.emailOptions?.fromAddress || DEFAULT_EMAIL_FROM;
 	const fromName = context?.emailOptions?.fromName;
 	const from = fromName ? `${fromName} <${fromAddress}>` : fromAddress;
 	const client = getResendClient(context?.emailOptions?.resendApiKey);

@@ -20,7 +20,8 @@
 		"lint": "biome check src/",
 		"format": "biome format --write src/",
 		"typecheck": "tsc --noEmit",
-		"clean": "rm -rf dist"
+		"clean": "rm -rf dist",
+		"test": "vitest run"
 	},
 	"dependencies": {
 		"@pleasehold/auth": "workspace:*",
@@ -28,6 +29,7 @@
 		"@trpc/server": "^11.10.0",
 		"drizzle-orm": "^0.45.1",
 		"sanitize-html": "^2.17.1",
+		"stripe": "^20.4.0",
 		"superjson": "^2.2.2",
 		"zod": "^3.23.8"
 	},
@@ -35,6 +37,7 @@
 		"@types/node": "^25.3.1",
 		"@types/sanitize-html": "^2.16.0",
 		"tsup": "^8.3.5",
-		"typescript": "~5.7.3"
+		"typescript": "~5.7.3",
+		"vitest": "^4.0.18"
 	}
 }

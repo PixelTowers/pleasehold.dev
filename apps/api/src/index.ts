@@ -5,7 +5,7 @@ import { serve } from '@hono/node-server';
 import { trpcServer } from '@hono/trpc-server';
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { createAuth } from '@pleasehold/auth';
-import { createDb } from '@pleasehold/db';
+import { createDb, subscriptions } from '@pleasehold/db';
 import { appRouter, createContext } from '@pleasehold/trpc';
 import { apiReference } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
@@ -20,6 +20,7 @@ import {
 import { entriesRoute } from './routes/v1/entries';
 import { createUploadRoute } from './routes/v1/upload';
 import { createVerifyRoute } from './routes/v1/verify';
+import { createStripeWebhookRoute } from './routes/webhooks/stripe';
 
 const app = new OpenAPIHono();
 
@@ -44,7 +45,16 @@ const auth = createAuth({
 				await resend.emails.send({ from: emailFrom, to, subject, html });
 			}
 		: undefined,
+	onUserCreated: async (user) => {
+		await db
+			.insert(subscriptions)
+			.values({ userId: user.id, plan: 'free' })
+			.onConflictDoNothing({ target: subscriptions.userId });
+	},
 });
+
+// Stripe webhook: raw body needed for signature verification, no CORS, no auth
+app.route('/webhooks/stripe', createStripeWebhookRoute(db));
 
 // Public verification endpoint: no API key required, permissive CORS for email link clicks
 app.use('/verify/*', cors({ origin: '*' }));

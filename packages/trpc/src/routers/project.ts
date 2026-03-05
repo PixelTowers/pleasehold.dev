@@ -1,10 +1,17 @@
 // ABOUTME: tRPC router for project CRUD and field configuration management.
 // ABOUTME: All queries enforce userId ownership checks; mode is immutable after creation.
 
-import { emailTemplates, entries, projectFieldConfigs, projects } from '@pleasehold/db';
+import {
+	emailTemplates,
+	entries,
+	projectFieldConfigs,
+	projects,
+	subscriptions,
+} from '@pleasehold/db';
 import { TRPCError } from '@trpc/server';
 import { and, count, desc, eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
+import { isBillingEnabled, PLAN_LIMITS } from '../lib/plan-limits';
 import { protectedProcedure, router } from '../trpc';
 
 const DEFAULT_VERIFICATION_TEMPLATE = {
@@ -35,6 +42,30 @@ export const projectRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			// Enforce project limit for free-plan users
+			if (isBillingEnabled()) {
+				const sub = await ctx.db.query.subscriptions.findFirst({
+					where: eq(subscriptions.userId, ctx.user.id),
+					columns: { plan: true },
+				});
+				const plan = (sub?.plan ?? 'free') as keyof typeof PLAN_LIMITS;
+				const limits = PLAN_LIMITS[plan];
+
+				if (limits.maxProjects !== Number.POSITIVE_INFINITY) {
+					const [{ count: projectCount }] = await ctx.db
+						.select({ count: count() })
+						.from(projects)
+						.where(eq(projects.userId, ctx.user.id));
+
+					if (projectCount >= limits.maxProjects) {
+						throw new TRPCError({
+							code: 'FORBIDDEN',
+							message: `You've reached the ${plan} plan limit of ${limits.maxProjects} project(s). Upgrade to Pro for unlimited projects.`,
+						});
+					}
+				}
+			}
+
 			return ctx.db.transaction(async (tx) => {
 				const [project] = await tx
 					.insert(projects)
@@ -157,11 +188,26 @@ export const projectRouter = router({
 				throw new TRPCError({ code: 'NOT_FOUND', message: 'Project not found' });
 			}
 
+			// Strip branding fields for free-plan users when billing is enabled
+			let effectiveInput = input;
+			if (isBillingEnabled()) {
+				const sub = await ctx.db.query.subscriptions.findFirst({
+					where: eq(subscriptions.userId, ctx.user.id),
+					columns: { plan: true },
+				});
+				const plan = (sub?.plan ?? 'free') as keyof typeof PLAN_LIMITS;
+				if (!PLAN_LIMITS[plan].customBranding) {
+					const { logoUrl: _logo, brandColor: _color, companyName: _company, ...rest } = input;
+					effectiveInput = rest as typeof input;
+				}
+			}
+
 			const updates: Record<string, unknown> = { updatedAt: new Date() };
-			if (input.name !== undefined) updates.name = input.name;
-			if (input.logoUrl !== undefined) updates.logoUrl = input.logoUrl;
-			if (input.brandColor !== undefined) updates.brandColor = input.brandColor;
-			if (input.companyName !== undefined) updates.companyName = input.companyName;
+			if (effectiveInput.name !== undefined) updates.name = effectiveInput.name;
+			if (effectiveInput.logoUrl !== undefined) updates.logoUrl = effectiveInput.logoUrl;
+			if (effectiveInput.brandColor !== undefined) updates.brandColor = effectiveInput.brandColor;
+			if (effectiveInput.companyName !== undefined)
+				updates.companyName = effectiveInput.companyName;
 
 			const [updated] = await ctx.db
 				.update(projects)

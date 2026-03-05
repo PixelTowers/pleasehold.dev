@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { FieldConfigForm } from '@/components/FieldConfigForm';
+import { ProFeatureGate } from '@/components/ProFeatureGate';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ColorPicker } from '@/components/ui/color-picker';
@@ -255,90 +256,92 @@ function ProjectSettingsPage() {
 			</div>
 
 			{/* Branding section */}
-			<div className="mb-8">
-				<h2 className="mb-2 text-[11px] uppercase tracking-wider text-muted-foreground">
-					Branding
-				</h2>
-				<p className="mb-3 text-xs text-muted-foreground">
-					Customize how your emails and public-facing pages look.
-				</p>
-				<div className="border-t border-border/50">
-					{/* Logo upload */}
-					<div className="border-b border-border/50 py-3">
-						<Label className="mb-2 block text-xs text-muted-foreground">Logo</Label>
-						<div className="flex items-center gap-4">
-							{logoUrl ? (
-								<div className="relative">
-									<img
-										src={logoUrl}
-										alt="Project logo"
-										className="h-16 w-16 rounded-md border border-border/50 object-contain"
-									/>
-									<button
-										type="button"
-										onClick={() => {
-											setLogoUrl(null);
-											updateProject.mutate({ id: projectId, logoUrl: null });
-										}}
-										className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-white shadow-sm"
-									>
-										<X className="h-3 w-3" />
-									</button>
+			<ProFeatureGate feature="Custom branding">
+				<div className="mb-8">
+					<h2 className="mb-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+						Branding
+					</h2>
+					<p className="mb-3 text-xs text-muted-foreground">
+						Customize how your emails and public-facing pages look.
+					</p>
+					<div className="border-t border-border/50">
+						{/* Logo upload */}
+						<div className="border-b border-border/50 py-3">
+							<Label className="mb-2 block text-xs text-muted-foreground">Logo</Label>
+							<div className="flex items-center gap-4">
+								{logoUrl ? (
+									<div className="relative">
+										<img
+											src={logoUrl}
+											alt="Project logo"
+											className="h-16 w-16 rounded-md border border-border/50 object-contain"
+										/>
+										<button
+											type="button"
+											onClick={() => {
+												setLogoUrl(null);
+												updateProject.mutate({ id: projectId, logoUrl: null });
+											}}
+											className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-white shadow-sm"
+										>
+											<X className="h-3 w-3" />
+										</button>
+									</div>
+								) : (
+									<label className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-border/50 text-muted-foreground transition-colors hover:border-foreground hover:text-foreground">
+										<Upload className="h-5 w-5" />
+										<input
+											type="file"
+											accept="image/*"
+											className="hidden"
+											onChange={(e) => {
+												const file = e.target.files?.[0];
+												if (file) handleLogoUpload(file);
+											}}
+										/>
+									</label>
+								)}
+								<div className="text-xs text-muted-foreground">
+									{uploading ? 'Uploading...' : 'Max 512KB, image files only'}
 								</div>
-							) : (
-								<label className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-border/50 text-muted-foreground transition-colors hover:border-foreground hover:text-foreground">
-									<Upload className="h-5 w-5" />
-									<input
-										type="file"
-										accept="image/*"
-										className="hidden"
-										onChange={(e) => {
-											const file = e.target.files?.[0];
-											if (file) handleLogoUpload(file);
-										}}
-									/>
-								</label>
-							)}
-							<div className="text-xs text-muted-foreground">
-								{uploading ? 'Uploading...' : 'Max 512KB, image files only'}
 							</div>
+						</div>
+
+						{/* Brand color */}
+						<div className="border-b border-border/50 py-3">
+							<Label className="mb-2 block text-xs text-muted-foreground">Brand Color</Label>
+							<ColorPicker value={brandColor} onChange={setBrandColor} />
+						</div>
+
+						{/* Company name */}
+						<div className="border-b border-border/50 py-3">
+							<Label className="mb-2 block text-xs text-muted-foreground">Company Name</Label>
+							<Input
+								type="text"
+								value={companyName}
+								onChange={(e) => setCompanyName(e.target.value)}
+								placeholder="Acme Inc"
+								className="h-8 max-w-sm"
+								maxLength={100}
+							/>
+							<p className="mt-1 text-[11px] text-muted-foreground">
+								Used in email footers and as the sender name.
+							</p>
 						</div>
 					</div>
 
-					{/* Brand color */}
-					<div className="border-b border-border/50 py-3">
-						<Label className="mb-2 block text-xs text-muted-foreground">Brand Color</Label>
-						<ColorPicker value={brandColor} onChange={setBrandColor} />
-					</div>
-
-					{/* Company name */}
-					<div className="border-b border-border/50 py-3">
-						<Label className="mb-2 block text-xs text-muted-foreground">Company Name</Label>
-						<Input
-							type="text"
-							value={companyName}
-							onChange={(e) => setCompanyName(e.target.value)}
-							placeholder="Acme Inc"
-							className="h-8 max-w-sm"
-							maxLength={100}
-						/>
-						<p className="mt-1 text-[11px] text-muted-foreground">
-							Used in email footers and as the sender name.
-						</p>
+					<div className="mt-3">
+						<Button
+							size="sm"
+							className="h-8 text-xs"
+							disabled={updateProject.isPending}
+							onClick={handleBrandingSave}
+						>
+							{updateProject.isPending ? 'Saving...' : 'Save Branding'}
+						</Button>
 					</div>
 				</div>
-
-				<div className="mt-3">
-					<Button
-						size="sm"
-						className="h-8 text-xs"
-						disabled={updateProject.isPending}
-						onClick={handleBrandingSave}
-					>
-						{updateProject.isPending ? 'Saving...' : 'Save Branding'}
-					</Button>
-				</div>
-			</div>
+			</ProFeatureGate>
 		</div>
 	);
 }

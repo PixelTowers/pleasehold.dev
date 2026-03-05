@@ -19,6 +19,7 @@ export interface BrandingContext {
 	logoUrl?: string | null;
 	brandColor?: string | null;
 	companyName?: string | null;
+	plan?: 'free' | 'pro' | null;
 }
 
 export interface TemplateContext {

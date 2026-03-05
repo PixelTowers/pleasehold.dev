@@ -10,14 +10,15 @@
 		"format": "biome format --write src/",
 		"typecheck": "tsc --noEmit",
 		"clean": "rm -rf dist",
-		"test": "vitest run"
+		"test": "vitest run",
+		"test:unit": "vitest run --config vitest.unit.config.ts"
 	},
 	"dependencies": {
 		"@aws-sdk/client-s3": "^3.999.0",
 		"@aws-sdk/s3-request-presigner": "^3.999.0",
 		"@hono/node-server": "^1.14.0",
 		"@hono/trpc-server": "^0.4.2",
-		"@hono/zod-openapi": "^0.19.10",
+		"@hono/zod-openapi": "^1.2.2",
 		"@pleasehold/auth": "workspace:*",
 		"@pleasehold/db": "workspace:*",
 		"@pleasehold/trpc": "workspace:*",
@@ -30,6 +31,7 @@
 		"ioredis": "^5",
 		"posthog-node": "^5.26.2",
 		"resend": "^6.9.2",
+		"stripe": "^20.4.0",
 		"zod": "^3.25.76"
 	},
 	"devDependencies": {

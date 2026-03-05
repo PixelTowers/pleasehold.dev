@@ -2,7 +2,7 @@
 // ABOUTME: Combines create dialog, key list, and breadcrumb navigation for key lifecycle management.
 
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { ApiKeyCreateDialog } from '@/components/ApiKeyCreateDialog';
 import { ApiKeyDocs } from '@/components/ApiKeyDocs';
@@ -70,7 +70,16 @@ function ApiKeysPage() {
 				</Button>
 			</div>
 			<p className="mb-4 text-sm text-muted-foreground">
-				Create and manage API keys used to accept submissions.
+				Create and manage API keys used to accept submissions.{' '}
+				<a
+					href="/docs"
+					target="_blank"
+					rel="noopener noreferrer"
+					className="inline-flex items-center gap-1 text-primary hover:underline"
+				>
+					View API docs
+					<ExternalLink className="h-3 w-3" />
+				</a>
 			</p>
 
 			{/* Key list — flat, no Card wrapper */}

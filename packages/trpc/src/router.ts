@@ -6,6 +6,7 @@ import { emailTemplateRouter } from './routers/email-template';
 import { entryRouter } from './routers/entry';
 import { notificationRouter } from './routers/notification';
 import { projectRouter } from './routers/project';
+import { subscriptionRouter } from './routers/subscription';
 import { userRouter } from './routers/user';
 import { userSettingsRouter } from './routers/user-settings';
 import { router } from './trpc';
@@ -18,6 +19,7 @@ export const appRouter = router({
 	entry: entryRouter,
 	notification: notificationRouter,
 	emailTemplate: emailTemplateRouter,
+	subscription: subscriptionRouter,
 });
 
 export type AppRouter = typeof appRouter;

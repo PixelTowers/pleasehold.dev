@@ -1,11 +1,12 @@
 // ABOUTME: tRPC router for per-project email template CRUD (verification and confirmation).
 // ABOUTME: Provides get, upsert, and delete operations scoped to authenticated project owners.
 
-import { emailTemplates, projects } from '@pleasehold/db';
+import { emailTemplates, projects, subscriptions } from '@pleasehold/db';
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
 import sanitizeHtml from 'sanitize-html';
 import { z } from 'zod';
+import { isBillingEnabled, PLAN_LIMITS } from '../lib/plan-limits';
 import { protectedProcedure, router } from '../trpc';
 
 const ALLOWED_HTML_TAGS = [
@@ -89,6 +90,21 @@ export const emailTemplateRouter = router({
 				columns: { id: true },
 			});
 			if (!project) throw new TRPCError({ code: 'NOT_FOUND', message: 'Project not found' });
+
+			// Gate custom email templates to Pro plan
+			if (isBillingEnabled()) {
+				const sub = await ctx.db.query.subscriptions.findFirst({
+					where: eq(subscriptions.userId, ctx.user.id),
+					columns: { plan: true },
+				});
+				const plan = (sub?.plan ?? 'free') as keyof typeof PLAN_LIMITS;
+				if (!PLAN_LIMITS[plan].customEmailTemplates) {
+					throw new TRPCError({
+						code: 'FORBIDDEN',
+						message: 'Custom email templates require the Pro plan. Upgrade to unlock.',
+					});
+				}
+			}
 
 			const sanitizedBodyHtml = sanitizeTemplateHtml(input.bodyHtml);
 

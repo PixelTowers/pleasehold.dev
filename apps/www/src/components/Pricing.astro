@@ -1,0 +1,123 @@
+---
+// ABOUTME: Two-column pricing comparison for Free vs Pro ($20/year) plans.
+// ABOUTME: Matches the dark-bg, teal-accent design language of the landing page.
+
+const plans = [
+	{
+		name: "Free",
+		price: "$0",
+		period: "forever",
+		description: "Everything you need to land your next idea.",
+		cta: "Get started",
+		ctaHref: "https://app.pleasehold.dev",
+		features: [
+			"1,000 entries/month",
+			"1 project",
+			"Full API access",
+			"All notification channels",
+			"Default email templates",
+			"Community support",
+		],
+		limits: [
+			'"Powered by pleasehold" badge',
+		],
+	},
+	{
+		name: "Pro",
+		price: "$20",
+		period: "/year",
+		description: "Less than your .dev domain renewal.",
+		cta: "Get started",
+		ctaHref: "https://app.pleasehold.dev/settings/billing",
+		features: [
+			"Unlimited entries",
+			"Unlimited projects",
+			"Full API access",
+			"All notification channels",
+			"Custom email templates",
+			"Custom branding & colors",
+			"Badge removed",
+			"5 team members",
+			"Priority support",
+		],
+		limits: [],
+	},
+];
+---
+
+<section id="pricing" class="px-6 py-24 md:py-32">
+	<div class="mx-auto max-w-[1080px]">
+		<div class="mb-10 flex flex-col items-center gap-1.5 text-center">
+			<p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">Pricing</p>
+			<h2 class="text-[22px] font-semibold tracking-tight text-text-primary sm:text-3xl">
+				Two plans. No surprises.
+			</h2>
+			<p class="mt-2 max-w-lg text-sm text-text-tertiary leading-relaxed">
+				No shady tiers. No calculator needed. No "contact sales" button.
+				Free forever, or $20/year when you need more.
+			</p>
+		</div>
+
+		<div class="mx-auto grid max-w-2xl gap-4 md:grid-cols-2">
+			{plans.map((plan) => (
+				<div
+					class="relative flex flex-col rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 transition-[border-color] duration-300 hover:border-white/[0.14]"
+				>
+					<div class="relative z-10 flex flex-1 flex-col">
+						<h3 class="text-sm font-semibold text-text-secondary">{plan.name}</h3>
+						<div class="mt-3 flex items-baseline gap-1">
+							<span class="text-4xl font-bold tracking-tight text-text-primary">{plan.price}</span>
+							<span class="text-sm text-text-tertiary">{plan.period}</span>
+						</div>
+						<p class="mt-2 text-sm text-text-tertiary">{plan.description}</p>
+
+						<ul class="mt-6 space-y-2.5">
+							{plan.features.map((feat) => (
+								<li class="flex items-start gap-2.5 text-sm text-text-secondary">
+									<svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-accent" viewBox="0 0 20 20" fill="currentColor">
+										<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd" />
+									</svg>
+									{feat}
+								</li>
+							))}
+							{plan.limits.map((limit) => (
+								<li class="flex items-start gap-2.5 text-sm text-text-quaternary">
+									<svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-text-quaternary" viewBox="0 0 20 20" fill="currentColor">
+										<path fill-rule="evenodd" d="M4 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 10Z" clip-rule="evenodd" />
+									</svg>
+									{limit}
+								</li>
+							))}
+						</ul>
+
+						<a
+							href={plan.ctaHref}
+							class:list={[
+								"mt-auto block w-full rounded-full py-2.5 text-center text-sm font-medium transition-colors",
+								plan.name === "Pro"
+									? "bg-orange-500 text-white hover:bg-orange-600"
+									: "bg-accent text-white hover:bg-accent-hover",
+							]}
+						>
+							{plan.cta}
+						</a>
+					</div>
+				</div>
+			))}
+		</div>
+
+		<!-- Self-hosted callout -->
+		<div class="mx-auto mt-8 max-w-2xl rounded-xl border border-white/[0.06] bg-white/[0.02] px-6 py-4 text-center">
+			<p class="text-sm text-text-secondary">
+				<span class="font-medium text-text-primary">Self-hosting?</span>
+				{' '}Free forever. Unlimited everything. Deploy with Docker.
+			</p>
+			<a
+				href="https://github.com/PixelTowers/pleasehold.dev"
+				class="mt-1 inline-block text-sm text-accent transition-colors hover:text-accent-hover"
+			>
+				View on GitHub &rarr;
+			</a>
+		</div>
+	</div>
+</section>

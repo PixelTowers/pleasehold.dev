@@ -8,6 +8,7 @@ import {
 	notificationChannels,
 	notificationLogs,
 	projects,
+	subscriptions,
 	userSettings,
 } from '@pleasehold/db';
 import type { Job } from 'bullmq';
@@ -41,15 +42,28 @@ async function getEmailSenderOptions(userId: string): Promise<EmailSenderOptions
 	};
 }
 
-function getBrandingContext(project: {
+async function getBrandingContext(project: {
+	userId: string;
 	logoUrl: string | null;
 	brandColor: string | null;
 	companyName: string | null;
-}): BrandingContext {
+}): Promise<BrandingContext> {
+	let plan: 'free' | 'pro' | null = null;
+	try {
+		const sub = await db.query.subscriptions.findFirst({
+			where: eq(subscriptions.userId, project.userId),
+			columns: { plan: true },
+		});
+		plan = (sub?.plan as 'free' | 'pro') ?? null;
+	} catch {
+		// Subscription lookup can fail in tests or when table doesn't exist yet
+	}
+
 	return {
 		logoUrl: project.logoUrl,
 		brandColor: project.brandColor,
 		companyName: project.companyName,
+		plan,
 	};
 }
 
@@ -117,7 +131,7 @@ async function processEntryCreated(data: NotificationJobData): Promise<void> {
 	}
 
 	const emailOptions = await getEmailSenderOptions(project.userId);
-	const branding = getBrandingContext(project);
+	const branding = await getBrandingContext(project);
 
 	const entryPayload: EntryPayload = {
 		email: entry.email,
@@ -255,7 +269,7 @@ async function processVerificationEmail(data: NotificationJobData): Promise<void
 	}
 
 	const emailOptions = await getEmailSenderOptions(project.userId);
-	const branding = getBrandingContext(project);
+	const branding = await getBrandingContext(project);
 	const customTemplate = await getCustomTemplate(data.projectId, 'verification');
 
 	await sendVerificationEmail(entry.email, entry.verificationToken, project.name, {
@@ -286,7 +300,7 @@ async function processConfirmationEmail(data: NotificationJobData): Promise<void
 	}
 
 	const emailOptions = await getEmailSenderOptions(project.userId);
-	const branding = getBrandingContext(project);
+	const branding = await getBrandingContext(project);
 	const customTemplate = await getCustomTemplate(data.projectId, 'confirmation');
 
 	await sendConfirmationEmail(

@@ -5,6 +5,7 @@ interface LayoutOptions {
 	logoUrl?: string | null;
 	brandColor?: string | null;
 	companyName?: string | null;
+	plan?: 'free' | 'pro' | null;
 }
 
 export function wrapInLayout(bodyHtml: string, options: LayoutOptions = {}): string {
@@ -19,9 +20,12 @@ export function wrapInLayout(bodyHtml: string, options: LayoutOptions = {}): str
 </table>`
 		: '';
 
-	const footerText = options.companyName
-		? escapeHtml(options.companyName)
-		: 'Powered by pleasehold';
+	// Free plan always shows "Powered by pleasehold" regardless of company name.
+	// Pro plan shows company name if set, otherwise falls back to "Powered by pleasehold".
+	// When plan is not provided (self-hosted/no billing), treat as pro.
+	const isFree = options.plan === 'free';
+	const footerText =
+		!isFree && options.companyName ? escapeHtml(options.companyName) : 'Powered by pleasehold';
 
 	return `<!DOCTYPE html>
 <html>

@@ -9,4 +9,5 @@ export * from './notification-channels';
 export * from './notification-logs';
 export * from './projects';
 export * from './relations';
+export * from './subscriptions';
 export * from './user-settings';

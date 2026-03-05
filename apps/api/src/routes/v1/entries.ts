@@ -4,7 +4,7 @@
 import crypto from 'node:crypto';
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { entries } from '@pleasehold/db';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, count, eq, gte, sql } from 'drizzle-orm';
 import { buildEntrySchema } from '../../lib/field-validator';
 import { enqueueNotification } from '../../lib/notification-queue';
 import { posthog } from '../../lib/posthog';
@@ -93,6 +93,47 @@ app.openapi(submitEntryRoute, async (c) => {
 		message?: string;
 		metadata?: Record<string, string | number | boolean | null>;
 	};
+
+	// Enforce monthly entry limit for free-plan users when billing is enabled.
+	// Check for duplicates first so re-submissions at the limit still return 200.
+	const plan = c.get('plan');
+	const billingEnabled = !!process.env.STRIPE_SECRET_KEY;
+
+	if (billingEnabled && plan === 'free') {
+		const existingEntry = await db.query.entries.findFirst({
+			where: and(eq(entries.projectId, project.id), eq(entries.email, data.email)),
+		});
+
+		if (!existingEntry) {
+			const startOfMonth = new Date();
+			startOfMonth.setDate(1);
+			startOfMonth.setHours(0, 0, 0, 0);
+
+			const [{ count: monthlyCount }] = await db
+				.select({ count: count() })
+				.from(entries)
+				.where(and(eq(entries.projectId, project.id), gte(entries.createdAt, startOfMonth)));
+
+			if (monthlyCount >= 1_000) {
+				posthog.capture({
+					distinctId: project.id,
+					event: 'entry_limit_reached',
+					properties: { projectId: project.id, monthlyCount },
+				});
+
+				return c.json(
+					{
+						error: {
+							code: 'ENTRY_LIMIT_REACHED',
+							message:
+								'Monthly entry limit reached (1,000 entries/month on the free plan). Upgrade to Pro for unlimited entries.',
+						},
+					},
+					429,
+				);
+			}
+		}
+	}
 
 	const verificationToken = project.doubleOptIn ? crypto.randomUUID() : null;
 	const verificationExpiresAt = project.doubleOptIn
