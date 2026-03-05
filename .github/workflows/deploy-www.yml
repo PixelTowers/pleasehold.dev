@@ -39,3 +39,26 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: apps/www
           command: pages deploy dist --project-name=pleasehold-www --branch=${{ github.head_ref || github.ref_name }}
+
+  notify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Discord notification - Success
+        if: needs.deploy.result == 'success'
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"embeds\":[{\"title\":\"✅ pleasehold WWW Deploy Succeeded\",\"description\":\"Commit \`${GITHUB_SHA::7}\` deployed to **Cloudflare Pages**\",\"color\":3066993,\"fields\":[{\"name\":\"Triggered by\",\"value\":\"${{ github.actor }}\",\"inline\":true},{\"name\":\"Workflow\",\"value\":\"[View Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\",\"inline\":true}]}]}" \
+            "$DISCORD_WEBHOOK_URL"
+
+      - name: Discord notification - Failure
+        if: needs.deploy.result == 'failure'
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"embeds\":[{\"title\":\"❌ pleasehold WWW Deploy Failed\",\"description\":\"Deploy of commit \`${GITHUB_SHA::7}\` to **Cloudflare Pages** failed\",\"color\":15158332,\"fields\":[{\"name\":\"Triggered by\",\"value\":\"${{ github.actor }}\",\"inline\":true},{\"name\":\"Workflow\",\"value\":\"[View Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\",\"inline\":true}]}]}" \
+            "$DISCORD_WEBHOOK_URL"
