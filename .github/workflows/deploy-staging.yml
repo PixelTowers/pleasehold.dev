@@ -44,6 +44,18 @@ jobs:
           push: true
           tags: ghcr.io/pixeltowers/pleasehold/worker:${{ github.sha }}
 
+  notify-deploy-start:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord of deploy start
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"embeds\":[{\"title\":\"🚀 pleasehold Staging Deploy Started\",\"description\":\"Deploying commit \`${GITHUB_SHA::7}\` to **staging**\",\"color\":3447003,\"fields\":[{\"name\":\"Triggered by\",\"value\":\"${{ github.actor }}\",\"inline\":true},{\"name\":\"Workflow\",\"value\":\"[View Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\",\"inline\":true}]}]}" \
+            "$DISCORD_WEBHOOK_URL"
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -83,3 +95,29 @@ jobs:
             git pull --rebase
           done
           exit 1
+
+  notify-deploy-success:
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Notify Discord of deploy success
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"embeds\":[{\"title\":\"✅ pleasehold Staging Deploy Succeeded\",\"description\":\"Commit \`${GITHUB_SHA::7}\` is live on **staging**\",\"color\":3066993,\"fields\":[{\"name\":\"Triggered by\",\"value\":\"${{ github.actor }}\",\"inline\":true},{\"name\":\"Workflow\",\"value\":\"[View Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\",\"inline\":true}]}]}" \
+            "$DISCORD_WEBHOOK_URL"
+
+  notify-deploy-failure:
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    if: failure()
+    steps:
+      - name: Notify Discord of deploy failure
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"embeds\":[{\"title\":\"❌ pleasehold Staging Deploy Failed\",\"description\":\"Deploy of commit \`${GITHUB_SHA::7}\` to **staging** failed\",\"color\":15158332,\"fields\":[{\"name\":\"Triggered by\",\"value\":\"${{ github.actor }}\",\"inline\":true},{\"name\":\"Workflow\",\"value\":\"[View Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\",\"inline\":true}]}]}" \
+            "$DISCORD_WEBHOOK_URL"
