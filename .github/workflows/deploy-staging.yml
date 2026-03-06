@@ -3,6 +3,12 @@ name: Deploy Staging
 on:
   push:
     branches: [main]
+    paths:
+      - "apps/api/**"
+      - "apps/web/**"
+      - "apps/worker/**"
+      - "packages/**"
+      - ".github/workflows/deploy-staging.yml"
   workflow_dispatch:
 
 jobs:
