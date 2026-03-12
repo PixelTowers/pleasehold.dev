@@ -47,7 +47,7 @@ function webhookRequest(body: string, signature = 'valid-sig') {
 	});
 }
 
-const PRO_PRICE_ID = 'price_pro_yearly';
+const PRO_PRICE_ID = 'price_pro_3mo';
 
 beforeEach(() => {
 	vi.clearAllMocks();

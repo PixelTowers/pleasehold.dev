@@ -158,7 +158,7 @@ function BillingPage() {
 								disabled={checkout.isPending}
 								onClick={() => checkout.mutate()}
 							>
-								{checkout.isPending ? 'Loading...' : 'Upgrade — $20/year'}
+								{checkout.isPending ? 'Loading...' : 'Upgrade — $19/3 months'}
 							</Button>
 						)}
 					</div>
@@ -235,7 +235,7 @@ function BillingPage() {
 							disabled={checkout.isPending}
 							onClick={() => checkout.mutate()}
 						>
-							{checkout.isPending ? 'Loading...' : 'Upgrade — $20/year'}
+							{checkout.isPending ? 'Loading...' : 'Upgrade — $19/3 months'}
 						</Button>
 					</div>
 				</div>

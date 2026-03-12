@@ -4,7 +4,7 @@
 
 Two tiers. That's it.
 
-| | Free | Pro ($20/year) |
+| | Free | Pro ($19/3 months) |
 |---|---|---|
 | Entries/mo | 1,000 | Unlimited |
 | Projects | 1 | Unlimited |
@@ -21,10 +21,10 @@ Self-hosted = free forever, unlimited, no restrictions.
 
 | Competitor | Annual Cost | vs pleasehold |
 |---|---|---|
-| GetWaitlist | $180/yr | 9x more expensive |
-| Waitlister | $180/yr | 9x more expensive |
-| Viral Loops | $420/yr | 21x more expensive |
-| LaunchList | $79 one-time | More expensive year 1 |
+| GetWaitlist | $180/yr | 2.4x more expensive |
+| Waitlister | $180/yr | 2.4x more expensive |
+| Viral Loops | $420/yr | 5.5x more expensive |
+| LaunchList | $79 one-time | Comparable year 1 |
 
 None are open source. None offer self-hosting.
 
