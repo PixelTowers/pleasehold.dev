@@ -3,7 +3,7 @@
 
 export const PLAN_LIMITS = {
 	free: {
-		maxEntriesPerMonth: 1_000,
+		maxEntriesPerMonth: 100,
 		maxProjects: 1,
 		customBranding: false,
 		customEmailTemplates: false,

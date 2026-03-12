@@ -6,7 +6,7 @@ Two tiers. That's it.
 
 | | Free | Pro ($19/3 months) |
 |---|---|---|
-| Entries/mo | 1,000 | Unlimited |
+| Entries/mo | 100 | Unlimited |
 | Projects | 1 | Unlimited |
 | API access | Full | Full |
 | Notifications | All channels | All channels |
@@ -49,7 +49,7 @@ None are open source. None offer self-hosting.
 - [x] Env vars: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRO_PRICE_ID`
 
 ### Phase 5: Limit Enforcement
-- [x] Entry limit: 1,000/mo on free tier (429 when exceeded)
+- [x] Entry limit: 100/mo on free tier (429 when exceeded)
 - [x] Project limit: 1 project on free tier
 - [x] Email template customization gated to Pro
 - [x] Branding fields (logo, color, company) gated to Pro

@@ -1,4 +1,4 @@
-// ABOUTME: Integration tests for free-plan monthly entry limit enforcement (1,000 entries/month).
+// ABOUTME: Integration tests for free-plan monthly entry limit enforcement (100 entries/month).
 // ABOUTME: Verifies 429 at limit, 200 for duplicates at limit, pro bypass, and self-hosted bypass.
 
 import { OpenAPIHono } from '@hono/zod-openapi';
@@ -77,12 +77,12 @@ describe('Entry limit enforcement', () => {
 			expect(res.status).toBe(201);
 		});
 
-		it('returns 429 ENTRY_LIMIT_REACHED when at the 1,000 entry limit', async () => {
+		it('returns 429 ENTRY_LIMIT_REACHED when at the 100 entry limit', async () => {
 			// Bulk insert entries to hit the limit using generate_series
 			await db.execute(
 				sql`INSERT INTO entries (project_id, email, position, status)
 					SELECT ${TEST_PROJECT_ID}, 'bulk-' || i || '@example.com', i, 'new'
-					FROM generate_series(1, 1000) AS i
+					FROM generate_series(1, 100) AS i
 					ON CONFLICT DO NOTHING`,
 			);
 

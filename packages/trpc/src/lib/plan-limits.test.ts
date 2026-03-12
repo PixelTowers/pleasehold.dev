@@ -6,7 +6,7 @@ import { isBillingEnabled, PLAN_LIMITS } from './plan-limits';
 
 describe('PLAN_LIMITS', () => {
 	it('free plan has correct limits', () => {
-		expect(PLAN_LIMITS.free.maxEntriesPerMonth).toBe(1_000);
+		expect(PLAN_LIMITS.free.maxEntriesPerMonth).toBe(100);
 		expect(PLAN_LIMITS.free.maxProjects).toBe(1);
 		expect(PLAN_LIMITS.free.customBranding).toBe(false);
 		expect(PLAN_LIMITS.free.customEmailTemplates).toBe(false);

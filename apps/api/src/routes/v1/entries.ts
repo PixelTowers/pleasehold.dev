@@ -114,7 +114,7 @@ app.openapi(submitEntryRoute, async (c) => {
 				.from(entries)
 				.where(and(eq(entries.projectId, project.id), gte(entries.createdAt, startOfMonth)));
 
-			if (monthlyCount >= 1_000) {
+			if (monthlyCount >= 100) {
 				posthog.capture({
 					distinctId: project.id,
 					event: 'entry_limit_reached',
@@ -126,7 +126,7 @@ app.openapi(submitEntryRoute, async (c) => {
 						error: {
 							code: 'ENTRY_LIMIT_REACHED',
 							message:
-								'Monthly entry limit reached (1,000 entries/month on the free plan). Upgrade to Pro for unlimited entries.',
+								'Monthly entry limit reached (100 entries/month on the free plan). Upgrade to Pro for unlimited entries.',
 						},
 					},
 					429,

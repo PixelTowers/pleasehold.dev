@@ -300,7 +300,7 @@ function BillingTab() {
 							</thead>
 							<tbody>
 								{[
-									{ feature: 'Entries / month', free: '1,000', pro: 'Unlimited' },
+									{ feature: 'Entries / month', free: '100', pro: 'Unlimited' },
 									{ feature: 'Projects', free: '1', pro: 'Unlimited' },
 									{ feature: 'Email templates', free: 'Default', pro: 'Custom' },
 									{ feature: 'Branding & colors', free: '—', pro: '✓' },
